@@ -1,0 +1,156 @@
+PODS:
+  - Agrume (5.8.10):
+    - SwiftyGif
+  - Alamofire (5.9.1)
+  - AlamofireImage (4.3.0):
+    - Alamofire (~> 5.8)
+  - AppAuth (1.7.5):
+    - AppAuth/Core (= 1.7.5)
+    - AppAuth/ExternalUserAgent (= 1.7.5)
+  - AppAuth/Core (1.7.5)
+  - AppAuth/ExternalUserAgent (1.7.5):
+    - AppAuth/Core
+  - DeckTransition (2.2.0)
+  - DeviceKit (1.13.0)
+  - DropDown (2.3.13)
+  - FBAEMKit (17.0.1):
+    - FBSDKCoreKit_Basics (= 17.0.1)
+  - FBSDKCoreKit (17.0.1):
+    - FBAEMKit (= 17.0.1)
+    - FBSDKCoreKit_Basics (= 17.0.1)
+  - FBSDKCoreKit_Basics (17.0.1)
+  - FBSDKLoginKit (17.0.1):
+    - FBSDKCoreKit (= 17.0.1)
+  - FittedSheets (2.6.1)
+  - GoogleSignIn (7.1.0):
+    - AppAuth (< 2.0, >= 1.7.3)
+    - GTMAppAuth (< 5.0, >= 4.1.1)
+    - GTMSessionFetcher/Core (~> 3.3)
+  - GTMAppAuth (4.1.1):
+    - AppAuth/Core (~> 1.7)
+    - GTMSessionFetcher/Core (< 4.0, >= 3.3)
+  - GTMSessionFetcher/Core (3.4.1)
+  - IDZSwiftCommonCrypto (0.16.1)
+  - IQKeyboardManager (6.5.18)
+  - MarqueeLabel (4.5.0)
+  - MBProgressHUD (1.2.0)
+  - Movin (1.2.0)
+  - NVActivityIndicatorView (5.2.0):
+    - NVActivityIndicatorView/Base (= 5.2.0)
+  - NVActivityIndicatorView/Base (5.2.0)
+  - ReachabilitySwift (5.2.2)
+  - Stripe (23.27.1):
+    - StripeApplePay (= 23.27.1)
+    - StripeCore (= 23.27.1)
+    - StripePayments (= 23.27.1)
+    - StripePaymentsUI (= 23.27.1)
+    - StripeUICore (= 23.27.1)
+  - StripeApplePay (23.27.1):
+    - StripeCore (= 23.27.1)
+  - StripeCore (23.27.1)
+  - StripePayments (23.27.1):
+    - StripeCore (= 23.27.1)
+    - StripePayments/Stripe3DS2 (= 23.27.1)
+  - StripePayments/Stripe3DS2 (23.27.1):
+    - StripeCore (= 23.27.1)
+  - StripePaymentsUI (23.27.1):
+    - StripeCore (= 23.27.1)
+    - StripePayments (= 23.27.1)
+    - StripeUICore (= 23.27.1)
+  - StripeUICore (23.27.1):
+    - StripeCore (= 23.27.1)
+  - SwiftyDropbox (10.1.0)
+  - SwiftyGif (5.4.5)
+  - SwiftyJSON (5.0.2)
+
+DEPENDENCIES:
+  - Agrume
+  - Alamofire
+  - AlamofireImage
+  - DeckTransition (~> 2.0)
+  - DeviceKit (~> 1.3)
+  - DropDown
+  - FBSDKLoginKit
+  - FittedSheets
+  - GoogleSignIn
+  - IDZSwiftCommonCrypto
+  - IQKeyboardManager
+  - MarqueeLabel
+  - MBProgressHUD (~> 1.2.0)
+  - Movin
+  - NVActivityIndicatorView
+  - ReachabilitySwift
+  - Stripe
+  - SwiftyDropbox
+  - SwiftyJSON
+
+SPEC REPOS:
+  trunk:
+    - Agrume
+    - Alamofire
+    - AlamofireImage
+    - AppAuth
+    - DeckTransition
+    - DeviceKit
+    - DropDown
+    - FBAEMKit
+    - FBSDKCoreKit
+    - FBSDKCoreKit_Basics
+    - FBSDKLoginKit
+    - FittedSheets
+    - GoogleSignIn
+    - GTMAppAuth
+    - GTMSessionFetcher
+    - IDZSwiftCommonCrypto
+    - IQKeyboardManager
+    - MarqueeLabel
+    - MBProgressHUD
+    - Movin
+    - NVActivityIndicatorView
+    - ReachabilitySwift
+    - Stripe
+    - StripeApplePay
+    - StripeCore
+    - StripePayments
+    - StripePaymentsUI
+    - StripeUICore
+    - SwiftyDropbox
+    - SwiftyGif
+    - SwiftyJSON
+
+SPEC CHECKSUMS:
+  Agrume: 0cc49307b76e700cbe56490f74c655b50ed1b6eb
+  Alamofire: f36a35757af4587d8e4f4bfa223ad10be2422b8c
+  AlamofireImage: 843953fa97bee5f561cf05d83abd759e590b068d
+  AppAuth: 501c04eda8a8d11f179dbe8637b7a91bb7e5d2fa
+  DeckTransition: c705e1f6bf8d63a3515a91d8a41be7038005bf35
+  DeviceKit: 5a4accdb2918ce0b69e62dc3bef6e4d2cc06e2e4
+  DropDown: 8a2116376c1981888557f72ec2ffc9a5e0e456ec
+  FBAEMKit: 97eaf41451b49691447df831f7f425229ae64b66
+  FBSDKCoreKit: e34084567d11cfdd4787ace2b1a0255bedf34ade
+  FBSDKCoreKit_Basics: 3d78e5fe00504e5c1aed1c48de0654c3a1565d15
+  FBSDKLoginKit: 9a581053879a1e6fc3fab8ead341c78c6a318255
+  FittedSheets: 37e35f105c531f3845075f1788dd8517a35315c4
+  GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
+  GTMAppAuth: f69bd07d68cd3b766125f7e072c45d7340dea0de
+  GTMSessionFetcher: 8000756fc1c19d2e5697b90311f7832d2e33f6cd
+  IDZSwiftCommonCrypto: aefd3487b88dc3d7a1de2553188c720ac3194940
+  IQKeyboardManager: 67f92bb29b650c094c40bd11c0545b47bdd25c5b
+  MarqueeLabel: 4b46d196abd253448e830cbd976f9eacc3af0849
+  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
+  Movin: 02a488d93913e46de77774d6a2cc2fa0eec83760
+  NVActivityIndicatorView: fe52a6a68664c2df8991d7d9e3d86d8d19453c53
+  ReachabilitySwift: 2128f3a8c9107e1ad33574c6e58e8285d460b149
+  Stripe: f2bde666c4d38f32237145fd1f703ceec0a75c15
+  StripeApplePay: 89943feba80f78c84b3a2741913fc19f8cb534cd
+  StripeCore: acb607d9f1bab7b8b57dd271f37353aae9e5e803
+  StripePayments: 6516caea144600b2dbcb953b53b5a534e080340c
+  StripePaymentsUI: 15645d3ab6f140efda33b69d94607e8a813f8951
+  StripeUICore: c60c85edb5e87ffc0cab05f4c808ca370dfde31c
+  SwiftyDropbox: a023f55cb1bd8a81bb48c33eea529cd71faf8e29
+  SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
+  SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
+
+PODFILE CHECKSUM: 6a223077e71dc3d7ec396167d6036d805930f23b
+
+COCOAPODS: 1.15.2

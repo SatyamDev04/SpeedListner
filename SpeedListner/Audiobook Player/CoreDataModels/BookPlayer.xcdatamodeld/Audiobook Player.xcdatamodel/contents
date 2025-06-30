@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22222" systemVersion="23A344" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="ArtworkColors" representedClassName=".ArtworkColors" syncable="YES">
+        <attribute name="backgroundHex" attributeType="String"/>
+        <attribute name="displayOnDark" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="primaryHex" attributeType="String"/>
+        <attribute name="secondaryHex" attributeType="String"/>
+        <attribute name="tertiaryHex" attributeType="String"/>
+        <relationship name="book" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Book" inverseName="artworkColors" inverseEntity="Book"/>
+    </entity>
+    <entity name="Book" representedClassName=".Book" parentEntity="LibraryItem" syncable="YES">
+        <attribute name="author" attributeType="String"/>
+        <attribute name="ext" attributeType="String"/>
+        <attribute name="usesDefaultArtwork" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <relationship name="artworkColors" maxCount="1" deletionRule="Nullify" destinationEntity="ArtworkColors" inverseName="book" inverseEntity="ArtworkColors"/>
+        <relationship name="chapters" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Chapter" inverseName="book" inverseEntity="Chapter"/>
+        <relationship name="playlist" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Playlist" inverseName="books" inverseEntity="Playlist"/>
+    </entity>
+    <entity name="Chapter" representedClassName=".Chapter" syncable="YES">
+        <attribute name="duration" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="index" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="start" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="title" attributeType="String"/>
+        <relationship name="book" maxCount="1" deletionRule="Nullify" destinationEntity="Book" inverseName="chapters" inverseEntity="Book"/>
+    </entity>
+    <entity name="Library" representedClassName=".Library" syncable="YES">
+        <relationship name="items" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="LibraryItem" inverseName="library" inverseEntity="LibraryItem"/>
+    </entity>
+    <entity name="LibraryItem" representedClassName=".LibraryItem" isAbstract="YES" syncable="YES">
+        <attribute name="artworkData" optional="YES" attributeType="Binary"/>
+        <attribute name="currentTime" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="duration" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="identifier" attributeType="String"/>
+        <attribute name="percentCompleted" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="recentPlayTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="title" attributeType="String"/>
+        <attribute name="uploadTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="library" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Library" inverseName="items" inverseEntity="Library"/>
+    </entity>
+    <entity name="Playlist" representedClassName=".Playlist" parentEntity="LibraryItem" syncable="YES">
+        <attribute name="desc" attributeType="String"/>
+        <relationship name="books" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Book" inverseName="playlist" inverseEntity="Book"/>
+        <relationship name="children" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Playlist" inverseName="parent" inverseEntity="Playlist"/>
+        <relationship name="parent" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Playlist" inverseName="children" inverseEntity="Playlist"/>
+    </entity>
+</model>

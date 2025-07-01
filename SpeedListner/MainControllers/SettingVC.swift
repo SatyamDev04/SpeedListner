@@ -7,10 +7,9 @@
 
 import UIKit
 import DropDown
-import MediaPlayer
 //import AudioStreaming
 
-
+import MediaPlayer
 
 class SettingVC: UIViewController, Afterpay {
     
@@ -280,6 +279,7 @@ class SettingVC: UIViewController, Afterpay {
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "AboutVC") as! AboutVC
         self.navigationController?.pushViewController(vc, animated: true)
     }
+    
     @IBAction func btnFAQ_Action(_ sender: Any) {
         
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC

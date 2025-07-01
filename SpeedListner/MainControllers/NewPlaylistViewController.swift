@@ -782,9 +782,7 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
 }
 
 extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDelegate{
-    func didSelectPlaylist(_ playlist: Playlist, from items: [LibraryItem]?) {
-        
-    }
+  
     
     
     
@@ -799,25 +797,61 @@ extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDeleg
         }
         playlistTableVC.item = item
         playlistTableVC.delegate = self
+        playlistTableVC.allowMoveToParent = self.playlist.parent != nil
+        playlistTableVC.allowMoveToRoot = true
+        playlistTableVC.parentPlaylist = self.playlist.parent
         let navController = UINavigationController(rootViewController: playlistTableVC)
         present(navController, animated: true, completion: nil)
     }
-    func didSelectPlaylist(_ playlist: Playlist, from item: LibraryItem?) {
-        print("Selected Playlist: \(playlist.title ?? "")")
-        if let item = item{
-            if item is Book{
-                NewDataMannagerClass.moveBook(item as! Book, from: self.playlist, or: nil, to: playlist, completion: {
-                    self.fetchPlaylistItems()
-                    
-                })
-            }else{
-                NewDataMannagerClass.movePlaylist(item as! Playlist, or: nil, from: self.playlist, to: playlist) {
-                    self.fetchPlaylistItems()
-                }
-            }
-        }
-        
-    }
+    func didSelectPlaylist(_ playlist: Playlist, from items: [LibraryItem]?) {
+          guard let items = items else { return }
+
+          let library = NewDataMannagerClass.getLibrary()
+          let currentPlaylist = self.playlist  // current context
+
+          for item in items {
+              if playlist.title == "__LIBRARY_ROOT__" {
+                  // Move to Library
+                  if let book = item as? Book {
+                      currentPlaylist?.removeFromBooks(book)
+                      library.addToItems(book)
+                  } else if let sub = item as? Playlist {
+                      currentPlaylist?.removeFromChildren(sub)
+                      library.addToItems(sub)
+                  }
+              } else if playlist == currentPlaylist?.parent {
+                  // Move to Parent Folder
+                  if let book = item as? Book {
+                      currentPlaylist?.removeFromBooks(book)
+                      playlist.addToBooks(book)
+                  } else if let sub = item as? Playlist {
+                      currentPlaylist?.removeFromChildren(sub)
+                      playlist.addToChildren(sub)
+                  }
+              } else {
+                  // Move to selected playlist
+                  if let book = item as? Book {
+                      NewDataMannagerClass.moveBook(book, from: currentPlaylist, or: library, to: playlist) {
+                          // Optional callback
+                      }
+                  } else if let sub = item as? Playlist {
+                      NewDataMannagerClass.movePlaylist(sub, or: library, from: currentPlaylist, to: playlist) {
+                          // Optional callback
+                      }
+                  }
+              }
+          }
+
+          self.fetchPlaylistItems()
+          NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
+      }
+
+      // Optional: required if moving single item from a different screen
+      func didSelectPlaylist(_ playlist: Playlist, from item: LibraryItem?) {
+          if let item = item {
+              self.didSelectPlaylist(playlist, from: [item])
+          }
+      }
     @IBAction func btnBookShowCover_Action(_ sender: UIButton) {
         
         if checked {

@@ -21,6 +21,10 @@ class PlaylistTableViewController: UITableViewController {
     var playlists: [Playlist] = []
     var item: LibraryItem?
     var items: [LibraryItem] = []
+    var allowMoveToParent = false
+    var allowMoveToRoot = false
+    var parentPlaylist: Playlist?
+    
     
     private var flattenedPlaylists: [PlaylistDisplayItem] = []
 
@@ -39,11 +43,36 @@ class PlaylistTableViewController: UITableViewController {
         print("[DEBUG] Building nested playlist display list...")
         flattenedPlaylists = []
 
-        let topLevel = playlists
-        for parent in topLevel {
+        // Inject special destinations FIRST
+        if allowMoveToParent, let parent = parentPlaylist {
+            let item = PlaylistDisplayItem(
+                playlist: parent,
+                indentLevel: 0,
+                isExpanded: false,
+                hasChildren: false
+            )
+            flattenedPlaylists.append(item)
+        }
+
+        if allowMoveToRoot {
+            let dummyContext = NewDataMannagerClass.persistentContainer.viewContext
+            let rootPlaceholder = Playlist(context: dummyContext)
+            rootPlaceholder.title = "__LIBRARY_ROOT__"
+
+            let item = PlaylistDisplayItem(
+                playlist: rootPlaceholder,
+                indentLevel: 0,
+                isExpanded: false,
+                hasChildren: false
+            )
+            flattenedPlaylists.append(item)
+        }
+
+        for parent in playlists {
             flatten(playlist: parent, indentLevel: 0)
         }
     }
+
 
     private func flatten(playlist: Playlist, indentLevel: Int) {
         let children = (playlist.children?.allObjects as? [Playlist]) ?? []
@@ -72,7 +101,13 @@ class PlaylistTableViewController: UITableViewController {
         let prefix = item.hasChildren ? (item.isExpanded ? "▾" : "▸") : "•"
         let indent = String(repeating: "    ", count: item.indentLevel)
         
-        cell.textLabel?.text = "\(indent)\(prefix) \(item.playlist.title ?? "Untitled")"
+        if item.playlist.title == "__LIBRARY_ROOT__" {
+            cell.textLabel?.text = "⬆︎ Move to Library"
+        } else if item.playlist == parentPlaylist {
+            cell.textLabel?.text = "⬆︎ Move to Parent Folder"
+        } else {
+            cell.textLabel?.text = "\(indent)\(prefix) \(item.playlist.title ?? "Untitled")"
+        }
         return cell
     }
 
@@ -91,6 +126,9 @@ class PlaylistTableViewController: UITableViewController {
             dismiss(animated: true, completion: nil)
         }
     }
+    
+    
+    
     private func toggleExpansion(at index: Int) {
         var item = flattenedPlaylists[index]
         guard item.hasChildren else { return }

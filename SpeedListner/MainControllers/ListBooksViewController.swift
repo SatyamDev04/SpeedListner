@@ -233,7 +233,6 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @objc func removeFiles() {}
     
     
-    
     func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
         if(navigationController!.viewControllers.count > 1){
             return true
@@ -1326,20 +1325,25 @@ extension ListBooksViewController {
 
 extension ListBooksViewController: PlaylistSelectionDelegate {
     func didSelectPlaylist(_ playlist: Playlist, from items: [LibraryItem]?) {
-        items?.forEach({ item in
-           
-                if item is Book{
-                    NewDataMannagerClass.moveBook(item as! Book, from: nil, or: self.library, to: playlist, completion: {
-                        self.loadLibrary()
-                        
-                    })
-                }else{
-                    NewDataMannagerClass.movePlaylist(item as! Playlist, or: self.library, from: nil, to: playlist) {
-                        self.loadLibrary()
-                    }
+            guard let items = items else { return }
+
+            let library = NewDataMannagerClass.getLibrary()
+
+            for item in items {
+                if let book = item as? Book {
+                    library.removeFromItems(book)
+                    playlist.addToBooks(book)
+                } else if let sub = item as? Playlist {
+                    library.removeFromItems(sub)
+                    playlist.addToChildren(sub)
                 }
-            
-        })
+            }
+
+            NewDataMannagerClass.saveContext()
+            self.loadLibrary()
+            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
+        
+
         resetSelection()
     }
     
@@ -1354,26 +1358,17 @@ extension ListBooksViewController: PlaylistSelectionDelegate {
         }
         playlistTableVC.item = item
         playlistTableVC.delegate = self
+        playlistTableVC.allowMoveToParent = false
+        playlistTableVC.allowMoveToRoot = false
         let navController = UINavigationController(rootViewController: playlistTableVC)
         present(navController, animated: true, completion: nil)
     }
     
     func didSelectPlaylist(_ playlist: Playlist, from item: LibraryItem?) {
-        print("Selected Playlist: \(playlist.title ?? "")")
-        if let item = item{
-            if item is Book{
-                NewDataMannagerClass.moveBook(item as! Book, from: nil, or: self.library, to: playlist, completion: {
-                    self.loadLibrary()
-                    
-                })
-            }else{
-                NewDataMannagerClass.movePlaylist(item as! Playlist, or: self.library, from: nil, to: playlist) {
-                    self.loadLibrary()
-                }
+            if let item = item {
+                self.didSelectPlaylist(playlist, from: [item])
             }
         }
-        
-    }
     
     
 

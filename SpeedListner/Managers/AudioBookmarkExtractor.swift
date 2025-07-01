@@ -270,6 +270,8 @@ class TranscriptionAI{
         }.resume()
     }
 }
+
+
 class Secrets {
     static var openAIKey: String {
         guard

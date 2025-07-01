@@ -22,8 +22,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>OpenAIKey</key>
-	<string>OPENAI_API_KEY</string>
+    <key>OpenAIKey</key>
+        <string>Key here</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -51,8 +51,6 @@
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
-	<key>CFBundleIdentifier</key>
-	<string></string>
 	<key>UIStatusBarTintParameters</key>
 	<dict>
 		<key>UINavigationBar</key>

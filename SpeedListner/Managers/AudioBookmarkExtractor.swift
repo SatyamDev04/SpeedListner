@@ -7,6 +7,12 @@
 
 import AVFoundation
 
+
+enum BookmarkDisplayItem {
+    case bookmark(BookmarksModel)
+    case segment(BookmarkSegment)
+}
+
 struct BookmarksModel: Codable {
     let indentifier: String
     let bookmarksTxt: String
@@ -25,6 +31,14 @@ struct BookmarkSegment{
     var summary:String?
 }
 
+extension BookmarkDisplayItem {
+    var startTime: TimeInterval? {
+        switch self {
+        case .bookmark(let b): return b.timeStamp
+        case .segment(let s): return s.startTime
+        }
+    }
+}
 class AudioBookmarkExtractor {
     
     /// Groups adjacent bookmarks within `threshold` seconds (default 5 min = 300s)

@@ -27,6 +27,10 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @IBOutlet weak var footerHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var footerPlayButton: UIButton!
 
+    @IBOutlet weak var bookmarksCountLable: UILabel!
+    
+    @IBOutlet weak var transCribeBtn: UIButton!
+    
     // MARK: - Properties
     let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
     let topMenu = DropDown()
@@ -35,6 +39,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
     var arrBookmarksNotes = [BookmarksModel]()
     var arrMergedBookmarksNotes = [BookmarkSegment]()
+    var displayItems: [BookmarkDisplayItem] = []
     var book: Book!
     var dataBack: (_ t: Double) -> () = { _ in }
 
@@ -71,6 +76,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         tblV.register(UINib(nibName: "MergeBookMarkCell", bundle: nil), forCellReuseIdentifier: "MergeBookMarkCell")
         tblV.delegate = self
         tblV.dataSource = self
+        transCribeBtn.addTarget(self, action: #selector(transcribeAllBtnAction), for: .touchUpInside)
     }
 
     func handleObservers() {
@@ -103,6 +109,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                 let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
                 if savedBookmarks.count > 0 {
                     self.arrBookmarksNotes = savedBookmarks
+                    updateBookmarkSummary()
                     mergeAdjecntBookmarks()
                 }
             } catch {
@@ -121,6 +128,14 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     
+    private func updateBookmarkSummary() {
+        let totalBookmarks = arrBookmarksNotes.count
+        let starCount = arrBookmarksNotes.filter { $0.isStar == true }.count
+        let notesCount = arrBookmarksNotes.filter { !$0.bookmarksTxt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
+
+        let summaryText = "\(totalBookmarks) Bookmark(s)  -  \(starCount) Star(s)  -  \(notesCount) Note(s)"
+        bookmarksCountLable.text = summaryText
+    }
     func mergeAdjecntBookmarks() {
         let inputAudioURL: URL = book.fileURL
        
@@ -139,13 +154,34 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                         urls.forEach { print("Exported file at: \($0.url)") }
                         // Play or share each URL as needed
                         self?.arrMergedBookmarksNotes = urls
+                        self?.prepareDisplayItems()
                         self?.tblV.reloadData()
+                        
                     } else {
                         print("Error: \(error?.localizedDescription ?? "Unknown error")")
                     }
                 }
             }
         )
+    }
+    
+    private func prepareDisplayItems() {
+        displayItems = []
+
+        for bookmark in arrBookmarksNotes {
+            displayItems.append(.bookmark(bookmark))
+        }
+
+        for segment in arrMergedBookmarksNotes {
+            displayItems.append(.segment(segment))
+        }
+
+        // Optional: sort display items by start time if needed
+        displayItems.sort { lhs, rhs in
+            let lhsTime = (lhs.startTime ?? 0)
+            let rhsTime = (rhs.startTime ?? 0)
+            return lhsTime < rhsTime
+        }
     }
     
     @IBAction func didPressPlay(_ sender: UIButton){
@@ -194,40 +230,36 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
     }
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+    @objc func transcribeAllBtnAction(){
+        
+        
     }
     
+  
+    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        switch section {
-        case 1:
-            return arrBookmarksNotes.count
-        case 0:
-            return arrMergedBookmarksNotes.count
-        default:
-            return 0
-        }
+        return displayItems.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-       
-        
-        if indexPath.section == 1 {
-            let cell = tblV.dequeueReusableCell(withIdentifier: "BookMarkExpandCell") as! BookMarkExpandCell
+        let item = displayItems[indexPath.row]
+        switch item {
+           case .bookmark(let model):
+               guard let cell = tableView.dequeueReusableCell(withIdentifier: "BookMarkExpandCell", for: indexPath) as? BookMarkExpandCell else {
+                   return UITableViewCell()
+               }
             cell.delegate = self
             cell.selectionStyle = .none
             cell.bottomView.isHidden = true
-                   cell.delegate = self
-                   cell.optionBtn.tag = indexPath.row
-                   cell.selectionStyle = .none
-                   cell.detailtxt.text = arrBookmarksNotes[indexPath.row].bookmarksTxt
-           cell.bookmarkTimelbl.text = arrBookmarksNotes[indexPath.row].time + " - " + arrBookmarksNotes[indexPath.row].date
-                   cell.bookmarkBtn.tag = indexPath.row
-                   cell.bookmarkBtn.addTarget(self, action: #selector(bookmarkTapButton(_:)), for: .touchUpInside)
-                   if (arrBookmarksNotes[indexPath.row].bookmarksTxt.count ) > 0 || arrBookmarksNotes[indexPath.row].isStar == true{
+            cell.optionBtn.tag = indexPath.row
+            cell.detailtxt.text = model.bookmarksTxt
+            cell.bookmarkTimelbl.text = model.time + " - " + model.date
+            cell.bookmarkBtn.tag = indexPath.row
+            cell.bookmarkBtn.addTarget(self, action: #selector(bookmarkTapButton(_:)), for: .touchUpInside)
+                   if (model.bookmarksTxt.count ) > 0 || model.isStar == true{
                        cell.bottomView.isHidden = false
                    }
-                   if  arrBookmarksNotes[indexPath.row].isStar ?? false {
+                   if  model.isStar ?? false {
                        cell.isStarBookMark.isHidden = false
                        cell.starBG.isHidden = false
                    }else{
@@ -236,13 +268,15 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                    }
                    
                    return cell
+               
+
+           case .segment(let segment):
+               guard let cell = tableView.dequeueReusableCell(withIdentifier: "MergeBookMarkCell", for: indexPath) as? MergeBookMarkCell else {
+                   return UITableViewCell()
+               }
             
-        } else {
-            
-            // Merged MergeBookMarkCell
-            let cell = tblV.dequeueReusableCell(withIdentifier: "MergeBookMarkCell") as! MergeBookMarkCell
             cell.selectionStyle = .none
-            let segment = arrMergedBookmarksNotes[indexPath.row]
+            
             cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime))" + " - " + "\(formatTime(from: segment.endTime))"
             cell.playBtn.tag = indexPath.row
             cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
@@ -254,7 +288,10 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
             
             return cell
-        }
+              
+           }
+        
+      
         
       
     }

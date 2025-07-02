@@ -10,6 +10,7 @@
 		2EBA2218DFC0A65FB3C307EB /* Pods_SpeedListnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDE8249FF0A533EA6A2E32EA /* Pods_SpeedListnerTests.framework */; };
 		3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5508C0B5F386F4D181453807 /* Pods_SpeedListner.framework */; };
 		51BF78FCE81270D1D2967A51 /* Pods_SpeedListner_SpeedListnerUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E916FB65AD7BB94898787D1 /* Pods_SpeedListner_SpeedListnerUITests.framework */; };
+		8118FC242E15B04B001C15A1 /* EasyTipView in Frameworks */ = {isa = PBXBuildFile; productRef = 8118FC232E15B04B001C15A1 /* EasyTipView */; };
 		815CA83A2E0FEC98009DC0C2 /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CA8392E0FEC98009DC0C2 /* SearchResultTableViewCell.swift */; };
 		DD030BC32C91A68C0089FDA2 /* AAXFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD030BC22C91A68C0089FDA2 /* AAXFileUploader.swift */; };
 		DD030BC52C91A6DD0089FDA2 /* RAProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD030BC42C91A6DD0089FDA2 /* RAProgressRing.swift */; };
@@ -294,6 +295,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */,
+				8118FC242E15B04B001C15A1 /* EasyTipView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -604,6 +606,7 @@
 			);
 			name = SpeedListner;
 			packageProductDependencies = (
+				8118FC232E15B04B001C15A1 /* EasyTipView */,
 			);
 			productName = SpeedListner;
 			productReference = DD0EED7A2C8F2456004F2863 /* SpeedListner.app */;
@@ -681,7 +684,7 @@
 			);
 			mainGroup = DD0EED712C8F2456004F2863;
 			packageReferences = (
-				DD42F5A72DCCC8E2002B960F /* XCRemoteSwiftPackageReference "EasyTipView" */,
+				8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */,
 			);
 			productRefGroup = DD0EED7B2C8F2456004F2863 /* Products */;
 			projectDirPath = "";
@@ -1315,7 +1318,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		DD42F5A72DCCC8E2002B960F /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
+		8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/teodorpatras/EasyTipView";
 			requirement = {
@@ -1324,6 +1327,14 @@
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8118FC232E15B04B001C15A1 /* EasyTipView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */;
+			productName = EasyTipView;
+		};
+/* End XCSwiftPackageProductDependency section */
 
 /* Begin XCVersionGroup section */
 		DD0EED862C8F2456004F2863 /* SpeedListner.xcdatamodeld */ = {

@@ -11,9 +11,10 @@ class MergeBookMarkCell: UITableViewCell {
     
    @IBOutlet weak var playBtn: UIButton!
    @IBOutlet weak var transcriptionBtn: UIButton!
-   @IBOutlet weak var emailBtn: UIButton!
    @IBOutlet weak var bookmarkTimelbl: UILabel!
-    
+    @IBOutlet weak var detailtxt: UILabel!
+    @IBOutlet weak var starBG: UIView!
+    @IBOutlet weak var isStarBookMark: UIButton!
     override func awakeFromNib() {
         super.awakeFromNib()
        

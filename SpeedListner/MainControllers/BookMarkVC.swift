@@ -16,83 +16,78 @@ enum SortType {
 
 class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,BookMarkCellDelegate, DelegateforBookmarkPopUpVC {
     
+    // MARK: - IBOutlets
     @IBOutlet weak var btnSort: UIButton!
     @IBOutlet weak var tblV: UITableView!
     @IBOutlet weak var currentTitleBook: UILabel!
-    //for mini player
     @IBOutlet weak var effectView: UIVisualEffectView!
     @IBOutlet weak var footerView: UIView!
     @IBOutlet weak var footerImageView: UIImageView!
     @IBOutlet weak var footerTitleLabel: UILabel!
     @IBOutlet weak var footerHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var footerPlayButton: UIButton!
-    
-    
+
+    // MARK: - Properties
     let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
     let topMenu = DropDown()
     let DownMenu = DropDown()
+    lazy var dropDowns: [DropDown] = { [topMenu, DownMenu] }()
+
     var arrBookmarksNotes = [BookmarksModel]()
     var arrMergedBookmarksNotes = [BookmarkSegment]()
-    var book:Book!
-    var dataBack:(_ t:Double)->() = {t in }
-    lazy var dropDowns: [DropDown] = {
-        return [
-            self.topMenu,
-            self.DownMenu
-        ]
-    }()
-    //keep in memory images to toggle play/pause
+    var book: Book!
+    var dataBack: (_ t: Double) -> () = { _ in }
+
     let miniPlayImage = UIImage(named: "29")
     let miniPauseButton = UIImage(named: "21")
     var currentSortType: SortType = .byTime
     var currentPlayingStatus: Bool = false
     let aiLoader = AILoaderView()
-    
+
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
         getBookmarks()
-        
-        
     }
+
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        if PlayerManager.shared.isPlaying {
+            footerView.isHidden = false
+        }
+        guard let b = currentBok else { return }
+        setupMiniPlayer(book: b)
+    }
+
+    // MARK: - Setup
     
-    func setupUI(){
-        self.tblV.addCorner5()
-        self.tblV.addShadow5()
-        self.handleObservers()
-        self.tblV.register(UINib(nibName: "BookMarkCell", bundle: nil), forCellReuseIdentifier: "BookMarkCell")
-        self.tblV.register(UINib(nibName: "BookMarkExpandCell", bundle: nil), forCellReuseIdentifier: "BookMarkExpandCell")
-        self.tblV.register(UINib(nibName: "MergeBookMarkCell", bundle: nil), forCellReuseIdentifier: "MergeBookMarkCell")
+    func setupUI() {
+        tblV.addCorner5()
+        tblV.addShadow5()
+        handleObservers()
+        tblV.register(UINib(nibName: "BookMarkCell", bundle: nil), forCellReuseIdentifier: "BookMarkCell")
+        tblV.register(UINib(nibName: "BookMarkExpandCell", bundle: nil), forCellReuseIdentifier: "BookMarkExpandCell")
+        tblV.register(UINib(nibName: "MergeBookMarkCell", bundle: nil), forCellReuseIdentifier: "MergeBookMarkCell")
         tblV.delegate = self
         tblV.dataSource = self
     }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        if PlayerManager.shared.isPlaying{
-            
-            self.footerView.isHidden = false
-        }
-        guard let b = currentBok else{return}
-        self.setupMiniPlayer(book: b)
-        
-    }
-    
+
     func handleObservers() {
-        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.didPressShowDetail(_:)))
-        self.effectView.addGestureRecognizer(tapRecognizer)
+        let tapRecognizer = UITapGestureRecognizer(target: self, action: #selector(didPressShowDetail(_:)))
+        effectView.addGestureRecognizer(tapRecognizer)
         effectView.isUserInteractionEnabled = true
-        
-        
-        self.footerView.clipsToBounds = true
-        self.footerView.layer.cornerRadius = 20
-        self.footerView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
-        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPlay), name: Notification.Name.AudiobookPlayer.bookPlayed, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPause), name: Notification.Name.AudiobookPlayer.bookPaused, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPause), name: Notification.Name.AudiobookPlayer.bookEnd, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookStop(_:)), name: Notification.Name.AudiobookPlayer.bookStopped, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.bookChange(_:)), name: Notification.Name.AudiobookPlayer.bookChange, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(self.bookReady(_:)), name: Notification.Name.AudiobookPlayer.bookReady, object: nil)
+
+        footerView.clipsToBounds = true
+        footerView.layer.cornerRadius = 20
+        footerView.layer.maskedCorners = [.layerMaxXMinYCorner, .layerMinXMinYCorner]
+
+        NotificationCenter.default.addObserver(self, selector: #selector(onBookPlay), name: Notification.Name.AudiobookPlayer.bookPlayed, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onBookPause), name: Notification.Name.AudiobookPlayer.bookPaused, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onBookPause), name: Notification.Name.AudiobookPlayer.bookEnd, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(onBookStop(_:)), name: Notification.Name.AudiobookPlayer.bookStopped, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bookChange(_:)), name: Notification.Name.AudiobookPlayer.bookChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(bookReady(_:)), name: Notification.Name.AudiobookPlayer.bookReady, object: nil)
     }
     
     func getBookmarks(){
@@ -226,9 +221,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                    cell.optionBtn.tag = indexPath.row
                    cell.selectionStyle = .none
                    cell.detailtxt.text = arrBookmarksNotes[indexPath.row].bookmarksTxt
-                   
-//                   print(arrBookmarksNotes[indexPath.row].bookmarksTxt,indexPath.row,"bbokmark text")
-                   cell.bookmarkTimelbl.text = arrBookmarksNotes[indexPath.row].time + " - " + arrBookmarksNotes[indexPath.row].date
+           cell.bookmarkTimelbl.text = arrBookmarksNotes[indexPath.row].time + " - " + arrBookmarksNotes[indexPath.row].date
                    cell.bookmarkBtn.tag = indexPath.row
                    cell.bookmarkBtn.addTarget(self, action: #selector(bookmarkTapButton(_:)), for: .touchUpInside)
                    if (arrBookmarksNotes[indexPath.row].bookmarksTxt.count ) > 0 || arrBookmarksNotes[indexPath.row].isStar == true{
@@ -258,12 +251,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             
             cell.emailBtn.tag = indexPath.row
             cell.emailBtn.addTarget(self, action: #selector(summriseClip(_:)), for: .touchUpInside)
-         
-// cell.detailtxt.text = "Merged Segment (\(segment.identifiers.count) bookmarks)"
-//  cell.bookmarkTimelbl.text = String(format: "%.2f - %.2f sec", segment.startTime, segment.endTime)
-//            cell.bottomView.isHidden = false
-//            cell.isStarBookMark.isHidden = true
-//            cell.starBG.isHidden = true
+    
             
             return cell
         }
@@ -288,10 +276,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
         ])
         
-        // Force white background for all subviews and content
+       
         headerView.layer.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-     //   titleLabel.backgroundColor = .white
-        
+    
         return headerView
     }
     
@@ -317,6 +304,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         self.dataBack(t)
         self.navigationController?.popViewController(animated: true)
     }
+    
     @IBAction private func tapMiniPlayerButton() {
         
     }
@@ -324,15 +312,14 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @objc func play_pauseImgSet(_ notification:Notification){
         
     }
-    /**
-     * Set play or pause image on button
-     */
+   
     
     
     @objc func handleAudioInterruptions(_ notification:Notification){
         
         
     }
+    
     @objc func playBookmarkClip(_ sender:UIButton){
         let playerVC = BottomSheetAudioPlayerVC()
         playerVC.url = arrMergedBookmarksNotes[sender.tag].url

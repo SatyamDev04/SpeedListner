@@ -7,6 +7,7 @@
 
 import UIKit
 import DropDown
+import MessageUI
 
 enum SortType {
     case byTime
@@ -17,6 +18,7 @@ enum SortType {
 class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,BookMarkCellDelegate, DelegateforBookmarkPopUpVC {
     
     // MARK: - IBOutlets
+    
     @IBOutlet weak var btnSort: UIButton!
     @IBOutlet weak var tblV: UITableView!
     @IBOutlet weak var currentTitleBook: UILabel!
@@ -28,8 +30,10 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @IBOutlet weak var footerPlayButton: UIButton!
     @IBOutlet weak var bookmarksCountLable: UILabel!
     @IBOutlet weak var transCribeBtn: UIButton!
+    @IBOutlet weak var autoTranscribeChecked: UIButton!
     
     // MARK: - Properties
+    
     let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
     let topMenu = DropDown()
     let DownMenu = DropDown()
@@ -55,7 +59,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             UserDefaults.standard.set(newValue, forKey: "autoTranscribeWhileListening")
         }
     }
+    
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -83,6 +89,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         tblV.delegate = self
         tblV.dataSource = self
         transCribeBtn.addTarget(self, action: #selector(transcribeAllBtnAction), for: .touchUpInside)
+        
+        autoTranscribeChecked.addTarget(self, action: #selector(autoTranscribeCheckAction), for: .touchUpInside)
     }
 
     func handleObservers() {
@@ -382,6 +390,18 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     @objc func transcribeAllBtnAction(){
         
+        self.transcribeAllSegments()
+    }
+    
+    @objc func autoTranscribeCheckAction(){
+        if isAutoTranscribeEnabled {
+            self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box-1"), for: .normal)
+            isAutoTranscribeEnabled = false
+            
+        }else{
+            self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box"), for: .normal)
+            isAutoTranscribeEnabled = true
+        }
         
     }
     
@@ -414,9 +434,11 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
         
     }
+    
     @objc func transcribeAllSegments() {
         aiLoader.show(in: view, msg: "Transcribing all bookmarks...")
 
+        
         let segments = displayItems.compactMap { item -> BookmarkSegment? in
             if case .segment(let seg) = item, seg.transcription == nil || seg.summary == nil {
                 return seg
@@ -424,9 +446,15 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             return nil
         }
 
+        let unprocessed = segments.filter { $0.transcription == nil || $0.summary == nil }
+        
+        guard !unprocessed.isEmpty else {
+            print("All segments already transcribed and summarized.")
+            return
+        }
         let group = DispatchGroup()
         
-        for var segment in segments {
+        for var segment in unprocessed {
             let id = segment.identifiers
             guard let url = segment.url else { continue }
            
@@ -449,6 +477,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             self.showAlert(title: "Done", message: "All bookmarks processed.")
         }
     }
+    
     @objc func openCombinedTranscriptionSummary(_ sender: UIButton) {
         let index = sender.tag
 
@@ -495,6 +524,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                         summary: result.summary,
                         timeRange: "\(self.formatTime(from: segment.startTime)) - \(self.formatTime(from: segment.endTime))"
                     )
+                    self.tblV.reloadData()
                 }
             }
         }
@@ -683,10 +713,17 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     @IBAction func btnBookmark_shareAction(_ sender: Any) {
         guard let book = self.book else {return}
-        self.showExportController(currentItem: book, bookmarks: self.arrBookmarksNotes)
+        
+        if !MFMailComposeViewController.canSendMail() {
+            showExportController(currentItem: book, bookmarks:  self.displayItems)
+            return
+        }
+        
+        self.showEmailExport(book: book, displayItems: self.displayItems)
+        
     }
     
-    func showExportController(currentItem: Book, bookmarks: [BookmarksModel]) {
+    func showExportController(currentItem: Book, bookmarks: [BookmarkDisplayItem]) {
         let provider = BookmarksActivityItemProvider(currentItem: currentItem, bookmarks: bookmarks)
         
         let shareController = UIActivityViewController(activityItems: [provider], applicationActivities: nil)

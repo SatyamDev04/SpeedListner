@@ -336,7 +336,7 @@ class PlayerManager: NSObject {
         }
         
         UserDefaults.standard.set(currentBook.identifier, forKey: UserDefaultsConstants.lastPlayedBook)
-        
+       
         do {
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
@@ -433,6 +433,11 @@ class PlayerManager: NSObject {
             self.pause()
         } else {
             self.play()
+            guard let currentBook = self.currentBook else {
+                print("No current book available.")
+                return
+            }
+            autoTranscribeIfNeeded(for: currentBook)
         }
     }
     
@@ -474,6 +479,13 @@ class PlayerManager: NSObject {
         
         return self.chapterArray[Int(chapter.index ) - 2]
     }
+    
+    func autoTranscribeIfNeeded(for book: Book?) {
+        guard let book = book,
+              UserDefaults.standard.bool(forKey: "autoTranscribeWhileListening") else { return }
+        
+        AudioMonitorManager.shared.startTranscribeAllBookmarksInBackground(book: book)
+    }
 }
 
 
@@ -488,7 +500,12 @@ extension PlayerManager: AVAudioPlayerDelegate {
             UserDefaults.standard.removeObject(forKey: UserDefaultsConstants.lastPlayedBook)
 
             self.update()
-
+        guard let currentBook = self.currentBook else {
+            print("No current book available.")
+            return
+        }
+        autoTranscribeIfNeeded(for: currentBook)
+        
             switch playbackMode {
             case .repeatMode:
              

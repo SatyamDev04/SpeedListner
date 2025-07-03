@@ -26,9 +26,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @IBOutlet weak var footerTitleLabel: UILabel!
     @IBOutlet weak var footerHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var footerPlayButton: UIButton!
-
     @IBOutlet weak var bookmarksCountLable: UILabel!
-    
     @IBOutlet weak var transCribeBtn: UIButton!
     
     // MARK: - Properties
@@ -49,6 +47,14 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     var currentPlayingStatus: Bool = false
     let aiLoader = AILoaderView()
 
+    var isAutoTranscribeEnabled: Bool {
+        get {
+            return UserDefaults.standard.bool(forKey: "autoTranscribeWhileListening")
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: "autoTranscribeWhileListening")
+        }
+    }
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -230,12 +236,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
     }
     
-    @objc func transcribeAllBtnAction(){
-        
-        
-    }
     
-  
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return displayItems.count
@@ -256,6 +257,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.bookmarkTimelbl.text = model.time + " - " + model.date
             cell.bookmarkBtn.tag = indexPath.row
             cell.bookmarkBtn.addTarget(self, action: #selector(bookmarkTapButton(_:)), for: .touchUpInside)
+            
                    if (model.bookmarksTxt.count ) > 0 || model.isStar == true{
                        cell.bottomView.isHidden = false
                    }
@@ -276,48 +278,51 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                }
             
             cell.selectionStyle = .none
-            
+            cell.delegate = self
+            cell.optionBtn.tag = indexPath.row
             cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime))" + " - " + "\(formatTime(from: segment.endTime))"
             cell.playBtn.tag = indexPath.row
             cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
             cell.transcriptionBtn.tag = indexPath.row
-            cell.transcriptionBtn.addTarget(self, action: #selector(trancripClip(_:)), for: .touchUpInside)
+            cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
+            if (segment.bookmarksTxt?.count ?? 0 ) > 0 || segment.isStar == true{
+                cell.bottomView.isHidden = false
+            }
+            if  segment.isStar ?? false {
+                cell.isStarBookMark.isHidden = false
+                cell.starBG.isHidden = false
+            }else{
+                cell.isStarBookMark.isHidden = true
+                cell.starBG.isHidden = true
+            }
+            cell.transSumryLable.layer.cornerRadius = 12
+            cell.transSumryLable.clipsToBounds = true
             
-            cell.emailBtn.tag = indexPath.row
-            cell.emailBtn.addTarget(self, action: #selector(summriseClip(_:)), for: .touchUpInside)
-    
-            
+            if let cachedTranscription = BookmarkCacheManager.getTranscription(for: segment.identifiers),
+               let cachedSummary = BookmarkCacheManager.getSummary(for: segment.identifiers) {
+                cell.transSumryLable.text = "Transcribed & Summarized"
+                cell.transSumryLable.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+            }else{
+                let underlineAttrString = NSAttributedString(
+                    string: "Transcribe & Summarize?",
+                    attributes: [
+                        .underlineStyle: NSUnderlineStyle.single.rawValue,
+                        .foregroundColor: UIColor.white,
+                        .font: UIFont.systemFont(ofSize: 14, weight: .medium)
+                    ]
+                )
+                cell.transSumryLable.attributedText = underlineAttrString
+                cell.transSumryLable.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.6)
+            }
             return cell
               
            }
-        
+
       
         
       
     }
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.width, height: 40))
-        headerView.backgroundColor = .white
-        
-        let titleLabel = UILabel()
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.font = UIFont.boldSystemFont(ofSize: 16)
-        titleLabel.textColor = .white
-        titleLabel.text = section == 1 ? "Individual Bookmarks" : "Merged Segments"
-        headerView.addSubview(titleLabel)
-        
-        NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
-            titleLabel.topAnchor.constraint(equalTo: headerView.topAnchor, constant: 8),
-            titleLabel.bottomAnchor.constraint(equalTo: headerView.bottomAnchor, constant: -8)
-        ])
-        
-       
-        headerView.layer.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-    
-        return headerView
-    }
+
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         
@@ -337,10 +342,27 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
 
     @objc func bookmarkTapButton(_ sender:UIButton) {
-        let t = self.arrBookmarksNotes[sender.tag].timeStamp
-        self.dataBack(t)
-        self.navigationController?.popViewController(animated: true)
+        let index = sender.tag
+            guard index < displayItems.count else {
+                print("Index out of bounds!")
+                return
+            }
+        let item = displayItems[index]
+
+        switch item {
+            
+        case .bookmark(let model):
+            let t = model.timeStamp
+            self.dataBack(t)
+            self.navigationController?.popViewController(animated: true)
+
+        case .segment(let segment):
+               print("Segment: \(segment.startTime)-\(segment.endTime)")
+        }
+        
+       
     }
+    
     
     @IBAction private func tapMiniPlayerButton() {
         
@@ -357,98 +379,136 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
     }
     
-    @objc func playBookmarkClip(_ sender:UIButton){
-        let playerVC = BottomSheetAudioPlayerVC()
-        playerVC.url = arrMergedBookmarksNotes[sender.tag].url
-        playerVC.modalPresentationStyle = .pageSheet
-
-        if let sheet = playerVC.sheetPresentationController {
-            sheet.detents = [.medium()]
-            sheet.prefersGrabberVisible = true
-        }
-
-        present(playerVC, animated: true)
+    
+    @objc func transcribeAllBtnAction(){
+        
+        
     }
     
-    @objc func trancripClip(_ sender: UIButton) {
+    @objc func playBookmarkClip(_ sender:UIButton){
+        
         let index = sender.tag
-        guard let audioURL = arrMergedBookmarksNotes[index].url else { return }
-
-        if let text = arrMergedBookmarksNotes[index].transcription, !text.isEmpty {
-            presentTranscriptionSheet(with: text)
-        } else {
-            aiLoader.show(in: view, msg: "AI is Fetching Transcription for your bookmarks...")
-            TranscriptionAI.transcribeLocalAudio(fileURL: audioURL) { [weak self] transcription in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    self.aiLoader.dismiss()
-                    if let transcription = transcription {
-                        self.arrMergedBookmarksNotes[index].transcription = transcription
-                        self.presentTranscriptionSheet(with: transcription)
-                    } else {
-                        self.showAlert(title: "Error", message: "Failed to fetch transcription.")
-                    }
-                }
+        guard index < displayItems.count else {
+            print("Index out of bounds!")
+            return
+        }
+        let item = displayItems[index]
+        
+        switch item {
+            
+        case .bookmark(let model):
+            print("Bookmark: \(model.bookmarksTxt)")
+            
+        case .segment(let segment):
+            print("Segment: \(segment.startTime)-\(segment.endTime)")
+            let playerVC = BottomSheetAudioPlayerVC()
+            playerVC.url = segment.url
+            playerVC.modalPresentationStyle = .pageSheet
+            if let sheet = playerVC.sheetPresentationController {
+                sheet.detents = [.medium()]
+                sheet.prefersGrabberVisible = true
             }
+            
+            present(playerVC, animated: true)
+            
+        }
+        
+    }
+    @objc func transcribeAllSegments() {
+        aiLoader.show(in: view, msg: "Transcribing all bookmarks...")
+
+        let segments = displayItems.compactMap { item -> BookmarkSegment? in
+            if case .segment(let seg) = item, seg.transcription == nil || seg.summary == nil {
+                return seg
+            }
+            return nil
+        }
+
+        let group = DispatchGroup()
+        
+        for var segment in segments {
+            let id = segment.identifiers
+            guard let url = segment.url else { continue }
+           
+            group.enter()
+            TranscriptionAI.processAudio(fileURL: url) { result in
+                if let result = result {
+                    segment.transcription = result.transcription
+                    segment.summary = result.summary
+                    
+                    BookmarkCacheManager.saveTranscription(result.transcription, for: id)
+                    BookmarkCacheManager.saveSummary(result.summary, for: id)
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) {
+            self.aiLoader.dismiss()
+            self.tblV.reloadData()
+            self.showAlert(title: "Done", message: "All bookmarks processed.")
         }
     }
-
-    @objc func summriseClip(_ sender: UIButton) {
+    @objc func openCombinedTranscriptionSummary(_ sender: UIButton) {
         let index = sender.tag
-        guard let audioURL = arrMergedBookmarksNotes[index].url else { return }
 
-        func summarize(text: String) {
-            aiLoader.show(in: view, msg: "AI is summarizing Transcription for your bookmarks...")
-            TranscriptionAI.getSummary(from: text) { [weak self] summary in
-                guard let self = self else { return }
-                DispatchQueue.main.async {
-                    self.aiLoader.dismiss()
-                    if let summary = summary {
-                        self.arrMergedBookmarksNotes[index].summary = summary
-                        self.presentSummaryBottomSheet(with: summary, from: self)
-                    } else {
-                        self.showAlert(title: "Error", message: "Failed to summarize transcription.")
-                    }
-                }
-            }
+        guard case .segment(var segment) = displayItems[index],
+              let audioURL = segment.url else {
+            return
         }
-
-        if let text = arrMergedBookmarksNotes[index].transcription, !text.isEmpty {
-            if let summary = arrMergedBookmarksNotes[index].summary, !summary.isEmpty {
-                self.presentSummaryBottomSheet(with: summary, from: self)
-            }else{
-                summarize(text: text)
-            }
+       let id = segment.identifiers
+        print(id,"efefwd")
+        if let cachedTranscription = BookmarkCacheManager.getTranscription(for: id),
+           let cachedSummary = BookmarkCacheManager.getSummary(for: id) {
+            
           
+            segment.transcription = cachedTranscription
+            segment.summary = cachedSummary
+            
+            self.presentCombinedSheet(
+                transcription: cachedTranscription,
+                summary: cachedSummary,
+                timeRange: "\(self.formatTime(from: segment.startTime)) - \(self.formatTime(from: segment.endTime))"
+            )
+            
         } else {
-            aiLoader.show(in: view, msg: "AI is Fetching Transcription for your bookmarks...")
-            TranscriptionAI.transcribeLocalAudio(fileURL: audioURL) { [weak self] transcription in
-                guard let self = self else { return }
+          
+            aiLoader.show(in: view, msg: "Fetching transcription & summary...")
+
+            TranscriptionAI.processAudio(fileURL: audioURL) { [weak self] result in
                 DispatchQueue.main.async {
-                    self.aiLoader.dismiss()
-                    if let transcription = transcription {
-                        self.arrMergedBookmarksNotes[index].transcription = transcription
-                        if let summary = self.arrMergedBookmarksNotes[index].summary, !summary.isEmpty {
-                            self.presentSummaryBottomSheet(with: summary, from: self)
-                        }else{
-                            summarize(text: transcription)
-                        }
-                    } else {
-                        self.showAlert(title: "Error", message: "Failed to transcribe.")
+                    self?.aiLoader.dismiss()
+                    guard let self = self, let result = result else {
+                        self?.showAlert(title: "Error", message: "Failed to process audio.")
+                        return
                     }
+
+                    segment.transcription = result.transcription
+                    segment.summary = result.summary
+
+        
+                    BookmarkCacheManager.saveTranscription(result.transcription, for: id)
+                    BookmarkCacheManager.saveSummary(result.summary, for: id)
+
+                    self.presentCombinedSheet(
+                        transcription: result.transcription,
+                        summary: result.summary,
+                        timeRange: "\(self.formatTime(from: segment.startTime)) - \(self.formatTime(from: segment.endTime))"
+                    )
                 }
             }
         }
     }
-    func presentSummaryBottomSheet(with summary: String, from vc: UIViewController) {
-        let bottomSheet = SummaryBottomSheetVC()
-        bottomSheet.summaryText = summary
-        if let sheet = bottomSheet.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
-        vc.present(bottomSheet, animated: true)
+    
+    func presentCombinedSheet(transcription: String, summary: String, timeRange: String) {
+        let vc = TranscriptionSummaryVC()
+        vc.timeRange = timeRange
+        vc.summaryText = summary
+        vc.transcriptionText = transcription
+        vc.modalPresentationStyle = .pageSheet
+        self.present(vc, animated: true)
     }
+    
     @IBAction func btnCross_Action(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
         
@@ -465,8 +525,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         self.topMenu.bottomOffset = CGPoint(x: -80, y: sender.bounds.height + 8)
         self.topMenu.textColor = .black
         self.topMenu.cornerRadius = 5.0
-        //        self.topMenu.borderWidth = 1
-        //        self.topMenu.borderColor = #colorLiteral(red: 0.3842016757, green: 0.2161925137, blue: 0.7387148142, alpha: 1)
         self.topMenu.separatorColor = .clear
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
@@ -481,9 +539,10 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             guard let cell = cell as? MyCell1 else {
                 return
             }
-            cell.img1.image = UIImage(named: imagesArr[index])// UIImage(systemName: imagesArr[index])
-            // cell.lbltitle.text = aArr[index]
+            cell.img1.image = UIImage(named: imagesArr[index])
+            
         }
+        
         topMenu.selectionAction = { [unowned self] (index, item) in
             if index == 0 {
                 
@@ -503,71 +562,87 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     func buttonTapped(index: Int, sender: UIButton) {
-        print(index,"index")
-        
+        print(index, "index")
+
+        let item = displayItems[index]
+
         self.DownMenu.anchorView = sender
         self.DownMenu.direction = .any
-        self.DownMenu.bottomOffset = CGPoint(x: -150, y: sender.bounds.height  )
-        self.DownMenu.topOffset = CGPoint(x: -150, y: sender.bounds.height )
+        self.DownMenu.bottomOffset = CGPoint(x: -150, y: sender.bounds.height)
+        self.DownMenu.topOffset = CGPoint(x: -150, y: sender.bounds.height)
         self.DownMenu.textColor = .black
         self.DownMenu.cornerRadius = 5.0
         self.DownMenu.separatorColor = .clear
         self.DownMenu.selectionBackgroundColor = .clear
         self.DownMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        self.DownMenu.dataSource.removeAll()
+        self.DownMenu.dataSource = ["Add/Edit Note", "Delete", "Cancel"]
         
-        self.DownMenu.dataSource.append(contentsOf: ["Add/Edit Note","Delete Bookmark"," Cancel"])
-        let imagesArr = ["Editicon","Deleteicon","Cancelicon"]
+        let imagesArr = ["Editicon", "Deleteicon", "Cancelicon"]
         
         DownMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         DownMenu.customCellConfiguration = { index, title, cell in
-            
-            guard let cell = cell as? MyCell1 else {
-                return
-            }
-            cell.img1.image = UIImage(named: imagesArr[index]) // UIImage(systemName: imagesArr[index])
-            
+            guard let cell = cell as? MyCell1 else { return }
+            cell.img1.image = UIImage(named: imagesArr[index])
         }
-        DownMenu.selectionAction = { [unowned self] (index1, item) in
-            if index1 == 0 {
-                print("add-edit",index)
-                
-                let vc: BookmarkPopUpVC = self.storyboard?.instantiateViewController(withIdentifier: "BookmarkPopUpVC") as! BookmarkPopUpVC
-                
-                vc.playerstaus = PlayerManager.shared.isPlaying
-                vc.delegateBookmarkVC = self
-                vc.txt = self.arrBookmarksNotes[index].bookmarksTxt
-                vc.index = index
-                vc.starStatus = self.arrBookmarksNotes[index].isStar ?? false
-                self.addChild(vc)
-                vc.view.frame = self.view.frame
-                self.view.addSubview(vc.view)
-                self.view.bringSubviewToFront(vc.view)
-                vc.didMove(toParent: self)
-                
-                
-            }else if index1 == 1{
-                showDeleteBookmarkAlert { confirmed in
-                    if confirmed {
-                        print("Delete",index)
-                        self.arrBookmarksNotes.remove(at: index)
-                        self.tblV.reloadData()
-                        self.saveBookMarksNotes()
-                    } else {
-                        print("Cancel",index)
-                        
+
+        DownMenu.selectionAction = { [unowned self] (menuIndex, _) in
+            switch item {
+            case .bookmark(let bookmarkModel):
+                switch menuIndex {
+                case 0:
+                    let vc = self.storyboard?.instantiateViewController(withIdentifier: "BookmarkPopUpVC") as! BookmarkPopUpVC
+                    vc.playerstaus = PlayerManager.shared.isPlaying
+                    vc.delegateBookmarkVC = self
+                    vc.txt = bookmarkModel.bookmarksTxt
+                    vc.index = index
+                    vc.starStatus = bookmarkModel.isStar ?? false
+                    self.addChild(vc)
+                    vc.view.frame = self.view.frame
+                    self.view.addSubview(vc.view)
+                    self.view.bringSubviewToFront(vc.view)
+                    vc.didMove(toParent: self)
+
+                case 1:
+                    showDeleteBookmarkAlert { confirmed in
+                        if confirmed {
+                            if let originalIndex = self.arrBookmarksNotes.firstIndex(where: { $0.indentifier == bookmarkModel.indentifier }) {
+                                self.arrBookmarksNotes.remove(at: originalIndex)
+                            }
+                           
+                            self.displayItems.remove(at: index)
+                            self.tblV.reloadData()
+                            self.saveBookMarksNotes()
+                        }
                     }
+
+                default: break
                 }
-                
-            }else{
-                print("Cancel",index)
+
+            case .segment(let segment):
+                switch menuIndex {
+                case 0:
+                    print("Edit Segment: \(segment.startTime) - \(segment.endTime)")
+
+                case 1:
+                    showDeleteBookmarkAlert { confirmed in
+                        if confirmed {
+                            if let originalIndex = self.arrMergedBookmarksNotes.firstIndex(where: { $0.identifiers == segment.identifiers }) {
+                                self.arrMergedBookmarksNotes.remove(at: originalIndex)
+                            }
+    
+                            self.displayItems.remove(at: index)
+                            self.tblV.reloadData()
+                        }
+                    }
+
+                default: break
+                }
             }
-            
         }
-        
+
         self.DownMenu.show()
-        
     }
+    
     
     func MethodforPop(string: String) {
         let userDefaults = UserDefaults.standard
@@ -582,10 +657,11 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                 self.tblV.reloadData()
                 
             } catch {
-                // Failed to convert Data to Contact
+               
             }
         }
     }
+    
     
     func sortBookmarks() {
         print(arrBookmarksNotes,"before sorting")
@@ -625,14 +701,13 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     func showDeleteBookmarkAlert(completion: @escaping (Bool) -> Void) {
         let alert = UIAlertController(title: nil, message: "Delete Bookmark?", preferredStyle: .alert)
         
-        // Cancel action
-        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
-            completion(false) // User cancelled
-        }
         
-        // Delete action
+        let cancelAction = UIAlertAction(title: "Cancel", style: .cancel) { _ in
+            completion(false)
+        }
+       
         let deleteAction = UIAlertAction(title: "Delete", style: .destructive) { _ in
-            completion(true) // User confirmed deletion
+            completion(true)
         }
         
         alert.addAction(cancelAction)
@@ -641,14 +716,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         self.present(alert, animated: true, completion: nil)
         
     }
-    private func presentTranscriptionSheet(with text: String) {
-        let sheetVC = TranscriptionBottomSheet(transcription: text)
-        if let sheet = sheetVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
-        self.present(sheetVC, animated: true)
-    }
+    
+    
 
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -659,8 +728,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
 
 extension BookMarkVC {
-    
-    
     
     func compareTimes(_ time1: String, _ time2: String) -> Bool {
         let formatter = DateFormatter()
@@ -727,86 +794,7 @@ extension BookMarkVC {
     }
 }
 
-final class BookmarksActivityItemProvider: UIActivityItemProvider {
-    
-    let currentItem: Book
-    let bookmarks: [BookmarksModel]
-    
-    init(currentItem: Book, bookmarks: [BookmarksModel]) {
-        self.currentItem = currentItem
-        self.bookmarks = bookmarks
-        super.init(placeholderItem: URL(fileURLWithPath: "placeholder.txt"))
-    }
-    
-    public override func activityViewController(
-        _ activityViewController: UIActivityViewController,
-        itemForActivityType activityType: UIActivity.ActivityType?
-    ) -> Any? {
-        let t = currentItem.title
-        
-        let fileTitle = "bookmarks-" + " \(t ?? "").txt"
-        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent(fileTitle)
-        
-        do {
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                try FileManager.default.removeItem(at: fileURL)
-            }
-            
-            let contentsData = parseBookmarksData()
-            FileManager.default.createFile(atPath: fileURL.path, contents: contentsData)
-        } catch {
-            return nil
-        }
-        
-        return fileURL
-    }
-    func formatTime(_ time:Int) -> String {
-        let hours = Int(time / 3600)
-        
-        let remaining = Float(time - (hours * 3600))
-        
-        let minutes = Int(remaining / 60)
-        
-        let seconds = Int(remaining - Float(minutes * 60))
-        
-        var formattedTime = String(format:"%02d:%02d", minutes, seconds)
-        if hours > 0 {
-            formattedTime = String(format:"%02d:"+formattedTime, hours)
-        }
-        
-        return formattedTime
-    }
-    func parseBookmarksData() -> Data? {
-        var fileContents = ""
-        
-        for bookmark in bookmarks {
-            
-            let chapterTime = bookmark.time
-            let chapterdate = bookmark.date
-            let formattedTime = self.formatTime(Int(currentItem.duration))
-            fileContents += "\("Bookmark".localized): \(chapterTime)\n"
-            fileContents += "\("Date".localized): \(chapterdate)\n"
-            fileContents += "\("Book Length".localized): \(formattedTime)\n"
-            if bookmark.isStar ?? false {
-                fileContents += "\("Starred?".localized): \("******************************")\n"
-            }else{
-                fileContents += "\("Starred?".localized): \("")\n"
-            }
-            let note = bookmark.bookmarksTxt
-            fileContents += "\("Note".localized): \(note)\n"
-            
-            fileContents += "------------------\n"
-        }
-        
-        return fileContents.data(using: .utf8)
-    }
-    
-    public override func activityViewControllerPlaceholderItem(
-        _ activityViewController: UIActivityViewController
-    ) -> Any {
-        return URL(fileURLWithPath: "placeholder.txt")
-    }
-}
+
 
 extension BookMarkVC {
     @objc func bookEnd(_ notification:Notification) {
@@ -833,8 +821,9 @@ extension BookMarkVC {
         
         currentBok = book
         setupMiniPlayer(book: book)
-        // setupMiniPlayer(book: book)
+     
     }
+    
     @objc private func bookChange(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let books = userInfo["books"] as? [Book],

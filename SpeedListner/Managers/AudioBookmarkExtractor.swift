@@ -23,12 +23,18 @@ struct BookmarksModel: Codable {
 }
 
 struct BookmarkSegment{
-    let identifiers: [String]
+    let identifiers: String
     let startTime: Double
     let endTime: Double
     let url:URL?
     var transcription:String?
     var summary:String?
+    var bookmarksTxt: String? = nil
+    var isStar: Bool? = false
+    
+    var isProcessed: Bool {
+           return (transcription?.isEmpty == false && summary?.isEmpty == false)
+       }
 }
 
 extension BookmarkDisplayItem {
@@ -63,7 +69,7 @@ class AudioBookmarkExtractor {
 
                 if !currentGroup.isEmpty {
                     segments.append(BookmarkSegment(
-                        identifiers: currentGroup.map { $0.indentifier },
+                        identifiers: "",
                         startTime: currentGroup.first!.timeStamp,
                         endTime: currentGroup.last!.timeStamp + 5, url: nil // extra 5 seconds padding
                     ))
@@ -81,7 +87,7 @@ class AudioBookmarkExtractor {
             }
 
             segments.append(BookmarkSegment(
-                identifiers: currentGroup.map { $0.indentifier },
+                identifiers: "",
                 startTime: currentGroup.first!.timeStamp,
                 endTime: currentGroup.last!.timeStamp + 5, url: nil
             ))
@@ -124,7 +130,7 @@ class AudioBookmarkExtractor {
                 processedSegments += 1
 
                 if success, let url = url {
-                    outputURLs.append(BookmarkSegment(identifiers: segment.identifiers, startTime: segment.startTime, endTime: segment.endTime, url: url))
+                    outputURLs.append(BookmarkSegment(identifiers: "\(segment.startTime)-\(segment.endTime)", startTime: segment.startTime, endTime: segment.endTime, url: url))
                 }
 
                 // Report progress overall
@@ -203,7 +209,37 @@ class AudioBookmarkExtractor {
     }
 }
 
+struct AITranscriptionResult {
+    let transcription: String
+    let summary: String
+}
+
+
+
 class TranscriptionAI{
+    
+    
+    static func processAudio(fileURL: URL, completion: @escaping (AITranscriptionResult?) -> Void) {
+       
+        transcribeLocalAudio(fileURL: fileURL) { transcription in
+            guard let transcription = transcription else {
+                completion(nil)
+                return
+            }
+
+           
+            getSummary(from: transcription) { summary in
+                guard let summary = summary else {
+                    completion(nil)
+                    return
+                }
+
+                completion(AITranscriptionResult(transcription: transcription, summary: summary))
+            }
+        }
+    }
+    
+    
     static func transcribeLocalAudio(fileURL: URL, completion: @escaping (String?) -> Void) {
         let boundary = UUID().uuidString
         var request = URLRequest(url: URL(string: "https://api.openai.com/v1/audio/transcriptions")!)
@@ -289,7 +325,7 @@ class TranscriptionAI{
 class Secrets {
     static var openAIKey: String {
         guard
-            let url = Bundle.main.url(forResource: "Secrets", withExtension: "plist"),
+            let url = Bundle.main.url(forResource: "Info", withExtension: "plist"),
             let data = try? Data(contentsOf: url),
             let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
             let key = dict["OpenAIKey"] as? String
@@ -297,5 +333,30 @@ class Secrets {
             fatalError("Missing OpenAI API Key")
         }
         return key
+    }
+}
+struct BookmarkCacheManager {
+    static let transcriptionKeyPrefix = "transcription_"
+    static let summaryKeyPrefix = "summary_"
+    
+    static func saveTranscription(_ text: String, for identifier: String) {
+        UserDefaults.standard.set(text, forKey: transcriptionKeyPrefix + identifier)
+    }
+    
+    static func getTranscription(for identifier: String) -> String? {
+        return UserDefaults.standard.string(forKey: transcriptionKeyPrefix + identifier)
+    }
+    
+    static func saveSummary(_ text: String, for identifier: String) {
+        UserDefaults.standard.set(text, forKey: summaryKeyPrefix + identifier)
+    }
+    
+    static func getSummary(for identifier: String) -> String? {
+        return UserDefaults.standard.string(forKey: summaryKeyPrefix + identifier)
+    }
+    
+    static func clearCache(for identifier: String) {
+        UserDefaults.standard.removeObject(forKey: transcriptionKeyPrefix + identifier)
+        UserDefaults.standard.removeObject(forKey: summaryKeyPrefix + identifier)
     }
 }

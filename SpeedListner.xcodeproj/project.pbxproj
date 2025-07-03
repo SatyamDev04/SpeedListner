@@ -117,11 +117,12 @@
 		DD0EF0632C8F320F004F2863 /* AccountDeletedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EF0432C8F320F004F2863 /* AccountDeletedVC.swift */; };
 		DD0EF0642C8F320F004F2863 /* MessageAccountDeletedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EF0442C8F320F004F2863 /* MessageAccountDeletedVC.swift */; };
 		DD1690502DCA205A008C2793 /* AILoaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD16904F2DCA205A008C2793 /* AILoaderView.swift */; };
-		DD42F5A42DCC8B3E002B960F /* TranscriptionBottomSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD42F5A32DCC8B3E002B960F /* TranscriptionBottomSheet.swift */; };
-		DD42F5A62DCC9251002B960F /* SummaryBottomSheetVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD42F5A52DCC9251002B960F /* SummaryBottomSheetVC.swift */; };
 		DD43D7E02DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD43D7DF2DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift */; };
 		DD700FDA2DCA4D3500AF7309 /* MergeBookMarkCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */; };
 		DD700FDB2DCA4D3500AF7309 /* MergeBookMarkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */; };
+		DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */; };
+		DD8E537D2E1686F500DF31C2 /* TranscriptionSummaryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */; };
+		DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */; };
 		DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */; };
 		DDBD627E2C9988C3007A6067 /* Library+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */; };
 		DDBD62802C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */; };
@@ -270,11 +271,12 @@
 		DD0EF0432C8F320F004F2863 /* AccountDeletedVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountDeletedVC.swift; sourceTree = "<group>"; };
 		DD0EF0442C8F320F004F2863 /* MessageAccountDeletedVC.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MessageAccountDeletedVC.swift; sourceTree = "<group>"; };
 		DD16904F2DCA205A008C2793 /* AILoaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AILoaderView.swift; sourceTree = "<group>"; };
-		DD42F5A32DCC8B3E002B960F /* TranscriptionBottomSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionBottomSheet.swift; sourceTree = "<group>"; };
-		DD42F5A52DCC9251002B960F /* SummaryBottomSheetVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SummaryBottomSheetVC.swift; sourceTree = "<group>"; };
 		DD43D7DF2DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetAudioPlayerVC.swift; sourceTree = "<group>"; };
 		DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeBookMarkCell.swift; sourceTree = "<group>"; };
 		DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MergeBookMarkCell.xib; sourceTree = "<group>"; };
+		DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksActivityItemProvider.swift; sourceTree = "<group>"; };
+		DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionSummaryVC.swift; sourceTree = "<group>"; };
+		DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitorManager.swift; sourceTree = "<group>"; };
 		DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBookmarkExtractor.swift; sourceTree = "<group>"; };
 		DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Library+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -428,6 +430,7 @@
 				DD0EEFA92C8F2EC2004F2863 /* NewDataMannagerClass.swift */,
 				DD0EEFAA2C8F2EC2004F2863 /* NewPlayerManager.swift */,
 				DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */,
+				DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -489,9 +492,9 @@
 				DD0EF01C2C8F31CF004F2863 /* ChaptersViewController.swift */,
 				DD0EF01B2C8F31CF004F2863 /* SpeedViewController.swift */,
 				DD0EF01A2C8F31CF004F2863 /* BookMarkVC.swift */,
+				DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */,
 				DD43D7DF2DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift */,
-				DD42F5A32DCC8B3E002B960F /* TranscriptionBottomSheet.swift */,
-				DD42F5A52DCC9251002B960F /* SummaryBottomSheetVC.swift */,
+				DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */,
 				DD0EF0152C8F31CD004F2863 /* UploadBookVC.swift */,
 				DD0EF0182C8F31CE004F2863 /* MoreViewController.swift */,
 				DD0EF0332C8F320B004F2863 /* SettingVC.swift */,
@@ -874,12 +877,12 @@
 				DD0EEFC42C8F2F5B004F2863 /* CloudFilePicker.swift in Sources */,
 				DD0EF01E2C8F31CF004F2863 /* ListBooksViewController.swift in Sources */,
 				DDBD62862C9988C3007A6067 /* Chapter+CoreDataProperties.swift in Sources */,
-				DD42F5A42DCC8B3E002B960F /* TranscriptionBottomSheet.swift in Sources */,
 				DD0EF0122C8F31BD004F2863 /* MyBookCell.swift in Sources */,
 				DD0EF05C2C8F320F004F2863 /* FeedbackVC.swift in Sources */,
 				DD0EEE4C2C8F269F004F2863 /* LibraryItem+CoreDataClass.swift in Sources */,
 				DD0EED802C8F2456004F2863 /* SceneDelegate.swift in Sources */,
 				DD0EF05B2C8F320F004F2863 /* TermsConditionVC.swift in Sources */,
+				DD8E537D2E1686F500DF31C2 /* TranscriptionSummaryVC.swift in Sources */,
 				DD0EF04A2C8F320F004F2863 /* UpdateProfileVC.swift in Sources */,
 				DDBD62842C9988C3007A6067 /* Book+CoreDataProperties.swift in Sources */,
 				DD0EEE4D2C8F269F004F2863 /* Playlist+CoreDataClass.swift in Sources */,
@@ -910,8 +913,10 @@
 				DD0EEFC52C8F2F5B004F2863 /* AlertController.swift in Sources */,
 				DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */,
 				DD0EF0032C8F31BD004F2863 /* UploadFileCell.swift in Sources */,
+				DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */,
 				DD0EF0532C8F320F004F2863 /* SettingVC.swift in Sources */,
 				DD0EF00A2C8F31BD004F2863 /* tableSortCell.swift in Sources */,
+				DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */,
 				DD0EF0562C8F320F004F2863 /* LoginVC.swift in Sources */,
 				DD0EF0552C8F320F004F2863 /* AboutVC.swift in Sources */,
 				DD0EF04E2C8F320F004F2863 /* LogoutPopup2VC.swift in Sources */,
@@ -953,7 +958,6 @@
 				DD0EF00E2C8F31BD004F2863 /* BookMarkCell.swift in Sources */,
 				DD0EEFBC2C8F2F5B004F2863 /* Constants.swift in Sources */,
 				DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */,
-				DD42F5A62DCC9251002B960F /* SummaryBottomSheetVC.swift in Sources */,
 				DD0EF0062C8F31BD004F2863 /* imgCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

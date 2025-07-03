@@ -75,6 +75,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
         guard let b = currentBok else { return }
         setupMiniPlayer(book: b)
+        if isAutoTranscribeEnabled{
+            self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box"), for: .normal)
+        }
     }
 
     // MARK: - Setup
@@ -446,10 +449,16 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             return nil
         }
 
-        let unprocessed = segments.filter { $0.transcription == nil || $0.summary == nil }
+        let unprocessed = segments.filter { segment in
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: segment.identifiers)?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: segment.identifiers)?.isEmpty == false
+                return !hasTranscript || !hasSummary
+            }
+
         
         guard !unprocessed.isEmpty else {
             print("All segments already transcribed and summarized.")
+            self.aiLoader.dismiss()
             return
         }
         let group = DispatchGroup()

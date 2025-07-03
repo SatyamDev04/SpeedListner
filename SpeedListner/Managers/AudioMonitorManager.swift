@@ -5,7 +5,7 @@ final class AudioMonitorManager: NSObject {
     
     static let shared = AudioMonitorManager()
     
-    private override init() {} // Singleton
+    private override init() {}
     
     private var currentBook: Book?
     
@@ -72,7 +72,12 @@ final class AudioMonitorManager: NSObject {
 
     private func transcribeMissingSegments(_ segments: [BookmarkSegment]) {
    
-        let unprocessed = segments.filter { $0.transcription == nil || $0.summary == nil }
+        let unprocessed = segments.filter { segment in
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: segment.identifiers)?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: segment.identifiers)?.isEmpty == false
+                return !hasTranscript || !hasSummary
+            }
+
         
         guard !unprocessed.isEmpty else {
             print("All segments already transcribed and summarized.")

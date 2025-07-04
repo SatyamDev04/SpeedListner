@@ -369,8 +369,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","Settings","fluent_person-1x"]
+        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
+        let imagesArr = ["bi_bookmark-fill","bi_bookmark-fill","Settings","fluent_person-1x"]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -390,12 +390,16 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
                 self.navigationController?.pushViewController(vc, animated: true)
             }else   if index == 1{
                 
-                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "HistoryViewController") as! HistoryViewController
               
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
+            }else if index == 2{
              //   Help & Feedback
                 
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+           
+                self.navigationController?.pushViewController(vc, animated: true)
+            }else{
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
            
                 self.navigationController?.pushViewController(vc, animated: true)

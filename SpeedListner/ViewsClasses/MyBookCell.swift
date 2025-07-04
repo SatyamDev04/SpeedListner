@@ -14,7 +14,7 @@ class MyBookCell: UITableViewCell {
     @IBOutlet weak var btnSelect: UIButton!
     @IBOutlet weak var folderIcon: UIImageView!
     @IBOutlet weak var selectBtnBgView: UIView!
-    
+    @IBOutlet weak var viewBgView: UIView!
     var onSelectButtonTapped: (() -> Void)?
     
     override func awakeFromNib() {

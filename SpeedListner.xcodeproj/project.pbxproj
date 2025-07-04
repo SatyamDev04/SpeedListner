@@ -124,6 +124,7 @@
 		DD8E537D2E1686F500DF31C2 /* TranscriptionSummaryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */; };
 		DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */; };
 		DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */; };
+		DDA453882E17E62F000A3196 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA453872E17E60F000A3196 /* HistoryViewController.swift */; };
 		DDBD627E2C9988C3007A6067 /* Library+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */; };
 		DDBD62802C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */; };
 		DDBD62822C9988C3007A6067 /* Playlist+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */; };
@@ -278,6 +279,7 @@
 		DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionSummaryVC.swift; sourceTree = "<group>"; };
 		DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitorManager.swift; sourceTree = "<group>"; };
 		DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBookmarkExtractor.swift; sourceTree = "<group>"; };
+		DDA453872E17E60F000A3196 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
 		DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Library+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Playlist+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -488,6 +490,7 @@
 			children = (
 				DD0EF0162C8F31CE004F2863 /* ListBooksViewController.swift */,
 				DD0EF0172C8F31CE004F2863 /* NewPlaylistViewController.swift */,
+				DDA453872E17E60F000A3196 /* HistoryViewController.swift */,
 				DD0EF0192C8F31CF004F2863 /* PlayerViewController.swift */,
 				DD0EF01C2C8F31CF004F2863 /* ChaptersViewController.swift */,
 				DD0EF01B2C8F31CF004F2863 /* SpeedViewController.swift */,
@@ -918,6 +921,7 @@
 				DD0EF00A2C8F31BD004F2863 /* tableSortCell.swift in Sources */,
 				DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */,
 				DD0EF0562C8F320F004F2863 /* LoginVC.swift in Sources */,
+				DDA453882E17E62F000A3196 /* HistoryViewController.swift in Sources */,
 				DD0EF0552C8F320F004F2863 /* AboutVC.swift in Sources */,
 				DD0EF04E2C8F320F004F2863 /* LogoutPopup2VC.swift in Sources */,
 				DD0EEFC32C8F2F5B004F2863 /* EndPoints.swift in Sources */,

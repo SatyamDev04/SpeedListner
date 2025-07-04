@@ -18,6 +18,7 @@ var delegateBookDetails:BookDetailsCellDelegate? = nil
 @IBOutlet var folderIcon_img: UIImageView!
 @IBOutlet weak var btnSelect: UIButton!
 @IBOutlet weak var selectBtnBgView: UIView!
+@IBOutlet weak var stackBgView: UIView!
 var onSelectButtonTapped: (() -> Void)?
 
 

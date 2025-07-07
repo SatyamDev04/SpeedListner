@@ -1348,7 +1348,10 @@ extension ListBooksViewController: PlaylistSelectionDelegate {
             NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
         
 
-        resetSelection()
+        selectedIndices.removeAll()
+        isSelectionModeEnabled = false
+        toggleBottomSheet()
+        tableView.reloadData()
     }
     
     
@@ -1374,8 +1377,6 @@ extension ListBooksViewController: PlaylistSelectionDelegate {
             }
         }
     
-    
-
 }
 
 

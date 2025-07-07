@@ -1264,7 +1264,7 @@
                                     <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Md5-wn-OTZ">
                                         <rect key="frame" x="0.0" y="0.33333333333337123" width="416" height="89.666666666666671"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="fxP-vk-vnQ">
-                                            <rect key="frame" x="0.0" y="0.0" width="416" height="90"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="416" height="89.666666666666671"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ju7-ae-3il">
@@ -10764,7 +10764,7 @@ _placeholderLabel.textColor</string>
                                     <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="rvd-OO-nfN">
                                         <rect key="frame" x="0.0" y="0.33333333333337123" width="391" height="89.666666666666671"/>
                                         <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="pDb-ab-U0n">
-                                            <rect key="frame" x="0.0" y="0.0" width="391" height="90"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="391" height="89.666666666666671"/>
                                             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                             <subviews>
                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="FEd-9W-Otb">
@@ -12427,7 +12427,6 @@ _placeholderLabel.textColor</string>
                                         <state key="normal" image="ic_outline-check-box-1"/>
                                         <connections>
                                             <action selector="btnBookShowCover_Action:" destination="AAY-AW-Bwv" eventType="touchUpInside" id="N0K-kr-lJt"/>
-                                            <action selector="btnBookShowCover_Action:" destination="ruU-fe-rK6" eventType="touchUpInside" id="hUz-NV-I8N"/>
                                         </connections>
                                     </button>
                                     <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Show Cover" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="2qY-zD-bYe">
@@ -12553,7 +12552,7 @@ _placeholderLabel.textColor</string>
                                                 <stackView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="WOo-px-GHN">
                                                     <rect key="frame" x="5" y="5" width="360" height="54"/>
                                                     <subviews>
-                                                        <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aDD-aJ-hr1">
+                                                        <view hidden="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aDD-aJ-hr1">
                                                             <rect key="frame" x="0.0" y="0.0" width="40" height="54"/>
                                                             <subviews>
                                                                 <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="26b-4l-4HS">
@@ -12575,7 +12574,7 @@ _placeholderLabel.textColor</string>
                                                                     </connections>
                                                                 </button>
                                                             </subviews>
-                                                            <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                            <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                                             <constraints>
                                                                 <constraint firstItem="26b-4l-4HS" firstAttribute="centerX" secondItem="aDD-aJ-hr1" secondAttribute="centerX" id="T1t-Rl-3cR"/>
                                                                 <constraint firstItem="26b-4l-4HS" firstAttribute="centerY" secondItem="aDD-aJ-hr1" secondAttribute="centerY" id="idg-OT-faA"/>
@@ -12583,10 +12582,10 @@ _placeholderLabel.textColor</string>
                                                             </constraints>
                                                         </view>
                                                         <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Yf2-10-1rZ">
-                                                            <rect key="frame" x="40" y="0.0" width="320" height="54"/>
+                                                            <rect key="frame" x="0.0" y="0.0" width="360" height="54"/>
                                                             <subviews>
                                                                 <stackView opaque="NO" contentMode="scaleToFill" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="70G-RK-kAI">
-                                                                    <rect key="frame" x="10" y="0.0" width="300" height="54"/>
+                                                                    <rect key="frame" x="10" y="0.0" width="340" height="54"/>
                                                                     <subviews>
                                                                         <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="Image" translatesAutoresizingMaskIntoConstraints="NO" id="XXF-2m-4xx">
                                                                             <rect key="frame" x="0.0" y="0.0" width="30" height="54"/>
@@ -12596,7 +12595,7 @@ _placeholderLabel.textColor</string>
                                                                             </constraints>
                                                                         </imageView>
                                                                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="ERGREGRTEGERGREGREGREGREGREGREGERGREGREGERGREGERGREGERGREGREG" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="r89-jH-U9A">
-                                                                            <rect key="frame" x="36" y="0.0" width="205" height="54"/>
+                                                                            <rect key="frame" x="36" y="0.0" width="245" height="54"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="width" relation="lessThanOrEqual" constant="300" id="9d6-5t-Taf"/>
                                                                             </constraints>
@@ -12605,7 +12604,7 @@ _placeholderLabel.textColor</string>
                                                                             <nil key="highlightedColor"/>
                                                                         </label>
                                                                         <label opaque="NO" contentMode="left" horizontalHuggingPriority="252" verticalHuggingPriority="251" horizontalCompressionResistancePriority="749" text="100%" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Y35-Pb-1ha">
-                                                                            <rect key="frame" x="247" y="0.0" width="53" height="54"/>
+                                                                            <rect key="frame" x="287" y="0.0" width="53" height="54"/>
                                                                             <constraints>
                                                                                 <constraint firstAttribute="width" constant="53" id="qA0-Xg-ARj"/>
                                                                             </constraints>
@@ -12648,6 +12647,7 @@ _placeholderLabel.textColor</string>
                                             <outlet property="lblBookAuthor" destination="Y35-Pb-1ha" id="lNv-Jz-bpf"/>
                                             <outlet property="lblBookName" destination="r89-jH-U9A" id="S91-vh-tL8"/>
                                             <outlet property="selectBtnBgView" destination="aDD-aJ-hr1" id="Hlm-48-sj3"/>
+                                            <outlet property="viewBgView" destination="WOo-px-GHN" id="eac-Cb-Ddb"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>

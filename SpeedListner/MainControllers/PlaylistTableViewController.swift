@@ -187,45 +187,7 @@ class PlaylistTableViewController: UITableViewController {
         return false
     }
 }
-//class PlaylistTableViewController: UITableViewController {
-//
-//   
-//    weak var delegate: PlaylistSelectionDelegate?
-//    var playlists: [Playlist] = []
-//    var item:LibraryItem?
-//    var items:[LibraryItem] = []
-//    
-//    override func viewDidLoad() {
-//        super.viewDidLoad()
-//        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "PlaylistCell")
-//        self.navigationController?.navigationBar.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-//    }
-//    
-//    // MARK: - Table view data source
-//    
-//    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return playlists.count
-//    }
-//    
-//    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//        let cell = tableView.dequeueReusableCell(withIdentifier: "PlaylistCell", for: indexPath)
-//        let playlist = playlists[indexPath.row]
-//        cell.textLabel?.text = playlist.title
-//        return cell
-//    }
-//    
-//    // MARK: - Table view delegate
-//    
-//    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        let selectedPlaylist = playlists[indexPath.row]
-//        if !items.isEmpty {
-//            delegate?.didSelectPlaylist(selectedPlaylist, from: self.items)
-//        }else{
-//            delegate?.didSelectPlaylist(selectedPlaylist, from: self.item)
-//        }
-//        dismiss(animated: true, completion: nil)
-//    }
-//}
+
 
 struct PlaylistDisplayItem {
     let playlist: Playlist

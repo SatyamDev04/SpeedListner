@@ -26,7 +26,7 @@ class HistoryViewController:UIViewController {
     var p = ""
     private var playedBooks: [Book] = []
 
-    var t_items = [LibraryItem]()
+    var t_items = [Book]()
     var AlphabetArr = (65...90).map { String(UnicodeScalar($0)) }
     var selectedTxt = ""
     var checked = false
@@ -37,20 +37,18 @@ class HistoryViewController:UIViewController {
     private var bottomSheetVC: BottomSheetViewController?
     var debounceWorkItem: DispatchWorkItem?
  
-    var filteredBooks: [Book] = []
-    var matchedPlaylists: [Playlist] = []
-    var isSearching = false
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupSearchFieldDelegate()
         fetchPlayedBooks()
-        self.setupUI()
+        setupUI()
         setupSearchFieldDelegate()
         setupUserCheckedStatus()
+        
         if let book = PlayerManager.shared.currentBook {
             setupMiniPlayer(book:book)
         }
-        
         
     }
     
@@ -65,10 +63,7 @@ class HistoryViewController:UIViewController {
         if let book = PlayerManager.shared.currentBook {
             setupMiniPlayer(book:book)
         }
-   
-      
-
-    }
+       }
     
     private func setupSearchFieldDelegate() {
         self.tableView.register(UINib(nibName: "BookDetailCell", bundle: nil), forCellReuseIdentifier: "BookDetailCell")
@@ -87,7 +82,7 @@ class HistoryViewController:UIViewController {
     
     @objc private func clearSearchText() {
         searchTxt.text = ""
-//        filterData(newString: "")
+      filterData(newString: "")
     }
     private func fetchPlayedBooks() {
             let context = NewDataMannagerClass.persistentContainer.viewContext
@@ -97,12 +92,14 @@ class HistoryViewController:UIViewController {
 
             do {
                 playedBooks = try context.fetch(request)
+                self.t_items = playedBooks
                 tableView.reloadData()
             } catch {
                 print("Failed to fetch played books: \(error)")
             }
         }
 }
+
 extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
     // MARK: - Table View Data Source
     
@@ -127,10 +124,11 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
                 cell.stackBgView.backgroundColor = .lightGray
                 cell.btnPlay.tag = indexPath.row
                 cell.btnPlay.addTarget(self, action: #selector(playBtnTap(_:)), for: .touchUpInside)
-                
-               
-                    cell.lbl_AutherName.isHidden = false
-                    cell.lbl_AutherName.text = item.author
+                let dateString = formatDate(item.recentPlayTime)
+                cell.lbl_AutherName?.numberOfLines = 2
+                        cell.lbl_AutherName?.text = dateString
+                cell.lbl_AutherName?.textColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3919999897, alpha: 1)
+
                     cell.lbl_comlition.text = "\(Int(round(item.percentCompleted)))%"
                     cell.lbl_comlition.isHidden = false
                     cell.lbl_subFolderCount.isHidden = true
@@ -140,7 +138,7 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
                 return cell
             } else {
                 let cell = tableView.dequeueReusableCell(withIdentifier: "MyBookCell", for: indexPath) as! MyBookCell
-                cell.lblBookName.text = item.title
+             cell.lblBookName.text = item.title
              cell.lblBookAuthor.text = "\(Int(round(item.percentCompleted)))%"
                     cell.folderIcon.isHidden = true
                     cell.lblBookAuthor.isHidden = false
@@ -153,7 +151,19 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
             }
         }
         
-    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        let item = self.playedBooks[indexPath.row]
+         currentItem = item
+      
+             print(item.currentTime,item.duration,"duratin matching")
+             if Int( item.currentTime) == Int(item.duration) {
+                 item.currentTime = 0.0
+                 NewDataMannagerClass.saveContext()
+             }
+             self.setupPlayer(books: [item])
+             
+    }
 
 
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -163,7 +173,13 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
             return 50
         }
     }
-
+    
+    private func formatDate(_ date: Date?) -> String {
+          guard let date = date else { return "Unknown Date" }
+          let formatter = DateFormatter()
+          formatter.dateFormat = "M/d/yy – h:mma"
+          return "Last Played: " + formatter.string(from: date).lowercased()
+      }
 
     func searchResultBookPlay(_ book:Book?){
        PlayerManager.shared.miniPlayerIsHidden = false
@@ -286,7 +302,7 @@ extension HistoryViewController:UITextFieldDelegate{
     }
 
 }
-extension HistoryViewController{
+extension HistoryViewController {
     
     private func setupUI(){
 
@@ -346,17 +362,10 @@ extension HistoryViewController{
                     return titleMatch || authorMatch
                 }
 
-                //self.playlistItems = filteredArray
+                self.playedBooks = filteredArray
             } else {
-              //  self.playlistItems = self.t_items
+          self.playedBooks = self.t_items
             }
-
-//            filteredBooks = getAllBooks(from: library).filter {
-//                   $0.title?.localizedCaseInsensitiveContains(newString) == true
-//               }
-            let rowHeight: CGFloat = 40 // or your cell height
-                let maxHeight: CGFloat = 200
-                let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
 
             self.tableView.reloadData()
             DispatchQueue.main.async {

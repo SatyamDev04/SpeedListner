@@ -10,7 +10,6 @@
 		2EBA2218DFC0A65FB3C307EB /* Pods_SpeedListnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDE8249FF0A533EA6A2E32EA /* Pods_SpeedListnerTests.framework */; };
 		3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5508C0B5F386F4D181453807 /* Pods_SpeedListner.framework */; };
 		51BF78FCE81270D1D2967A51 /* Pods_SpeedListner_SpeedListnerUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E916FB65AD7BB94898787D1 /* Pods_SpeedListner_SpeedListnerUITests.framework */; };
-		8118FC242E15B04B001C15A1 /* EasyTipView in Frameworks */ = {isa = PBXBuildFile; productRef = 8118FC232E15B04B001C15A1 /* EasyTipView */; };
 		815CA83A2E0FEC98009DC0C2 /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CA8392E0FEC98009DC0C2 /* SearchResultTableViewCell.swift */; };
 		DD030BC32C91A68C0089FDA2 /* AAXFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD030BC22C91A68C0089FDA2 /* AAXFileUploader.swift */; };
 		DD030BC52C91A6DD0089FDA2 /* RAProgressRing.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD030BC42C91A6DD0089FDA2 /* RAProgressRing.swift */; };
@@ -132,6 +131,7 @@
 		DDBD62862C9988C3007A6067 /* Chapter+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD627C2C9988C3007A6067 /* Chapter+CoreDataProperties.swift */; };
 		DDBD62882C99AE3C007A6067 /* PlaylistTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62872C99AE3C007A6067 /* PlaylistTableViewController.swift */; };
 		DDC04B1D2CF6F4E5000745F9 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */; };
+		DDDD3D192E1BAB7F00D75886 /* EasyTipView in Frameworks */ = {isa = PBXBuildFile; productRef = DDDD3D182E1BAB7F00D75886 /* EasyTipView */; };
 		DDDE116E2DA3E514007C0CDD /* BookDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */; };
 		DDDE116F2DA3E514007C0CDD /* BookDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */; };
 /* End PBXBuildFile section */
@@ -299,7 +299,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */,
-				8118FC242E15B04B001C15A1 /* EasyTipView in Frameworks */,
+				DDDD3D192E1BAB7F00D75886 /* EasyTipView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,7 +612,7 @@
 			);
 			name = SpeedListner;
 			packageProductDependencies = (
-				8118FC232E15B04B001C15A1 /* EasyTipView */,
+				DDDD3D182E1BAB7F00D75886 /* EasyTipView */,
 			);
 			productName = SpeedListner;
 			productReference = DD0EED7A2C8F2456004F2863 /* SpeedListner.app */;
@@ -690,7 +690,7 @@
 			);
 			mainGroup = DD0EED712C8F2456004F2863;
 			packageReferences = (
-				8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */,
+				DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */,
 			);
 			productRefGroup = DD0EED7B2C8F2456004F2863 /* Products */;
 			projectDirPath = "";
@@ -1326,7 +1326,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
+		DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/teodorpatras/EasyTipView";
 			requirement = {
@@ -1337,9 +1337,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		8118FC232E15B04B001C15A1 /* EasyTipView */ = {
+		DDDD3D182E1BAB7F00D75886 /* EasyTipView */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 8118FC222E15B04B001C15A1 /* XCRemoteSwiftPackageReference "EasyTipView" */;
+			package = DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */;
 			productName = EasyTipView;
 		};
 /* End XCSwiftPackageProductDependency section */

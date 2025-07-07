@@ -1,7 +1,6 @@
 //
 //  NewPlaylistViewController.swift
 //  SpeedListner
-//
 //  Created by YATIN  KALRA on 06/09/24.
 //  
 //
@@ -51,13 +50,16 @@ class NewPlaylistViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.setupUI()
+        
+        setupUI()
         setupSearchFieldDelegate()
         handleAppearanceMode()
         setupUserCheckedStatus()
         setupBottomSheet()
     }
+    
     private func setupSearchFieldDelegate() {
+        
         self.tableView.register(UINib(nibName: "BookDetailCell", bundle: nil), forCellReuseIdentifier: "BookDetailCell")
         
         searchTxt.delegate = self
@@ -70,6 +72,7 @@ class NewPlaylistViewController: UIViewController {
         
         searchTxt.rightView = clearButton
         searchTxt.rightViewMode = .always
+        
     }
 
     
@@ -185,7 +188,7 @@ class NewPlaylistViewController: UIViewController {
     }
     private func darkModeEnabled() {
         searchTxt.attributedPlaceholder = NSAttributedString(string:"Search Your Books", attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
-        //        self.topMenu.backgroundColor = #colorLiteral(red: 0.1098039216, green: 0.1098039216, blue: 0.1176470588, alpha: 1)
+        //  self.topMenu.backgroundColor = #colorLiteral(red: 0.1098039216, green: 0.1098039216, blue: 0.1176470588, alpha: 1)
     }
     
     func fetchPlaylistItems() {
@@ -811,7 +814,7 @@ extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDeleg
 
           for item in items {
               if playlist.title == "__LIBRARY_ROOT__" {
-                  // Move to Library
+                
                   if let book = item as? Book {
                       currentPlaylist?.removeFromBooks(book)
                       library.addToItems(book)
@@ -819,8 +822,9 @@ extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDeleg
                       currentPlaylist?.removeFromChildren(sub)
                       library.addToItems(sub)
                   }
+                  NewDataMannagerClass.saveContext()
               } else if playlist == currentPlaylist?.parent {
-                  // Move to Parent Folder
+               
                   if let book = item as? Book {
                       currentPlaylist?.removeFromBooks(book)
                       playlist.addToBooks(book)
@@ -828,17 +832,19 @@ extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDeleg
                       currentPlaylist?.removeFromChildren(sub)
                       playlist.addToChildren(sub)
                   }
+                  NewDataMannagerClass.saveContext()
               } else {
-                  // Move to selected playlist
+                 
                   if let book = item as? Book {
                       NewDataMannagerClass.moveBook(book, from: currentPlaylist, or: library, to: playlist) {
-                          // Optional callback
+                          NewDataMannagerClass.saveContext()
                       }
                   } else if let sub = item as? Playlist {
                       NewDataMannagerClass.movePlaylist(sub, or: library, from: currentPlaylist, to: playlist) {
-                          // Optional callback
+                          NewDataMannagerClass.saveContext()
                       }
                   }
+                  
               }
           }
 

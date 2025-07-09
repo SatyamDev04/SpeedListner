@@ -742,6 +742,7 @@ extension PlayerManager {
             
             if PlayerManager.shared.isPlaying {
                 PlayerManager.shared.pause()
+                PlayerManager.shared.sleepCheck = false
                 let userInfo = ["time":"pause"]
                 NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.pauseReminder, object: nil,userInfo: userInfo)
             }

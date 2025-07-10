@@ -4,9 +4,7 @@ import AVFoundation
 final class AudioMonitorManager: NSObject {
     
     static let shared = AudioMonitorManager()
-    
     private override init() {}
-    
     private var currentBook: Book?
     
     var isAutoEnabled: Bool {
@@ -32,7 +30,7 @@ final class AudioMonitorManager: NSObject {
         
         let key = (book.identifier ?? "") + "_bookmarks"
         guard let savedData = UserDefaults.standard.data(forKey: key) else {
-            print("No bookmarks found for book:", book.title)
+            print("No bookmarks found for book:", book.title ?? "")
             return
         }
         

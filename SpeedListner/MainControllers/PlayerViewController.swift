@@ -57,11 +57,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
    
     var currentValue: Float = 0.1
     weak var delegate: TabBarDataDelegate?
-    private let playImage = UIImage(named: "Group 4")
-    private let pauseImage = UIImage(named: "21")
+    private let playImage = UIImage(systemName:"play.fill")
+    private let pauseImage = UIImage(systemName:"pause.fill")
     private var coverImage = UIImage()
     private var routePickerView: AVRoutePickerView!
-
+    
     private let topMenu = DropDown()
     var taponMini = false
     lazy var dropDowns: [DropDown] = {
@@ -939,15 +939,13 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.topMenu.bottomOffset = CGPoint(x: -90, y: sender.bounds.height + 8)
         self.topMenu.textColor = .black
         self.topMenu.cornerRadius = 5.0
-        //        self.topMenu.borderWidth = 1
-        //        self.topMenu.borderColor = #colorLiteral(red: 0.3842016757, green: 0.2161925137, blue: 0.7387148142, alpha: 1)
         self.topMenu.separatorColor = .clear
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","Settings","fluent_person-1x"]
-        //  let imagesArr = ["Vector","Settings","bi_bookmark-fill"]
+        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
+        let imagesArr = ["bi_bookmark-fill","historyIcon","Settings","fluent_person-1x"]
+       
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
             
@@ -955,8 +953,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 return
             }
             cell.img1.image = UIImage(named: imagesArr[index])
-            // UIImage(systemName: imagesArr[index])
-            // cell.lbltitle.text = aArr[index]
+            
         }
         self.topMenu.selectionAction = { [unowned self] (index, item) in
             if index == 0 {
@@ -967,17 +964,20 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 self.navigationController?.pushViewController(vc, animated: true)
             }else   if index == 1{
                 
-                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
-                //self.hidesBottomBarWhenPushed = true
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "HistoryViewController") as! HistoryViewController
+              
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
+            }else if index == 2{
              //   Help & Feedback
                 
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+           
+                self.navigationController?.pushViewController(vc, animated: true)
+            }else{
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
-                //self.hidesBottomBarWhenPushed = true
+           
                 self.navigationController?.pushViewController(vc, animated: true)
             }
-            //
         }
         self.topMenu.show()
         

@@ -153,6 +153,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         let summaryText = "\(totalBookmarks) Bookmark(s)  -  \(starCount) Star(s)  -  \(notesCount) Note(s)"
         bookmarksCountLable.text = summaryText
     }
+    
     func mergeAdjecntBookmarks() {
         let inputAudioURL: URL = book.fileURL
        
@@ -190,15 +191,18 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
 
         for segment in arrMergedBookmarksNotes {
-            displayItems.append(.segment(segment))
+            
+            displayItems.append(.segment(BookmarkSegment(identifiers: segment.identifiers, startTime: segment.startTime, endTime: segment.endTime, url: segment.url,bookmarksTxt: BookmarkCacheManager.getNotes(for: segment.identifiers), isStar: BookmarkCacheManager.getIsStar(for: segment.identifiers))))
         }
 
-        // Optional: sort display items by start time if needed
-        displayItems.sort { lhs, rhs in
-            let lhsTime = (lhs.startTime ?? 0)
-            let rhsTime = (rhs.startTime ?? 0)
-            return lhsTime < rhsTime
-        }
+       
+//        displayItems.sort { lhs, rhs in
+//            let lhsTime = (lhs.startTime ?? 0)
+//            let rhsTime = (rhs.startTime ?? 0)
+//            return lhsTime < rhsTime
+//        }
+        
+        print(displayItems)
     }
     
     @IBAction func didPressPlay(_ sender: UIButton){
@@ -296,6 +300,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
             cell.transcriptionBtn.tag = indexPath.row
             cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
+            cell.detailtxt.text = segment.bookmarksTxt
             if (segment.bookmarksTxt?.count ?? 0 ) > 0 || segment.isStar == true{
                 cell.bottomView.isHidden = false
             }
@@ -329,9 +334,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
               
            }
 
-      
-        
-      
     }
 
     
@@ -634,6 +636,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                     vc.delegateBookmarkVC = self
                     vc.txt = bookmarkModel.bookmarksTxt
                     vc.index = index
+                    vc.displayItems = displayItems
                     vc.starStatus = bookmarkModel.isStar ?? false
                     self.addChild(vc)
                     vc.view.frame = self.view.frame
@@ -661,7 +664,19 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                 switch menuIndex {
                 case 0:
                     print("Edit Segment: \(segment.startTime) - \(segment.endTime)")
-
+                    let vc = self.storyboard?.instantiateViewController(withIdentifier: "BookmarkPopUpVC") as! BookmarkPopUpVC
+                    vc.playerstaus = PlayerManager.shared.isPlaying
+                    vc.delegateBookmarkVC = self
+                    vc.txt = segment.bookmarksTxt
+                    vc.index = index
+                    vc.displayItems = displayItems
+                    vc.starStatus = segment.isStar ?? false
+                    self.addChild(vc)
+                    vc.view.frame = self.view.frame
+                    self.view.addSubview(vc.view)
+                    self.view.bringSubviewToFront(vc.view)
+                    vc.didMove(toParent: self)
+                    
                 case 1:
                     showDeleteBookmarkAlert { confirmed in
                         if confirmed {
@@ -684,21 +699,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     
     func MethodforPop(string: String) {
-        let userDefaults = UserDefaults.standard
-        
-        if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
-            do{
-                let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-                if savedBookmarks.count > 0 {
-                    self.arrBookmarksNotes = savedBookmarks
-                }
-                
-                self.tblV.reloadData()
-                
-            } catch {
-               
-            }
-        }
+        getBookmarks()
     }
     
     

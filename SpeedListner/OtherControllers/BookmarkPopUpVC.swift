@@ -12,12 +12,12 @@ protocol DelegateforBookmarkPopUpVC {
 }
 
 class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
-    let COMMENTS_LIMIT = 255
+  
     @IBOutlet weak var txt_notes: UITextView!
     @IBOutlet weak var lblCount_message: UILabel!
+    @IBOutlet weak var staredBookMark: UIButton!
+    @IBOutlet weak var btnSave: UIButton!
     
-    var delegateBookmarkVC:DelegateforBookmarkPopUpVC? = nil
-    var arrBookmarksNotes = [BookmarksModel]()
     var book:Book!
     var txt:String?
     var index:Int?
@@ -26,68 +26,86 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     var tapOnText = 0
     var timer = Timer()
     var starStatus = false
-   var playerstaus = false
-    @IBOutlet weak var staredBookMark: UIButton!
-    @IBOutlet weak var btnSave: UIButton!
+    var playerstaus = false
+    var delegateBookmarkVC:DelegateforBookmarkPopUpVC? = nil
+    var arrBookmarksNotes = [BookmarksModel]()
+    var displayItems: [BookmarkDisplayItem] = []
+    let COMMENTS_LIMIT = 255
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-       txt_notes.delegate = self
-       // txt_notes.text = "Add Additional Notes Here…"
-      //  btnSave.backgroundColor = UIColor.gray
-        //txt_notes.textColor = UIColor.gray
+        setupView()
+    }
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+       
+        if index == nil {
+            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timerTap), userInfo: nil, repeats: true)
+        }
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         
-//        if btnSave.backgroundColor == UIColor.gray {
-//            btnSave.isUserInteractionEnabled = false
-//        }
-//        else {
-//            btnSave.isUserInteractionEnabled = true
-//        }
+    }
+    
+    private func setupView(){
+        
+        txt_notes.delegate = self
         guard let book = currentBok else {return}
         self.book = book
         
         
         let userDefaults = UserDefaults.standard
-        // 1
         if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
             
             do{
-                // 2
                 let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
                 if savedBookmarks.count > 0 {
                     self.arrBookmarksNotes = savedBookmarks
                     if let index = self.index{
-                        self.starStatus = self.arrBookmarksNotes[index].isStar ?? false
-                        if self.starStatus == false{
+                        let item = displayItems[index]
+                        switch item {
+                        case .bookmark(let bookmark):
                             
-                            staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
-                        }else{
-                           
-                            staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
+                            self.starStatus = bookmark.isStar ?? false
+                            if self.starStatus == false{
+                                
+                                staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
+                            }else{
+                               
+                                staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
+                            }
+                            
+                        case .segment(let segment):
+                            
+                            self.starStatus = segment.isStar ?? false
+                            if self.starStatus == false{
+                                
+                                staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
+                            }else{
+                                staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
+                            }
+                            
                         }
+                        
+                      
                     }
                     
                 }
             } catch {
-                // Failed to convert Data to Contact
             }
         }
-        guard let txt = self.txt,let index = self.index else {return}
-        self.txt_notes.text = txt
+        guard let index = self.index else {return}
         self.i = String(index)
-        
+        guard let txt = self.txt else {return}
+        self.txt_notes.text = txt
        
         
-    }
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-       
-        if let index = index {
-            
-        }else{
-            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timerTap), userInfo: nil, repeats: true)
-        }
     }
     
     @objc func timerTap(){
@@ -108,10 +126,8 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             }
         }
     }
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        
-    }
+    
+  
     
     @IBAction func starBtnTap(_ sender: UIButton) {
         if self.starStatus == false{
@@ -132,8 +148,6 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         let wordCount = filteredWords.count
         
         lblCount_message.text = String(wordCount)
-        //lblCount_message.text = String(txt_notes.text.count)
-        //  print("chars \(txt_notes.text.count) \( text)")
         
         if(wordCount > 99 && range.length == 0) {
             showAlert(for: "Please summarize in 100 words or less")
@@ -142,56 +156,58 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         }
         return true
     }
+    
     func textViewDidBeginEditing(_ textView: UITextView) {
         if PlayerManager.shared.isPlaying{
           PlayerManager.shared.pause()
          }
-//        if txt_notes.textColor == UIColor.gray {
-////            if txt_notes.text == "Add Additional Notes Here…"{
-////                txt_notes.text = ""
-//                self.timer.invalidate()
-//            }
-//            
-//            
-////            txt_notes.textColor = UIColor.black
-////            btnSave.backgroundColor =  #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-////            if btnSave.backgroundColor == UIColor.gray {
-//          //      btnSave.isUserInteractionEnabled = false
-//            }
-//            else {
-//           //     btnSave.isUserInteractionEnabled = true
-//            }
-//        }
+        tapOnText = 1
     }
     func textViewDidEndEditing(_ textView: UITextView) {
         
-//        if txt_notes.text == "" {
-//            txt_notes.textColor = UIColor.gray
-//          //  txt_notes.text = "Add Additional Notes Here…"
-//            txt_notes.textColor = UIColor.gray
-//           // btnSave.backgroundColor = UIColor.gray
-//            if btnSave.backgroundColor == UIColor.gray {
-//                //btnSave.isUserInteractionEnabled = false
-//            }
-//            else {
-//              //  btnSave.isUserInteractionEnabled = true
-//            }
-//            
-//        }
+
     }
     
     @IBAction func btnDone_Action(_ sender: UIButton) {
-        
+        self.timer.invalidate()
         if self.i != "" {
             
             guard let  ind = Int(self.i) else {return}
+            let item = displayItems[ind]
+            switch item {
+            case .bookmark(let bookmark):
+                guard let index = self.arrBookmarksNotes.firstIndex(where: { arrBookmark in
+                    arrBookmark.timeStamp == bookmark.timeStamp
+                    
+                }) else {return}
+                
+                let t = self.arrBookmarksNotes[index].timeStamp
+                let time = self.arrBookmarksNotes[index].time
+                let date = self.arrBookmarksNotes[index].date
+                
+                self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus)
+                
+                self.saveBookMarksNotes()
+                
+            case .segment(let segment):
+                let identifier = segment.identifiers
+                BookmarkCacheManager.saveNotes(self.txt_notes.text, for: identifier)
+                BookmarkCacheManager.saveIsStar(starStatus, for: identifier)
+                self.dismiss(animated: true) {
+          
+                    self.delegateBookmarkVC?.MethodforPop(string: self.txt_notes.text ?? "")
+                    self.showToast("saved succefully")
+                    if self.playerstaus == true{
+                        PlayerManager.shared.play()
+                    }else{
+                        PlayerManager.shared.pause()
+                    }
+                    self.view.removeFromSuperview()
+                }
+            }
             
-            let t = self.arrBookmarksNotes[ind].timeStamp
-            let time = self.arrBookmarksNotes[ind].time
-            let date = self.arrBookmarksNotes[ind].date
             
-            self.arrBookmarksNotes[ind] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus)
-            self.saveBookMarksNotes()
+            
         }else{
             
             let t = self.book.currentTime
@@ -206,31 +222,20 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     }
     func saveWithoutNote(){
         
-        if self.i != "" {
-            
-            guard let  ind = Int(self.i) else {return}
-            
-            let t = self.arrBookmarksNotes[ind].timeStamp
-            let time = self.arrBookmarksNotes[ind].time
-            let date = self.arrBookmarksNotes[ind].date
-            
-            self.arrBookmarksNotes[ind] = BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt:  "", timeStamp: t, time: time, date: date, isStar: starStatus)
-            self.saveBookMarksNotes()
-            
-        }else{
-            
+        if displayItems.count <= 0 {
             let t = self.book.currentTime
             let time = formatTime(Int(self.book.currentTime))
             let date = Date.getCurrentDate()
             self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: starStatus))
             self.saveBookMarksNotes()
+            
         }
-        
         
         
     }
     
     @IBAction func btnCross_Actioin(_ sender: UIButton) {
+        self.timer.invalidate()
         self.dismiss(animated: true) {
             self.view.removeFromSuperview()
             self.delegateBookmarkVC?.MethodforPop(string: "")
@@ -248,12 +253,10 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
 extension BookmarkPopUpVC {
     func saveBookMarksNotes(){
         do {
-            // 1
+           
             let encodedData = try JSONEncoder().encode(self.arrBookmarksNotes)
-
-            
             let userDefaults = UserDefaults.standard
-            // 2
+           
             userDefaults.set(encodedData, forKey: (self.book.identifier ?? "")+"_bookmarks")
             
             self.dismiss(animated: true) {
@@ -269,7 +272,6 @@ extension BookmarkPopUpVC {
             }
 
         } catch {
-            // Failed to encode Contact to Data
             self.dismiss(animated: true) {
                 if self.playerstaus == true{
                     PlayerManager.shared.play()

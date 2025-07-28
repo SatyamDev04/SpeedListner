@@ -653,6 +653,8 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
         
         present(alert, animated: true, completion: nil)
     }
+    
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if tableView == searchTblV{
             self.searchResultBookPlay(self.filteredBooks[indexPath.row])

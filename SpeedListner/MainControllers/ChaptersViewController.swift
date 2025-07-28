@@ -27,7 +27,10 @@ class ChaptersViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        guard !chapters.isEmpty else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         self.tableView.tableFooterView = UIView()
         self.tableView.reloadData()
     let asset = AVAsset(url: PlayerManager.shared.currentBook?.fileURL ?? URL(fileURLWithPath: ""))

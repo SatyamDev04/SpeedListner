@@ -576,9 +576,11 @@ extension ListBooksViewController{
             lightModeEnabled()
             print("Light Mode is active")
         }
+        
     }
     
     private func setupUserCheckedStatus() {
+        
         let checked = UserDefaults.standard.object(forKey: "checked") as? Bool ?? false
         
         if checked {
@@ -592,7 +594,7 @@ extension ListBooksViewController{
     
     private func setupSearchFieldDelegate() {
         self.tableView.register(UINib(nibName: "BookDetailCell", bundle: nil), forCellReuseIdentifier: "BookDetailCell")
-        
+      //  UserDefaults.standard.set(true, forKey: "autoTranscribeWhileListening")
         searchTxt.delegate = self
         searchTxt.clearButtonMode = .never
         let clearButton = UIButton(type: .custom)

@@ -148,6 +148,7 @@ class SettingVC: UIViewController, Afterpay {
     @objc func handleAudioInterruptions(_ notification:Notification){
        
     }
+    
     @IBAction func didPressPlay(_ sender: UIButton){
         PlayerManager.shared.playPause()
         self.setPlayImage()

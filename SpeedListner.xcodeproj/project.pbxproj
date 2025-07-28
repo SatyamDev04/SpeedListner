@@ -52,7 +52,6 @@
 		DD0EEFE82C8F3197004F2863 /* BookMarkExpandCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFDD2C8F3195004F2863 /* BookMarkExpandCell.xib */; };
 		DD0EEFE92C8F3197004F2863 /* CellData.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFDE2C8F3195004F2863 /* CellData.xib */; };
 		DD0EEFEA2C8F3197004F2863 /* MyBookCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFDF2C8F3195004F2863 /* MyBookCell.xib */; };
-		DD0EEFEB2C8F3197004F2863 /* BookMarkCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFE02C8F3196004F2863 /* BookMarkCell.xib */; };
 		DD0EEFEC2C8F3197004F2863 /* ChapterCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFE12C8F3196004F2863 /* ChapterCell.xib */; };
 		DD0EEFED2C8F3197004F2863 /* HoursMinutesCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFE22C8F3196004F2863 /* HoursMinutesCell.xib */; };
 		DD0EEFEE2C8F3197004F2863 /* tableSortCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD0EEFE32C8F3196004F2863 /* tableSortCell.xib */; };
@@ -69,7 +68,6 @@
 		DD0EF00B2C8F31BD004F2863 /* CustomDropDownCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF92C8F31BB004F2863 /* CustomDropDownCell.swift */; };
 		DD0EF00C2C8F31BD004F2863 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFA2C8F31BB004F2863 /* InfoView.swift */; };
 		DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFB2C8F31BB004F2863 /* DropDownCell.swift */; };
-		DD0EF00E2C8F31BD004F2863 /* BookMarkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFC2C8F31BB004F2863 /* BookMarkCell.swift */; };
 		DD0EF00F2C8F31BD004F2863 /* HoursMinutesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFD2C8F31BC004F2863 /* HoursMinutesCell.swift */; };
 		DD0EF0102C8F31BD004F2863 /* AlphabetsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFE2C8F31BC004F2863 /* AlphabetsCell.swift */; };
 		DD0EF0112C8F31BD004F2863 /* CellData.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFF2C8F31BC004F2863 /* CellData.swift */; };
@@ -117,6 +115,7 @@
 		DD0EF0642C8F320F004F2863 /* MessageAccountDeletedVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EF0442C8F320F004F2863 /* MessageAccountDeletedVC.swift */; };
 		DD1690502DCA205A008C2793 /* AILoaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD16904F2DCA205A008C2793 /* AILoaderView.swift */; };
 		DD43D7E02DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD43D7DF2DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift */; };
+		DD5BD8432E310AA1007FA776 /* EasyTipView in Frameworks */ = {isa = PBXBuildFile; productRef = DD5BD8422E310AA1007FA776 /* EasyTipView */; };
 		DD700FDA2DCA4D3500AF7309 /* MergeBookMarkCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */; };
 		DD700FDB2DCA4D3500AF7309 /* MergeBookMarkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */; };
 		DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */; };
@@ -124,6 +123,7 @@
 		DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */; };
 		DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */; };
 		DDA453882E17E62F000A3196 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA453872E17E60F000A3196 /* HistoryViewController.swift */; };
+		DDAF7AAF2E2E698500D02458 /* AudioClipUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF7AAE2E2E698500D02458 /* AudioClipUtils.swift */; };
 		DDBD627E2C9988C3007A6067 /* Library+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */; };
 		DDBD62802C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */; };
 		DDBD62822C9988C3007A6067 /* Playlist+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */; };
@@ -131,7 +131,6 @@
 		DDBD62862C9988C3007A6067 /* Chapter+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD627C2C9988C3007A6067 /* Chapter+CoreDataProperties.swift */; };
 		DDBD62882C99AE3C007A6067 /* PlaylistTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62872C99AE3C007A6067 /* PlaylistTableViewController.swift */; };
 		DDC04B1D2CF6F4E5000745F9 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */; };
-		DDDD3D192E1BAB7F00D75886 /* EasyTipView in Frameworks */ = {isa = PBXBuildFile; productRef = DDDD3D182E1BAB7F00D75886 /* EasyTipView */; };
 		DDDE116E2DA3E514007C0CDD /* BookDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */; };
 		DDDE116F2DA3E514007C0CDD /* BookDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */; };
 /* End PBXBuildFile section */
@@ -208,7 +207,6 @@
 		DD0EEFDD2C8F3195004F2863 /* BookMarkExpandCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BookMarkExpandCell.xib; sourceTree = "<group>"; };
 		DD0EEFDE2C8F3195004F2863 /* CellData.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = CellData.xib; sourceTree = "<group>"; };
 		DD0EEFDF2C8F3195004F2863 /* MyBookCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MyBookCell.xib; sourceTree = "<group>"; };
-		DD0EEFE02C8F3196004F2863 /* BookMarkCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = BookMarkCell.xib; sourceTree = "<group>"; };
 		DD0EEFE12C8F3196004F2863 /* ChapterCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ChapterCell.xib; sourceTree = "<group>"; };
 		DD0EEFE22C8F3196004F2863 /* HoursMinutesCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = HoursMinutesCell.xib; sourceTree = "<group>"; };
 		DD0EEFE32C8F3196004F2863 /* tableSortCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = tableSortCell.xib; sourceTree = "<group>"; };
@@ -225,7 +223,6 @@
 		DD0EEFF92C8F31BB004F2863 /* CustomDropDownCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomDropDownCell.swift; sourceTree = "<group>"; };
 		DD0EEFFA2C8F31BB004F2863 /* InfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		DD0EEFFB2C8F31BB004F2863 /* DropDownCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DropDownCell.swift; sourceTree = "<group>"; };
-		DD0EEFFC2C8F31BB004F2863 /* BookMarkCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BookMarkCell.swift; sourceTree = "<group>"; };
 		DD0EEFFD2C8F31BC004F2863 /* HoursMinutesCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoursMinutesCell.swift; sourceTree = "<group>"; };
 		DD0EEFFE2C8F31BC004F2863 /* AlphabetsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlphabetsCell.swift; sourceTree = "<group>"; };
 		DD0EEFFF2C8F31BC004F2863 /* CellData.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CellData.swift; sourceTree = "<group>"; };
@@ -280,6 +277,7 @@
 		DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitorManager.swift; sourceTree = "<group>"; };
 		DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioBookmarkExtractor.swift; sourceTree = "<group>"; };
 		DDA453872E17E60F000A3196 /* HistoryViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryViewController.swift; sourceTree = "<group>"; };
+		DDAF7AAE2E2E698500D02458 /* AudioClipUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioClipUtils.swift; sourceTree = "<group>"; };
 		DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Library+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Playlist+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -299,7 +297,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */,
-				DDDD3D192E1BAB7F00D75886 /* EasyTipView in Frameworks */,
+				DD5BD8432E310AA1007FA776 /* EasyTipView in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,6 +431,7 @@
 				DD0EEFAA2C8F2EC2004F2863 /* NewPlayerManager.swift */,
 				DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */,
 				DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */,
+				DDAF7AAE2E2E698500D02458 /* AudioClipUtils.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -551,7 +550,6 @@
 				DD0EEFFE2C8F31BC004F2863 /* AlphabetsCell.swift */,
 				815CA8392E0FEC98009DC0C2 /* SearchResultTableViewCell.swift */,
 				DD0EF0012C8F31BC004F2863 /* BookDetailsCell.swift */,
-				DD0EEFFC2C8F31BB004F2863 /* BookMarkCell.swift */,
 				DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */,
 				DD0EEFF52C8F31B9004F2863 /* BookMarkExpandCell.swift */,
 				DD0EEFFF2C8F31BC004F2863 /* CellData.swift */,
@@ -575,7 +573,6 @@
 		DD0EEFDA2C8F30B1004F2863 /* ViewsXib */ = {
 			isa = PBXGroup;
 			children = (
-				DD0EEFE02C8F3196004F2863 /* BookMarkCell.xib */,
 				DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */,
 				DD0EEFDD2C8F3195004F2863 /* BookMarkExpandCell.xib */,
 				DD0EEFDE2C8F3195004F2863 /* CellData.xib */,
@@ -612,7 +609,7 @@
 			);
 			name = SpeedListner;
 			packageProductDependencies = (
-				DDDD3D182E1BAB7F00D75886 /* EasyTipView */,
+				DD5BD8422E310AA1007FA776 /* EasyTipView */,
 			);
 			productName = SpeedListner;
 			productReference = DD0EED7A2C8F2456004F2863 /* SpeedListner.app */;
@@ -690,7 +687,7 @@
 			);
 			mainGroup = DD0EED712C8F2456004F2863;
 			packageReferences = (
-				DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */,
+				DD5BD8412E310AA1007FA776 /* XCRemoteSwiftPackageReference "EasyTipView" */,
 			);
 			productRefGroup = DD0EED7B2C8F2456004F2863 /* Products */;
 			projectDirPath = "";
@@ -720,7 +717,6 @@
 				DD0EEFD52C8F3028004F2863 /* LaunchScreen.storyboard in Resources */,
 				DD0EEFE82C8F3197004F2863 /* BookMarkExpandCell.xib in Resources */,
 				DD0EEFE92C8F3197004F2863 /* CellData.xib in Resources */,
-				DD0EEFEB2C8F3197004F2863 /* BookMarkCell.xib in Resources */,
 				DD0EEFCF2C8F2FEC004F2863 /* A-splash@3x.png in Resources */,
 				DD0EEFCD2C8F2FEC004F2863 /* Assets.xcassets in Resources */,
 				DD0EEFEE2C8F3197004F2863 /* tableSortCell.xib in Resources */,
@@ -914,6 +910,7 @@
 				DD0EEE3F2C8F269F004F2863 /* Library+CoreDataClass.swift in Sources */,
 				DD0EF0522C8F320F004F2863 /* LogoutPop1VC.swift in Sources */,
 				DD0EEFC52C8F2F5B004F2863 /* AlertController.swift in Sources */,
+				DDAF7AAF2E2E698500D02458 /* AudioClipUtils.swift in Sources */,
 				DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */,
 				DD0EF0032C8F31BD004F2863 /* UploadFileCell.swift in Sources */,
 				DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */,
@@ -959,7 +956,6 @@
 				DDBD627E2C9988C3007A6067 /* Library+CoreDataProperties.swift in Sources */,
 				DD0EEE472C8F269F004F2863 /* UIColor+BookPlayer.swift in Sources */,
 				DD0EF0132C8F31BD004F2863 /* BookDetailsCell.swift in Sources */,
-				DD0EF00E2C8F31BD004F2863 /* BookMarkCell.swift in Sources */,
 				DD0EEFBC2C8F2F5B004F2863 /* Constants.swift in Sources */,
 				DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */,
 				DD0EF0062C8F31BD004F2863 /* imgCell.swift in Sources */,
@@ -1326,7 +1322,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
+		DD5BD8412E310AA1007FA776 /* XCRemoteSwiftPackageReference "EasyTipView" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/teodorpatras/EasyTipView";
 			requirement = {
@@ -1337,9 +1333,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		DDDD3D182E1BAB7F00D75886 /* EasyTipView */ = {
+		DD5BD8422E310AA1007FA776 /* EasyTipView */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = DDDD3D172E1BAB7F00D75886 /* XCRemoteSwiftPackageReference "EasyTipView" */;
+			package = DD5BD8412E310AA1007FA776 /* XCRemoteSwiftPackageReference "EasyTipView" */;
 			productName = EasyTipView;
 		};
 /* End XCSwiftPackageProductDependency section */

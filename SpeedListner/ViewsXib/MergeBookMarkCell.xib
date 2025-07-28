@@ -67,6 +67,13 @@
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="aD1-mN-pQt">
                                                 <rect key="frame" x="83" y="0.0" width="190" height="40"/>
                                                 <subviews>
+                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transcribed &amp; Summarized" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f9P-8D-2mG">
+                                                        <rect key="frame" x="0.0" y="0.0" width="190" height="40"/>
+                                                        <color key="backgroundColor" red="0.30980392159999998" green="0.0" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
+                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                                        <nil key="highlightedColor"/>
+                                                    </label>
                                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="bvK-h6-jah">
                                                         <rect key="frame" x="0.0" y="0.0" width="190" height="40"/>
                                                         <fontDescription key="fontDescription" type="boldSystem" pointSize="12"/>
@@ -80,13 +87,6 @@
                                                             </userDefinedRuntimeAttribute>
                                                         </userDefinedRuntimeAttributes>
                                                     </button>
-                                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Transcribed &amp; Summarized" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="f9P-8D-2mG">
-                                                        <rect key="frame" x="0.0" y="0.0" width="190" height="40"/>
-                                                        <color key="backgroundColor" red="0.30980392159999998" green="0.0" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                                        <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="12"/>
-                                                        <color key="textColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                                        <nil key="highlightedColor"/>
-                                                    </label>
                                                 </subviews>
                                                 <constraints>
                                                     <constraint firstAttribute="width" constant="190" id="0Xx-b1-wro"/>

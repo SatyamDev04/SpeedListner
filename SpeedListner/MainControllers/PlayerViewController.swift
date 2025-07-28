@@ -132,6 +132,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     var chapters: [Chapter]?
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         playButton.layer.cornerRadius = 25
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,

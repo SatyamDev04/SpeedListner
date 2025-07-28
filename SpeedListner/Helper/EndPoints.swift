@@ -11,7 +11,7 @@ import Foundation
 
 enum baseURL {
     
-    static let baseURL = "https://speedlistener.yesitlabs.co/api/"
+    static let baseURL = "https://speedlistener.tgastaging.com/api/"
     
 }
 

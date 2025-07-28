@@ -36,9 +36,15 @@ final class AudioMonitorManager: NSObject {
         
         do {
             let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-            guard !savedBookmarks.isEmpty else { return }
+            let validBookmarks = savedBookmarks.filter { bookmark in
+                if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
+                    return FileManager.default.fileExists(atPath: url.path)
+                }
+                return false
+            }
+            guard !validBookmarks.isEmpty else { return }
             
-            mergeAdjacentBookmarks(bookmarks: savedBookmarks, book: book)
+            mergeAdjacentBookmarks(bookmarks: validBookmarks, book: book)
             
         } catch {
             print("Failed to decode bookmarks:", error)
@@ -60,15 +66,64 @@ final class AudioMonitorManager: NSObject {
                     }
                     
                     print("Merge completed with \(segments.count) segment(s).")
-                    self?.transcribeMissingSegments(segments)
+                    
+                    Task {
+                        await self?.transcribeMissingBookmark(bookmarks)
+                        await self?.transcribeMissingSegments(segments)
+                    }
                 }
             }
         )
     }
     
     // MARK: - Transcription
+    private func transcribeMissingBookmark(_ bookmarks: [BookmarksModel]) async{
+   
+        let unprocessed = bookmarks.filter { bookmark in
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                return !hasTranscript || !hasSummary
+            }
 
-    private func transcribeMissingSegments(_ segments: [BookmarkSegment]) {
+        
+        guard !unprocessed.isEmpty else {
+            print("All segments already transcribed and summarized.")
+            return
+        }
+        
+        print("Transcribing \(unprocessed.count) unprocessed segment(s)...")
+        
+        let group = DispatchGroup()
+        
+        for var bookmark in unprocessed {
+            let identifier = "\(Int(bookmark.timeStamp))"
+            guard let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) else { continue }
+            
+            group.enter()
+            
+            TranscriptionAI.processAudio(fileURL: url) { result in
+                if let result = result {
+                    bookmark.transcription = result.transcription
+                    bookmark.summary = result.summary
+                    
+                    BookmarkCacheManager.saveTranscription(result.transcription, for: identifier)
+                    BookmarkCacheManager.saveSummary(result.summary, for: identifier)
+                    
+                    print("Transcribed segment:", identifier)
+                } else {
+                    print("Failed transcription for:", identifier)
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) { [weak self] in
+            guard let self = self, let bookTitle = self.currentBook?.title else { return }
+            print("All indiudual bookmarks processed for transcription and summary in: \(bookTitle)")
+          //  self.showCompletionToast(for: bookTitle)
+        }
+    }
+    private func transcribeMissingSegments(_ segments: [BookmarkSegment])async {
    
         let unprocessed = segments.filter { segment in
                 let hasTranscript = BookmarkCacheManager.getTranscription(for: segment.identifiers)?.isEmpty == false
@@ -110,7 +165,7 @@ final class AudioMonitorManager: NSObject {
         
         group.notify(queue: .main) { [weak self] in
             guard let self = self, let bookTitle = self.currentBook?.title else { return }
-            self.showCompletionToast(for: bookTitle)
+            print("All bookmarks processed for transcription and summary in: \(bookTitle)")
         }
     }
     

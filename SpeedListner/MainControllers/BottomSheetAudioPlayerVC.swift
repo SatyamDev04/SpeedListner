@@ -31,6 +31,11 @@ class BottomSheetAudioPlayerVC: UIViewController {
         view.backgroundColor = .systemBackground
         setupUI()
         if let url = url {
+            if FileManager.default.fileExists(atPath:url.path) {
+                print("File exists ✅")
+            } else {
+                print("File does not exist ❌ at path:", url.path)
+            }
             setupPlayer(with: url)
         }
     }

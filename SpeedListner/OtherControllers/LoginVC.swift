@@ -33,11 +33,11 @@ class LoginVC: UIViewController {
             print("Light Mode is active")
         }
         let userid = UserDetail.shared.getUserId()
-   
+        if !userid.isEmpty{
             let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarVC") as! TabBarVC
        
         self.navigationController!.pushViewController(vc, animated: false)
-        //}
+        }
         hidesBottomBarWhenPushed = true
         self.view_Login.layer.borderWidth = 1
         self.view_Login.layer.borderColor = UIColor(red:70/255, green:0/255, blue:100/255, alpha: 1).cgColor
@@ -95,7 +95,8 @@ class LoginVC: UIViewController {
                      if let resultData = dictData!["data"] as? [String:Any]{
                          print( resultData,"resultData")
                          let myStringVariable = (resultData["user_id"] as? String)
-
+                         let token = (resultData["token"] as? String) ?? ""
+                         TokenManager.shared.saveToken(token)
                      let myIntegerVariable = Int(myStringVariable!) ?? 0
 
                      let userid  = myIntegerVariable

@@ -16,15 +16,16 @@ protocol BookMarkCellDelegate  {
 
 class BookMarkExpandCell: UITableViewCell {
     
-    @IBOutlet weak var topView: UIView!
+
     @IBOutlet weak var optionBtn: UIButton!
     @IBOutlet weak var bookmarkTimelbl: UILabel!
     @IBOutlet weak var bottomView: UIView!
-    @IBOutlet weak var bookmarkBtn: UIButton!
     @IBOutlet weak var detailtxt: UILabel!
     @IBOutlet weak var starBG: UIView!
     @IBOutlet weak var isStarBookMark: UIButton!
-    
+    @IBOutlet weak var playBtn: UIButton!
+    @IBOutlet weak var transcriptionBtn: UIButton!
+    @IBOutlet weak var transSumryLable: UILabel!
     var delegate: BookMarkCellDelegate? = nil
     let topMenu = DropDown()
    

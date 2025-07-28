@@ -20,6 +20,9 @@ struct BookmarksModel: Codable {
     let time: String
     let date: String
     let isStar: Bool?
+    var transcription:String?
+    var summary:String?
+    var audioClipPath:URL?
 }
 
 struct BookmarkSegment{
@@ -46,59 +49,49 @@ extension BookmarkDisplayItem {
     }
 }
 class AudioBookmarkExtractor {
-    
-    /// Groups adjacent bookmarks within `threshold` seconds (default 5 min = 300s)
+
+    /// Groups adjacent bookmarks within `threshold` seconds
     static func groupBookmarks(_ bookmarks: [BookmarksModel], threshold: TimeInterval = 300) -> [BookmarkSegment] {
         let sorted = bookmarks.sorted(by: { $0.timeStamp < $1.timeStamp })
         var segments: [BookmarkSegment] = []
         var currentGroup: [BookmarksModel] = []
-        var mergedTimestamps: [Double] = []
-        var unmergedTimestamps: [Double] = []
 
         print("All Timestamps: \(sorted.map { $0.timeStamp })")
 
         for bookmark in sorted {
-            if let last = currentGroup.last, bookmark.timeStamp - last.timeStamp <= threshold {
-                currentGroup.append(bookmark)
+            if let last = currentGroup.last {
+                let gap = bookmark.timeStamp - (last.timeStamp + 5)
+                if gap <= 20 {
+                    currentGroup.append(bookmark)
+                } else {
+                    if currentGroup.count > 1 {
+                        segments.append(BookmarkSegment(
+                            identifiers: "",
+                            startTime: currentGroup.first!.timeStamp,
+                            endTime: currentGroup.last!.timeStamp + 5,
+                            url: nil
+                        ))
+                    }
+                    currentGroup = [bookmark]
+                }
             } else {
-                if currentGroup.count > 1 {
-                    mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-                } else if let single = currentGroup.first {
-                    unmergedTimestamps.append(single.timeStamp)
-                }
-
-                if !currentGroup.isEmpty {
-                    segments.append(BookmarkSegment(
-                        identifiers: "",
-                        startTime: currentGroup.first!.timeStamp,
-                        endTime: currentGroup.last!.timeStamp + 5, url: nil // extra 5 seconds padding
-                    ))
-                }
                 currentGroup = [bookmark]
             }
         }
 
-      
-        if !currentGroup.isEmpty {
-            if currentGroup.count > 1 {
-                mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-            } else if let single = currentGroup.first {
-                unmergedTimestamps.append(single.timeStamp)
-            }
-
+        if currentGroup.count > 1 {
             segments.append(BookmarkSegment(
                 identifiers: "",
                 startTime: currentGroup.first!.timeStamp,
-                endTime: currentGroup.last!.timeStamp + 5, url: nil
+                endTime: currentGroup.last!.timeStamp + 5,
+                url: nil
             ))
         }
 
-        print("\nMerged Timestamps: \(mergedTimestamps)")
-        print("Unmerged Timestamps: \(unmergedTimestamps)")
         return segments
     }
 
-    /// Extract audio segments for each grouped segment (returns multiple URLs if needed)
+    /// Extract audio segments for each grouped segment
     static func extractGroupedBookmarks(
         from inputURL: URL,
         bookmarks: [BookmarksModel],
@@ -112,12 +105,11 @@ class AudioBookmarkExtractor {
         var processedSegments = 0
 
         guard totalSegments > 0 else {
-            completion(false, nil, NSError(domain: "No bookmarks found", code: 2))
+            completion(false, nil, NSError(domain: "No valid merged segments", code: 2))
             return
         }
 
         for segment in segments {
-            // Generate unique temporary URL per segment
             let outputURL = FileManager.default.temporaryDirectory
                 .appendingPathComponent("merged_\(Int(segment.startTime))_\(UUID().uuidString).m4a")
 
@@ -133,13 +125,10 @@ class AudioBookmarkExtractor {
                     outputURLs.append(BookmarkSegment(identifiers: "\(segment.startTime)-\(segment.endTime)", startTime: segment.startTime, endTime: segment.endTime, url: url))
                 }
 
-                // Report progress overall
                 progressHandler?(Double(processedSegments) / Double(totalSegments))
 
-                // Completion when all segments processed
                 if processedSegments == totalSegments {
                     if !outputURLs.isEmpty {
-                     
                         completion(true, outputURLs, nil)
                     } else {
                         completion(false, nil, error ?? NSError(domain: "Failed to export segments", code: 3))
@@ -149,7 +138,7 @@ class AudioBookmarkExtractor {
         }
     }
 
-    /// Extract a single segment (helper function)
+    /// Extract a single audio segment from start to end
     private static func extractSingleSegment(
         from inputURL: URL,
         startTime: Double,
@@ -208,6 +197,7 @@ class AudioBookmarkExtractor {
         }
     }
 }
+
 
 struct AITranscriptionResult {
     let transcription: String

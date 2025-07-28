@@ -53,7 +53,11 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
     var isAutoTranscribeEnabled: Bool {
         get {
-            return UserDefaults.standard.bool(forKey: "autoTranscribeWhileListening")
+            let defaults = UserDefaults.standard
+            if defaults.object(forKey: "autoTranscribeWhileListening") == nil {
+                defaults.set(true, forKey: "autoTranscribeWhileListening")
+            }
+            return defaults.bool(forKey: "autoTranscribeWhileListening")
         }
         set {
             UserDefaults.standard.set(newValue, forKey: "autoTranscribeWhileListening")
@@ -75,7 +79,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
         guard let b = currentBok else { return }
         setupMiniPlayer(book: b)
-        if isAutoTranscribeEnabled{
+        if !isAutoTranscribeEnabled{
             self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box"), for: .normal)
         }
     }
@@ -86,7 +90,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         tblV.addCorner5()
         tblV.addShadow5()
         handleObservers()
-        tblV.register(UINib(nibName: "BookMarkCell", bundle: nil), forCellReuseIdentifier: "BookMarkCell")
         tblV.register(UINib(nibName: "BookMarkExpandCell", bundle: nil), forCellReuseIdentifier: "BookMarkExpandCell")
         tblV.register(UINib(nibName: "MergeBookMarkCell", bundle: nil), forCellReuseIdentifier: "MergeBookMarkCell")
         tblV.delegate = self
@@ -125,7 +128,13 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             do{
                 let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
                 if savedBookmarks.count > 0 {
-                    self.arrBookmarksNotes = savedBookmarks
+                    let validBookmarks = savedBookmarks.filter { bookmark in
+                        if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
+                            return FileManager.default.fileExists(atPath: url.path)
+                        }
+                        return false
+                    }
+                    self.arrBookmarksNotes = validBookmarks
                     updateBookmarkSummary()
                     mergeAdjecntBookmarks()
                 }
@@ -187,20 +196,15 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         displayItems = []
 
         for bookmark in arrBookmarksNotes {
-            displayItems.append(.bookmark(bookmark))
+            if let _ = AudioClipUtils.getClipURL(for: bookmark.timeStamp){
+                displayItems.append(.bookmark(bookmark))
+            }
         }
 
         for segment in arrMergedBookmarksNotes {
             
             displayItems.append(.segment(BookmarkSegment(identifiers: segment.identifiers, startTime: segment.startTime, endTime: segment.endTime, url: segment.url,bookmarksTxt: BookmarkCacheManager.getNotes(for: segment.identifiers), isStar: BookmarkCacheManager.getIsStar(for: segment.identifiers))))
         }
-
-       
-//        displayItems.sort { lhs, rhs in
-//            let lhsTime = (lhs.startTime ?? 0)
-//            let rhsTime = (rhs.startTime ?? 0)
-//            return lhsTime < rhsTime
-//        }
         
         print(displayItems)
     }
@@ -259,81 +263,54 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let item = displayItems[indexPath.row]
+
         switch item {
-           case .bookmark(let model):
-               guard let cell = tableView.dequeueReusableCell(withIdentifier: "BookMarkExpandCell", for: indexPath) as? BookMarkExpandCell else {
-                   return UITableViewCell()
-               }
+        case .bookmark(let model):
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "BookMarkExpandCell", for: indexPath) as? BookMarkExpandCell else {
+                return UITableViewCell()
+            }
+
             cell.delegate = self
             cell.selectionStyle = .none
-            cell.bottomView.isHidden = true
             cell.optionBtn.tag = indexPath.row
             cell.detailtxt.text = model.bookmarksTxt
-            cell.bookmarkTimelbl.text = model.time + " - " + model.date
-            cell.bookmarkBtn.tag = indexPath.row
-            cell.bookmarkBtn.addTarget(self, action: #selector(bookmarkTapButton(_:)), for: .touchUpInside)
-            
-                   if (model.bookmarksTxt.count ) > 0 || model.isStar == true{
-                       cell.bottomView.isHidden = false
-                   }
-                   if  model.isStar ?? false {
-                       cell.isStarBookMark.isHidden = false
-                       cell.starBG.isHidden = false
-                   }else{
-                       cell.isStarBookMark.isHidden = true
-                       cell.starBG.isHidden = true
-                   }
-                   
-                   return cell
-               
-
-           case .segment(let segment):
-               guard let cell = tableView.dequeueReusableCell(withIdentifier: "MergeBookMarkCell", for: indexPath) as? MergeBookMarkCell else {
-                   return UITableViewCell()
-               }
-            
-            cell.selectionStyle = .none
-            cell.delegate = self
-            cell.optionBtn.tag = indexPath.row
-            cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime))" + " - " + "\(formatTime(from: segment.endTime))"
+            cell.bookmarkTimelbl.text = "\(model.time) - \(model.date)"
+            cell.bottomView.isHidden = !(model.bookmarksTxt.count > 0 || model.isStar == true)
+            cell.isStarBookMark.isHidden = !(model.isStar ?? false)
+            cell.starBG.isHidden = !(model.isStar ?? false)
+            cell.transSumryLable.layer.cornerRadius = 12
+            cell.transSumryLable.clipsToBounds = true
             cell.playBtn.tag = indexPath.row
             cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
             cell.transcriptionBtn.tag = indexPath.row
             cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
+            configureTranscriptionSummary(for: cell.transSumryLable, id: "\(Int(model.timeStamp))")
+            return cell
+
+        case .segment(let segment):
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: "MergeBookMarkCell", for: indexPath) as? MergeBookMarkCell else {
+                return UITableViewCell()
+            }
+
+            cell.delegate = self
+            cell.selectionStyle = .none
+            cell.optionBtn.tag = indexPath.row
+            cell.playBtn.tag = indexPath.row
+            cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
+            cell.transcriptionBtn.tag = indexPath.row
+            cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
+
+            cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime)) - \(formatTime(from: segment.endTime))"
             cell.detailtxt.text = segment.bookmarksTxt
-            if (segment.bookmarksTxt?.count ?? 0 ) > 0 || segment.isStar == true{
-                cell.bottomView.isHidden = false
-            }
-            if  segment.isStar ?? false {
-                cell.isStarBookMark.isHidden = false
-                cell.starBG.isHidden = false
-            }else{
-                cell.isStarBookMark.isHidden = true
-                cell.starBG.isHidden = true
-            }
+            cell.bottomView.isHidden = !((segment.bookmarksTxt?.count ?? 0) > 0 || segment.isStar == true)
+            cell.isStarBookMark.isHidden = !(segment.isStar ?? false)
+            cell.starBG.isHidden = !(segment.isStar ?? false)
             cell.transSumryLable.layer.cornerRadius = 12
             cell.transSumryLable.clipsToBounds = true
-            
-            if let cachedTranscription = BookmarkCacheManager.getTranscription(for: segment.identifiers),
-               let cachedSummary = BookmarkCacheManager.getSummary(for: segment.identifiers) {
-                cell.transSumryLable.text = "Transcribed & Summarized"
-                cell.transSumryLable.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-            }else{
-                let underlineAttrString = NSAttributedString(
-                    string: "Transcribe & Summarize?",
-                    attributes: [
-                        .underlineStyle: NSUnderlineStyle.single.rawValue,
-                        .foregroundColor: UIColor.white,
-                        .font: UIFont.systemFont(ofSize: 14, weight: .medium)
-                    ]
-                )
-                cell.transSumryLable.attributedText = underlineAttrString
-                cell.transSumryLable.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.6)
-            }
-            return cell
-              
-           }
 
+            configureTranscriptionSummary(for: cell.transSumryLable, id: segment.identifiers)
+            return cell
+        }
     }
 
     
@@ -341,19 +318,26 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
         return UITableView.automaticDimension
     }
-    func formatTime(from seconds: Double) -> String {
-        let totalSeconds = Int(seconds)
-        let hours = totalSeconds / 3600
-        let minutes = (totalSeconds % 3600) / 60
-        let secs = totalSeconds % 60
-
-        if hours > 0 {
-            return String(format: "%02d:%02d:%02d", hours, minutes, secs)
+   
+    private func configureTranscriptionSummary(for label: UILabel, id: String) {
+        if let _ = BookmarkCacheManager.getTranscription(for: id),
+           let _ = BookmarkCacheManager.getSummary(for: id) {
+            label.text = "Transcribed & Summarized"
+            label.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
         } else {
-            return String(format: "%02d:%02d", minutes, secs)
+            let underlineAttrString = NSAttributedString(
+                string: "Transcribe & Summarize?",
+                attributes: [
+                    .underlineStyle: NSUnderlineStyle.single.rawValue,
+                    .foregroundColor: UIColor.white,
+                    .font: UIFont.systemFont(ofSize: 14, weight: .medium)
+                ]
+            )
+            label.attributedText = underlineAttrString
+            label.backgroundColor = UIColor.systemPurple.withAlphaComponent(0.6)
         }
     }
-
+    
     @objc func bookmarkTapButton(_ sender:UIButton) {
         let index = sender.tag
             guard index < displayItems.count else {
@@ -396,16 +380,17 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @objc func transcribeAllBtnAction(){
         
         self.transcribeAllSegments()
+        self.transcribeAllBookmarks()
     }
     
     @objc func autoTranscribeCheckAction(){
-        if isAutoTranscribeEnabled {
+        if !isAutoTranscribeEnabled {
             self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box-1"), for: .normal)
-            isAutoTranscribeEnabled = false
+            isAutoTranscribeEnabled = true
             
         }else{
             self.autoTranscribeChecked.setImage(UIImage(named: "ic_outline-check-box"), for: .normal)
-            isAutoTranscribeEnabled = true
+            isAutoTranscribeEnabled = false
         }
         
     }
@@ -422,8 +407,18 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         switch item {
             
         case .bookmark(let model):
-            print("Bookmark: \(model.bookmarksTxt)")
+            print("Bookmark: \(model.audioClipPath)")
+          
+            let playerVC = BottomSheetAudioPlayerVC()
+            playerVC.url = AudioClipUtils.getClipURL(for: model.timeStamp)
+ //model.audioClipPath
+            playerVC.modalPresentationStyle = .pageSheet
+            if let sheet = playerVC.sheetPresentationController {
+                sheet.detents = [.medium()]
+                sheet.prefersGrabberVisible = true
+            }
             
+            present(playerVC, animated: true)
         case .segment(let segment):
             print("Segment: \(segment.startTime)-\(segment.endTime)")
             let playerVC = BottomSheetAudioPlayerVC()
@@ -438,6 +433,56 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             
         }
         
+    }
+    
+    @objc func transcribeAllBookmarks() {
+        aiLoader.show(in: view, msg: "Transcribing all bookmarks...")
+
+        
+        let bookmarks = displayItems.compactMap { item -> BookmarksModel? in
+            if case .bookmark(let bookMark) = item, bookMark.transcription == nil || bookMark.summary == nil {
+                return bookMark
+            }
+            return nil
+        }
+
+        let unprocessed = bookmarks.filter { bookmark in
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                return !hasTranscript || !hasSummary
+            }
+
+        
+        guard !unprocessed.isEmpty else {
+            print("All segments already transcribed and summarized.")
+            self.aiLoader.dismiss()
+            return
+        }
+        let group = DispatchGroup()
+        
+        for var bookmark in unprocessed {
+            let id = "\(Int(bookmark.timeStamp))"
+            guard let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) else { continue }
+           
+            group.enter()
+            TranscriptionAI.processAudio(fileURL: url) { result in
+                if let result = result {
+                    bookmark.transcription = result.transcription
+                    bookmark.summary = result.summary
+                    
+                    BookmarkCacheManager.saveTranscription(result.transcription, for: id)
+                    BookmarkCacheManager.saveSummary(result.summary, for: id)
+                }
+                group.leave()
+            }
+        }
+        
+        group.notify(queue: .main) {
+            self.aiLoader.dismiss()
+            self.tblV.reloadData()
+            print("All bookmarks processed.")
+        //    self.showAlert(title: "Done", message: "All bookmarks processed.")
+        }
     }
     
     @objc func transcribeAllSegments() {
@@ -485,62 +530,62 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         group.notify(queue: .main) {
             self.aiLoader.dismiss()
             self.tblV.reloadData()
-            self.showAlert(title: "Done", message: "All bookmarks processed.")
+            print("All bookmarks processed.")
+        //    self.showAlert(title: "Done", message: "All bookmarks processed.")
         }
     }
+    
+    
     
     @objc func openCombinedTranscriptionSummary(_ sender: UIButton) {
         let index = sender.tag
-
-        guard case .segment(var segment) = displayItems[index],
-              let audioURL = segment.url else {
+        guard index < displayItems.count else {
+            print("Index out of bounds!")
             return
         }
-       let id = segment.identifiers
-        print(id,"efefwd")
-        if let cachedTranscription = BookmarkCacheManager.getTranscription(for: id),
-           let cachedSummary = BookmarkCacheManager.getSummary(for: id) {
-            
-          
-            segment.transcription = cachedTranscription
-            segment.summary = cachedSummary
-            
-            self.presentCombinedSheet(
-                transcription: cachedTranscription,
-                summary: cachedSummary,
-                timeRange: "\(self.formatTime(from: segment.startTime)) - \(self.formatTime(from: segment.endTime))"
-            )
-            
-        } else {
-          
-            aiLoader.show(in: view, msg: "Fetching transcription & summary...")
 
-            TranscriptionAI.processAudio(fileURL: audioURL) { [weak self] result in
-                DispatchQueue.main.async {
-                    self?.aiLoader.dismiss()
-                    guard let self = self, let result = result else {
-                        self?.showAlert(title: "Error", message: "Failed to process audio.")
-                        return
-                    }
+        switch displayItems[index] {
+        case .bookmark(let model):
+            let id = "\(Int(model.timeStamp))"
+            guard let url = AudioClipUtils.getClipURL(for: model.timeStamp) else { return }
+            let timeRange = "\(model.time) - \(model.date)"
 
-                    segment.transcription = result.transcription
-                    segment.summary = result.summary
+            handleTranscription(for: id, audioURL: url, fallbackTranscription: model.transcription, fallbackSummary: model.summary, timeRange: timeRange)
 
-        
-                    BookmarkCacheManager.saveTranscription(result.transcription, for: id)
-                    BookmarkCacheManager.saveSummary(result.summary, for: id)
+        case .segment(let segment):
+            let id = segment.identifiers
+            guard let url = segment.url else { return }
+            let timeRange = "\(formatTime(from: segment.startTime)) - \(formatTime(from: segment.endTime))"
 
-                    self.presentCombinedSheet(
-                        transcription: result.transcription,
-                        summary: result.summary,
-                        timeRange: "\(self.formatTime(from: segment.startTime)) - \(self.formatTime(from: segment.endTime))"
-                    )
-                    self.tblV.reloadData()
-                }
-            }
+            handleTranscription(for: id, audioURL: url, fallbackTranscription: segment.transcription, fallbackSummary: segment.summary, timeRange: timeRange)
         }
     }
     
+    private func handleTranscription(for id: String, audioURL: URL, fallbackTranscription: String?, fallbackSummary: String?, timeRange: String) {
+        if let cachedTranscription = BookmarkCacheManager.getTranscription(for: id),
+           let cachedSummary = BookmarkCacheManager.getSummary(for: id) {
+            presentCombinedSheet(transcription: cachedTranscription, summary: cachedSummary, timeRange: timeRange)
+            return
+        }
+
+        aiLoader.show(in: view, msg: "Fetching transcription & summary...")
+        
+        TranscriptionAI.processAudio(fileURL: audioURL) { [weak self] result in
+            DispatchQueue.main.async {
+                self?.aiLoader.dismiss()
+                guard let self = self, let result = result else {
+                    self?.showAlert(title: "Error", message: "Failed to process audio.")
+                    return
+                }
+
+                BookmarkCacheManager.saveTranscription(result.transcription, for: id)
+                BookmarkCacheManager.saveSummary(result.summary, for: id)
+
+                self.presentCombinedSheet(transcription: result.transcription, summary: result.summary, timeRange: timeRange)
+                self.tblV.reloadData()
+            }
+        }
+    }
     func presentCombinedSheet(transcription: String, summary: String, timeRange: String) {
         let vc = TranscriptionSummaryVC()
         vc.timeRange = timeRange
@@ -933,7 +978,18 @@ extension BookMarkVC:TapOnOptions{
             break
         }
     }
-    
+    func formatTime(from seconds: Double) -> String {
+        let totalSeconds = Int(seconds)
+        let hours = totalSeconds / 3600
+        let minutes = (totalSeconds % 3600) / 60
+        let secs = totalSeconds % 60
+
+        if hours > 0 {
+            return String(format: "%02d:%02d:%02d", hours, minutes, secs)
+        } else {
+            return String(format: "%02d:%02d", minutes, secs)
+        }
+    }
     
 }
 extension String {
@@ -955,4 +1011,5 @@ extension UITableView {
         self.layer.shadowOffset = .zero
         self.layer.masksToBounds = true
     }
+    
 }

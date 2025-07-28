@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (valfritt)";
 
+"(not accepted)" = "(accepteras inte)";
+
 "Account number" = "Kontonummer";
 
 "Address" = "Adress";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK-kod";
 
 "BSB number" = "BSB-nummer";
+
+"Bank account •••• %@" = "Bankkonto •••• %@";
 
 "Billing address is same as shipping" = "Faktureringsadress är samma som leveransadress";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parish";
 
-"Phone" = "Telefonnummer";
-
 "Phone number" = "Telefonnummer";
 
 "Postal code" = "Postnummer";
@@ -94,15 +96,15 @@
 
 "Remove" = "Ta bort";
 
-"Remove bank account" = "Ta bort bankkonto";
-
-"Remove bank account ending in %@" = "Ta bort bankkonto som slutar på %@";
+"Remove bank account?" = "Ta bort bankkonto?";
 
 "Remove card" = "Ta bort kort";
 
 "Search" = "Sök";
 
 "Select card brand (optional)" = "Välj korttyp (valfritt)";
+
+"Selection is empty." = "Urvalet är tomt.";
 
 "Sort code" = "Clearingnummer";
 

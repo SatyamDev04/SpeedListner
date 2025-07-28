@@ -110,6 +110,13 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     
     @objc func timerTap(){
         print("timer")
+        guard self.book != nil else {
+            DispatchQueue.main.async{
+                self.showToast("Please add a book to the library if already added then play")
+                self.dismiss(animated: true)
+            }
+            return
+        }
         runCount += 1
         if runCount == 3 && tapOnText == 0  {
             self.timer.invalidate()
@@ -169,6 +176,13 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     }
     
     @IBAction func btnDone_Action(_ sender: UIButton) {
+        guard self.book != nil else {
+            DispatchQueue.main.async{
+                self.showToast("Please add a book to the library if already added then play")
+                self.dismiss(animated: true)
+            }
+            return
+        }
         self.timer.invalidate()
         if self.i != "" {
             
@@ -246,7 +260,13 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         
     }
     func saveWithoutNote(){
-        
+        guard self.book != nil else {
+            DispatchQueue.main.async{
+                self.showToast("Please add a book to the library if already added then play")
+                self.dismiss(animated: true)
+            }
+            return
+        }
         if displayItems.count <= 0 {
             let t = self.book.currentTime
             let time = formatTime(Int(self.book.currentTime))

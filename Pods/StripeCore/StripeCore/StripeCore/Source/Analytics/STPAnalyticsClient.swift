@@ -27,7 +27,19 @@ import UIKit
     @objc public static let sharedClient = STPAnalyticsClient()
     /// When this class logs a payload in an XCTestCase, it's added to `_testLogHistory` instead of being sent over the network.
     /// This is a hack - ideally, we inject a different analytics client in our tests. This is an escape hatch until we can make that (significant) refactor
-    public var _testLogHistory: [[String: Any]] = []
+    private var _testLogHistoryStorage: [[String: Any]] = []
+    public var _testLogHistory: [[String: Any]] {
+        get {
+            objc_sync_enter(self)
+            defer { objc_sync_exit(self) }
+            return _testLogHistoryStorage
+        }
+        set {
+            objc_sync_enter(self)
+            _testLogHistoryStorage = newValue
+            objc_sync_exit(self)
+        }
+    }
     public weak var delegate: STPAnalyticsClientDelegate?
 
     @objc public var productUsage: Set<String> = Set()
@@ -36,7 +48,7 @@ import UIKit
         configuration: StripeAPIConfiguration.sharedUrlSessionConfiguration
     )
     let url = URL(string: "https://q.stripe.com")!
-
+    private let analyticsEventTranslator = STPAnalyticsEventTranslator()
     @objc public class func tokenType(fromParameters parameters: [AnyHashable: Any]) -> String? {
         let parameterKeys = parameters.keys
 
@@ -93,8 +105,6 @@ import UIKit
         var payload = commonPayload(apiClient)
 
         payload["event"] = analytic.event.rawValue
-        payload["additional_info"] = additionalInfo()
-        payload["product_usage"] = productUsage.sorted()
 
         payload.mergeAssertingOnOverwrites(analytic.params)
         return payload
@@ -108,6 +118,10 @@ import UIKit
     ///   - apiClient: The `STPAPIClient` instance with which this payload should be associated
     ///     (i.e. publishable key). Defaults to `STPAPIClient.shared`.
     public func log(analytic: Analytic, apiClient: STPAPIClient = .shared) {
+        log(analytic: analytic, apiClient: apiClient, notificationCenter: .default)
+    }
+
+    func log(analytic: Analytic, apiClient: STPAPIClient = .shared, notificationCenter: NotificationCenter = .default) {
         let payload = payload(from: analytic, apiClient: apiClient)
 
         #if DEBUG
@@ -115,9 +129,16 @@ import UIKit
         delegate?.analyticsClientDidLog(analyticsClient: self, payload: payload)
         #endif
 
+        if let translatedEvent = analyticsEventTranslator.translate(analytic.event, payload: payload) {
+            notificationCenter.post(name: translatedEvent.notificationName,
+                                    object: translatedEvent.event)
+        }
+
         // If in testing, don't log analytic, instead append payload to log history
         guard !STPAnalyticsClient.isUnitOrUITest else {
-            _testLogHistory.append(payload)
+            objc_sync_enter(self)
+            _testLogHistoryStorage.append(payload)
+            objc_sync_exit(self)
             return
         }
 
@@ -152,7 +173,9 @@ extension STPAnalyticsClient {
         if STPAnalyticsClient.isSimulatorOrTest {
             payload["is_development"] = true
         }
-
+        payload["locale"] = Locale.autoupdatingCurrent.identifier
+        payload["additional_info"] = additionalInfo()
+        payload["product_usage"] = productUsage.sorted()
         return payload
     }
 }

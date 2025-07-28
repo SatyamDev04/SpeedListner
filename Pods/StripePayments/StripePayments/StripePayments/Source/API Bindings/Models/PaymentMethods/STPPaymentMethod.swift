@@ -86,6 +86,23 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
     @objc private(set) public var amazonPay: STPPaymentMethodAmazonPay?
     /// If this is a Alma PaymentMethod (i.e. `self.type == STPPaymentMethodTypeAlma`), this contains additional details.
     @objc private(set) public var alma: STPPaymentMethodAlma?
+    /// If this is a Sunbit PaymentMethod (i.e. `self.type == STPPaymentMethodTypeSunibt`), this contains additional details.
+    @objc private(set) public var sunbit: STPPaymentMethodSunbit?
+    /// If this is a Billie PaymentMethod (i.e. `self.type == STPPaymentMethodTypeBillie`), this contains additional details.
+    @objc private(set) public var billie: STPPaymentMethodBillie?
+    /// If this is a Satispay PaymentMethod (i.e. `self.type == STPPaymentMethodTypeSatispay`), this contains additional details.
+    @objc private(set) public var satispay: STPPaymentMethodSatispay?
+    /// If this is a Crypto PaymentMethod (i.e. `self.type == STPPaymentMethodTypeCrypto`), this contains additional details.
+    @objc private(set) public var crypto: STPPaymentMethodCrypto?
+    /// If this is a Multibanco PaymentMethod (i.e. `self.type == STPPaymentMethodTypeMultibanco`), this contains additional details.
+    @objc private(set) public var multibanco: STPPaymentMethodMultibanco?
+    /// If this is a MobilePay PaymentMethod (i.e. `self.type == STPPaymentMethodTypeMobilePay`), this contains additional details.
+    @objc private(set) public var mobilePay: STPPaymentMethodMobilePay?
+    /// If this is a ShopPay PaymentMethod (i.e. `self.type == STPPaymentMethodTypeShopPay`), this contains additional details.
+    @_spi(STP) @objc private(set) public var shopPay: STPPaymentMethodShopPay?
+
+    /// This field indicates whether this payment method can be shown again to its customer in a checkout flow
+    @objc private(set) public var allowRedisplay: STPPaymentMethodAllowRedisplay
 
     /// The ID of the Customer to which this PaymentMethod is saved. Nil when the PaymentMethod has not been saved to a Customer.
     @objc private(set) public var customerId: String?
@@ -101,6 +118,15 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
             "Metadata is no longer returned to clients using publishable keys. Retrieve them on your server using your secret key instead."
     )
     @objc private(set) public var metadata: [String: String]?
+
+    /// The payment details of a PaymentMethod that was created using Link.
+    @_spi(STP) public var linkPaymentDetails: LinkPaymentDetails?
+    /// Whether this payment method is coming from Link.
+    @_spi(STP) public var isLinkPassthroughMode: Bool = false
+
+    @_spi(STP) public var isLinkPaymentMethod: Bool {
+        linkPaymentDetails != nil
+    }
 
     /// :nodoc:
     @objc private(set) public var allResponseFields: [AnyHashable: Any] = [:]
@@ -147,7 +173,15 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
             "swish = \(String(describing: swish))",
             "amazon_pay = \(String(describing: amazonPay))",
             "alma = \(String(describing: alma))",
+            "sunbit = \(String(describing: sunbit))",
+            "billie = \(String(describing: billie))",
+            "satispay = \(String(describing: satispay))",
+            "crypto = \(String(describing: crypto))",
+            "multibanco = \(String(describing: multibanco))",
+            "mobilePay = \(String(describing: mobilePay))",
+            "shopPay = \(String(describing: shopPay))",
             "liveMode = \(liveMode ? "YES" : "NO")",
+            "allowRedisplay = \(allResponseFields["allow_redisplay"] as? String ?? "")",
             "type = \(allResponseFields["type"] as? String ?? "")",
         ]
         return "<\(props.joined(separator: "; "))>"
@@ -167,6 +201,13 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
         return STPPaymentMethodType.allCases.first(where: { type in
             type.identifier == key
         }) ?? .unknown
+    }
+
+    @_spi(STP) public class func allowRedisplay(from string: String) -> STPPaymentMethodAllowRedisplay {
+        let key = string.lowercased()
+        return STPPaymentMethodAllowRedisplay.allCases.first(where: { type in
+            type.stringValue == key
+        }) ?? .unspecified
     }
 
     class func types(from strings: [String]) -> [NSNumber] {
@@ -189,10 +230,12 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
     /// :nodoc:
     @objc @_spi(STP) public required init(
         stripeId: String,
-        type: STPPaymentMethodType
+        type: STPPaymentMethodType,
+        allowRedisplay: STPPaymentMethodAllowRedisplay = .unspecified
     ) {
         self.stripeId = stripeId
         self.type = type
+        self.allowRedisplay = allowRedisplay
         super.init()
     }
 
@@ -209,7 +252,8 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
         }
 
         let paymentMethod = self.init(stripeId: stripeId,
-                                      type: self.type(from: dict.stp_string(forKey: "type") ?? ""))
+                                      type: self.type(from: dict.stp_string(forKey: "type") ?? ""),
+                                      allowRedisplay: self.allowRedisplay(from: dict.stp_string(forKey: "allow_redisplay") ?? ""))
         paymentMethod.allResponseFields = response
         paymentMethod.stripeId = stripeId
         paymentMethod.created = dict.stp_date(forKey: "created")
@@ -313,7 +357,27 @@ public class STPPaymentMethod: NSObject, STPAPIResponseDecodable {
         paymentMethod.alma = STPPaymentMethodAlma.decodedObject(
             fromAPIResponse: dict.stp_dictionary(forKey: "alma")
         )
-
+        paymentMethod.sunbit = STPPaymentMethodSunbit.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "sunbit")
+        )
+        paymentMethod.billie = STPPaymentMethodBillie.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "billie")
+        )
+        paymentMethod.satispay = STPPaymentMethodSatispay.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "satispay")
+        )
+        paymentMethod.crypto = STPPaymentMethodCrypto.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "crypto")
+        )
+        paymentMethod.multibanco = STPPaymentMethodMultibanco.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "multibanco")
+        )
+        paymentMethod.mobilePay = STPPaymentMethodMobilePay.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "mobilepay")
+        )
+        paymentMethod.shopPay = STPPaymentMethodShopPay.decodedObject(
+            fromAPIResponse: dict.stp_dictionary(forKey: "shop_pay")
+        )
         return paymentMethod
     }
 }

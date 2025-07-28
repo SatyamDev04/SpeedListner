@@ -12,8 +12,6 @@
 
 "Bancontact" = "Bancontact";
 
-"Bank" = "Banca";
-
 "Boleto" = "Boleto";
 
 "Card" = "Carta";
@@ -48,15 +46,15 @@
 
 "Swish" = "Swish";
 
-"Timed out authenticating your payment method -- try again" = "Timeout durante l'autenticazione della modalità di pagamento. Riprova.";
+"Timed out authenticating your payment method -- try again" = "Timeout durante l'autenticazione del metodo di pagamento. Riprova.";
 
 "UPI" = "UPI";
 
-"US Bank Account" = "Conto bancario Stati Uniti";
+"US bank account" = "Conto bancario Stati Uniti";
 
 "Unknown" = "Sconosciuto";
 
-"We are unable to authenticate your payment method. Please choose a different payment method and try again." = "Impossibile autenticare la modalità di pagamento. Scegline un'altra e riprova.";
+"We are unable to authenticate your payment method. Please choose a different payment method and try again." = "Impossibile autenticare il metodo di pagamento. Scegline un altro e riprova.";
 
 "WeChat Pay" = "WeChat Pay";
 

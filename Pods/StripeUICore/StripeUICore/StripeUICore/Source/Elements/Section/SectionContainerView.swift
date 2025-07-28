@@ -36,18 +36,14 @@ class SectionContainerView: UIView {
     }()
 
     private(set) var views: [UIView]
-    private let theme: ElementsUITheme
+    private let theme: ElementsAppearance
 
     // MARK: - Initializers
-
-    convenience init(view: UIView, theme: ElementsUITheme = .default) {
-        self.init(views: [view], theme: theme)
-    }
 
     /**
      - Parameter views: A list of views to display in a row. To display multiple elements in a single row, put them inside a `MultiElementRowView`.
      */
-    init(views: [UIView], theme: ElementsUITheme = .default) {
+    init(views: [UIView], theme: ElementsAppearance = .default) {
         self.views = views
         self.theme = theme
         super.init(frame: .zero)
@@ -80,6 +76,7 @@ class SectionContainerView: UIView {
                 view.layer.maskedCorners = []
                 view.layer.shadowOpacity = 0.0
                 view.layer.borderWidth = 0
+                view.layer.masksToBounds = true
             }
         }
         // 2. Round the top-most view's top corners
@@ -106,12 +103,23 @@ class SectionContainerView: UIView {
         )
     }
 
-#if !canImport(CompositorServices)
+#if !os(visionOS)
     override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
         super.traitCollectionDidChange(previousTraitCollection)
         updateUI()
     }
 #endif
+
+    func potentialFirstResponderIsInHierarchy(topView: UIView) -> Bool {
+        if let rememberableTopView = topView as? TextFieldView.STPTextFieldThatRemembersWantingToBecomeFirstResponder,
+           rememberableTopView.wantedToBecomeFirstResponder {
+            return true
+        }
+        for subview in topView.subviews {
+            return potentialFirstResponderIsInHierarchy(topView: subview)
+        }
+        return false
+    }
 
     // MARK: - Internal methods
     func updateUI(newViews: [UIView]? = nil) {
@@ -119,7 +127,7 @@ class SectionContainerView: UIView {
         layer.cornerRadius = theme.cornerRadius
 
         if isUserInteractionEnabled || UITraitCollection.current.isDarkMode {
-            backgroundColor = theme.colors.background
+            backgroundColor = theme.colors.componentBackground
         } else {
             backgroundColor = .tertiarySystemGroupedBackground
         }
@@ -142,6 +150,19 @@ class SectionContainerView: UIView {
         }
 
         let oldStackHeight = self.stackView.frame.size.height
+
+        let newFirstResponder: UIView? = {
+            for view in views {
+                if potentialFirstResponderIsInHierarchy(topView: view) {
+                    let oldFirstResponderIndex = views.firstIndex(of: view)
+                    if let oldFirstResponderIndex = oldFirstResponderIndex, oldFirstResponderIndex < newViews.count {
+                        return newViews[oldFirstResponderIndex]
+                    }
+                }
+            }
+            return nil
+        }()
+
         let newStack = buildStackView(views: newStackViews, theme: theme)
         newStack.arrangedSubviews.forEach { $0.alpha = 0 }
         bottomPinningContainerView.addPinnedSubview(newStack)
@@ -169,12 +190,18 @@ class SectionContainerView: UIView {
             self.layoutIfNeeded()
             oldStackView.removeFromSuperview()
         }
+        let transitionCompletion: (Bool) -> Void = { _ in
+            if let newFirstResponderTextField = newFirstResponder as? TextFieldView {
+                _ = newFirstResponderTextField.textField.becomeFirstResponder()
+            }
+        }
         guard let viewController = window?.rootViewController?.presentedViewController else {
             transition()
+            transitionCompletion(false)
             return
         }
         let shouldAnimate = Int(newStack.frame.size.height) != Int(oldStackHeight)
-        viewController.animateHeightChange(duration: shouldAnimate ? 0.5 : 0.0, transition)
+        viewController.animateHeightChange(duration: shouldAnimate ? 0.5 : 0.0, transition, completion: transitionCompletion)
     }
 }
 
@@ -199,7 +226,7 @@ extension SectionContainerView {
     class MultiElementRowView: UIView {
         let views: [UIView]
 
-        init(views: [UIView], theme: ElementsUITheme = .default) {
+        init(views: [UIView], theme: ElementsAppearance = .default) {
             self.views = views
             super.init(frame: .zero)
             let stackView = buildStackView(views: views, theme: theme)
@@ -214,14 +241,14 @@ extension SectionContainerView {
 
 // MARK: - StackViewWithSeparator
 
-private func buildStackView(views: [UIView], theme: ElementsUITheme = .default) -> StackViewWithSeparator {
+private func buildStackView(views: [UIView], theme: ElementsAppearance = .default) -> StackViewWithSeparator {
     let stackView = StackViewWithSeparator(arrangedSubviews: views)
     stackView.axis = .vertical
     stackView.spacing = theme.borderWidth
     stackView.separatorColor = theme.colors.divider
     stackView.borderColor = theme.colors.border
     stackView.borderCornerRadius = theme.cornerRadius
-    stackView.customBackgroundColor = theme.colors.background
+    stackView.customBackgroundColor = theme.colors.componentBackground
     stackView.drawBorder = true
     stackView.hideShadow = true // Shadow is handled by `SectionContainerView`
     return stackView

@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (mhux obbligatorja)";
 
+"(not accepted)" = "(ma tistax tintuża)";
+
 "Account number" = "In-numru tal-kont";
 
 "Address" = "Indirizz";
@@ -13,6 +15,8 @@
 "BLIK code" = "Kodiċi BLIK";
 
 "BSB number" = "Numru BSB";
+
+"Bank account •••• %@" = "Kont tal-bank •••• %@";
 
 "Billing address is same as shipping" = "L-indirizz tal-fatturazzjoni huwa l-istess bħall-indirizz tal-posta";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parroċċa";
 
-"Phone" = "Telefon";
-
 "Phone number" = "In-numru tal-mowbajl";
 
 "Postal code" = "Kodiċi postali";
@@ -94,15 +96,15 @@
 
 "Remove" = "Neħħi";
 
-"Remove bank account" = "Neħħi l-kont tal-bank";
-
-"Remove bank account ending in %@" = "Neħħi l-kont tal-bank li jispiċċa b'%@";
+"Remove bank account?" = "Tixtieq tneħħi l-kont tal-bank?";
 
 "Remove card" = "Neħħi l-karta";
 
 "Search" = "Fittex";
 
 "Select card brand (optional)" = "Agħżel id-ditta tal-karta (mhux obbligatorja)";
+
+"Selection is empty." = "L-għażla hija vojta.";
 
 "Sort code" = "Il-kodiċi Sort";
 

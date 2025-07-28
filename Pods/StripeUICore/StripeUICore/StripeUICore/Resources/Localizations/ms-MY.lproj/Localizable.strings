@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (opsyenal)";
 
+"(not accepted)" = "(tidak diterima)";
+
 "Account number" = "Nombor akaun";
 
 "Address" = "Alamat";
@@ -13,6 +15,8 @@
 "BLIK code" = "Kod BLIK";
 
 "BSB number" = "Nombor BSB";
+
+"Bank account •••• %@" = "Akaun bank •••• %@";
 
 "Billing address is same as shipping" = "Alamat pengebilan sama dengan alamat penghantaran";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Kariah";
 
-"Phone" = "Telefon";
-
 "Phone number" = "Nombor telefon";
 
 "Postal code" = "Poskod";
@@ -94,15 +96,15 @@
 
 "Remove" = "Alih Keluar";
 
-"Remove bank account" = "Alih keluar akaun bank";
-
-"Remove bank account ending in %@" = "Alih keluar akaun bank yang berakhir dengan %@";
+"Remove bank account?" = "Alih keluar akaun bank?";
 
 "Remove card" = "Alih keluar kad";
 
 "Search" = "Cari";
 
 "Select card brand (optional)" = "Pilih jenama kad (opsyenal)";
+
+"Selection is empty." = "Tiada pilihan dibuat.";
 
 "Sort code" = "Kod isihan";
 

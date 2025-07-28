@@ -22,8 +22,8 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>k.kj.j.</key>
-	<string>hgviugi</string>
+	<key>OpenAIKey</key>
+	<string>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</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -46,8 +46,6 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
-		<string>fetch</string>
-		<string>processing</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

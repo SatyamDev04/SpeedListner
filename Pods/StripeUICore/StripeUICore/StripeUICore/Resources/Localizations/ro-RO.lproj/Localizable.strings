@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (opțional)";
 
+"(not accepted)" = "(nu este acceptat)";
+
 "Account number" = "Număr cont";
 
 "Address" = "Adresa";
@@ -13,6 +15,8 @@
 "BLIK code" = "Cod BLIK";
 
 "BSB number" = "Număr BSB";
+
+"Bank account •••• %@" = "Cont bancar •••• %@";
 
 "Billing address is same as shipping" = "Adresa de facturare este la fel cu cea de expediere";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parohie";
 
-"Phone" = "Număr de telefon";
-
 "Phone number" = "Număr de telefon";
 
 "Postal code" = "Cod poștal";
@@ -94,15 +96,15 @@
 
 "Remove" = "Eliminare";
 
-"Remove bank account" = "Eliminați contul bancar";
-
-"Remove bank account ending in %@" = "Eliminați contul bancar care se termină în %@";
+"Remove bank account?" = "Eliminați contul bancar?";
 
 "Remove card" = "Eliminare card";
 
 "Search" = "Căutare";
 
 "Select card brand (optional)" = "Selectare marcă card (opțional)";
+
+"Selection is empty." = "Selecția este goală.";
 
 "Sort code" = "Cod de sortare";
 
@@ -134,7 +136,7 @@
 
 "Your ZIP is incomplete." = "Codul dvs. poștal nu este complet.";
 
-"Your email is invalid." = "E-mailul dvs. nu este valid.";
+"Your email is invalid." = "E-mailul nu este valid.";
 
 "Your payment information will not be saved." = "Informațiile dvs. de plată nu vor fi salvate.";
 

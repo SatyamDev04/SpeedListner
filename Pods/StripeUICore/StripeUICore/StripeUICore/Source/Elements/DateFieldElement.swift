@@ -65,7 +65,7 @@ import UIKit
     public var didUpdate: DidUpdateSelectedDate?
 
     private let label: String?
-    private let theme: ElementsUITheme
+    private let theme: ElementsAppearance
 
     /**
      - Parameters:
@@ -89,7 +89,7 @@ import UIKit
         maximumDate: Date? = nil,
         locale: Locale = .current,
         timeZone: TimeZone = .current,
-        theme: ElementsUITheme = .default,
+        theme: ElementsAppearance = .default,
         customDateFormatter: DateFormatter? = nil,
         didUpdate: DidUpdateSelectedDate? = nil
     ) {
@@ -130,6 +130,8 @@ import UIKit
 // MARK: Element
 
 extension DateFieldElement: Element {
+    public var collectsUserInput: Bool { true }
+
     public var view: UIView {
         return pickerFieldView
     }

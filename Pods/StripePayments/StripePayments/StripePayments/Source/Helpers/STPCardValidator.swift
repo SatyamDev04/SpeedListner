@@ -350,14 +350,13 @@ public class STPCardValidator: NSObject {
         case 0, 1:
             return .incomplete
         case 2:
-            if self.validationState(forExpirationMonth: sanitizedMonth) == .invalid {
+            guard let yearInt = Int(sanitizedYear), let monthInt = Int(sanitizedMonth), self.validationState(forExpirationMonth: sanitizedMonth) != .invalid else {
                 return .invalid
+            }
+            if yearInt == moddedYear {
+                return monthInt >= currentMonth ? .valid : .invalid
             } else {
-                if Int(sanitizedYear) ?? 0 == moddedYear {
-                    return Int(sanitizedMonth) ?? 0 >= currentMonth ? .valid : .invalid
-                } else {
-                    return Int(sanitizedYear) ?? 0 > moddedYear ? .valid : .invalid
-                }
+                return ((yearInt > moddedYear) && (yearInt - moddedYear <= 50)) ? .valid : .invalid
             }
         default:
             return .invalid
@@ -514,5 +513,18 @@ extension STPCardValidator {
         }
 
         return sum % 10 == 0
+    }
+    
+    /// Returns the brand (eg VISA) for a card, respecting card brand choice.
+    @_spi(STP) public class func brand(for card: STPPaymentMethodCardParams?) -> STPCardBrand {
+        guard let card, let number = card.number else {
+            return .unknown
+        }
+        // If there's a preferred card network, just use that
+        if let networks = card.networks {
+            return STPCard.brand(from: networks.preferred ?? "")
+        }
+        // Otherwise use the default card network for the card number
+        return STPCardValidator.brand(forNumber: number)
     }
 }

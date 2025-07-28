@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@（可选）";
 
+"(not accepted)" = "（未接受）";
+
 "Account number" = "账号";
 
 "Address" = "地址";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK 代码";
 
 "BSB number" = "BSB 号码";
+
+"Bank account •••• %@" = "银行账户 •••• %@";
 
 "Billing address is same as shipping" = "账单地址与收货地址相同";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "堂区";
 
-"Phone" = "电话";
-
 "Phone number" = "手机号码";
 
 "Postal code" = "邮政编码";
@@ -94,15 +96,15 @@
 
 "Remove" = "移除";
 
-"Remove bank account" = "移除银行账户";
-
-"Remove bank account ending in %@" = "移除尾号为 %@ 的银行账户";
+"Remove bank account?" = "移除银行账户？";
 
 "Remove card" = "移除卡";
 
 "Search" = "搜索";
 
 "Select card brand (optional)" = "选择银行卡品牌（可选）";
+
+"Selection is empty." = "选择为空。";
 
 "Sort code" = "分类代码";
 

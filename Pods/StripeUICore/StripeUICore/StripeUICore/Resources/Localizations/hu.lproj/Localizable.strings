@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (nem kötelező)";
 
+"(not accepted)" = "(nem elfogadott)";
+
 "Account number" = "Számlaszám";
 
 "Address" = "Cím";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK kód";
 
 "BSB number" = "BSB-szám";
+
+"Bank account •••• %@" = "Bankszámla •••• %@";
 
 "Billing address is same as shipping" = "A számlázási cím megegyezik a szállítási címmel";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Egyházközség";
 
-"Phone" = "Telefon";
-
 "Phone number" = "Telefonszám";
 
 "Postal code" = "Irányítószám";
@@ -94,15 +96,15 @@
 
 "Remove" = "Eltávolítás";
 
-"Remove bank account" = "Bankszámla eltávolítása";
-
-"Remove bank account ending in %@" = "%@ számra végződő bankszámla eltávolítása";
+"Remove bank account?" = "Eltávolítja a bankszámlát?";
 
 "Remove card" = "Kártya törlése";
 
 "Search" = "Keresés";
 
 "Select card brand (optional)" = "Válassza ki a kártya márkáját (nem kötelező)";
+
+"Selection is empty." = "A kiválasztás üres.";
 
 "Sort code" = "Bankazonosító";
 

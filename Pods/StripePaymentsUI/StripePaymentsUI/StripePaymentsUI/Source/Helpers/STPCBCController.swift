@@ -83,11 +83,13 @@ class STPCBCController {
 
     var cbcEnabledOverride: Bool?
 
+    var onBehalfOf: String?
+
     var cbcEnabled: Bool {
         if let cbcEnabledOverride = cbcEnabledOverride {
             return cbcEnabledOverride
         }
-        return CardElementConfigService.shared.isCBCEligible
+        return CardElementConfigService.shared.isCBCEligible(onBehalfOf: onBehalfOf)
     }
 
     enum BrandState: Equatable {
@@ -144,11 +146,10 @@ class STPCBCController {
 
     var contextMenuConfiguration: UIContextMenuConfiguration {
         return UIContextMenuConfiguration(actionProvider: { _ in
-            let action = { (action: UIAction) -> Void in
+            let action = { (action: UIAction) in
                 let brand = STPCard.brand(from: action.identifier.rawValue)
                 // Set the selected brand if a brand is selected
                 self.selectedBrand = brand != .unknown ? brand : nil
-                self.updateHandler?()
             }
             let placeholderAction = UIAction(title: String.Localized.card_brand_dropdown_placeholder, attributes: .disabled, handler: action)
             let menu = UIMenu(children:

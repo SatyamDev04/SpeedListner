@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (opcional)";
 
+"(not accepted)" = "(no s'accepta)";
+
 "Account number" = "Número de Compte";
 
 "Address" = "Adreça";
@@ -13,6 +15,8 @@
 "BLIK code" = "Codi BLIK";
 
 "BSB number" = "Número BSB";
+
+"Bank account •••• %@" = "Compte bancari •••• %@";
 
 "Billing address is same as shipping" = "L'adreça de facturació és la mateixa que la d'enviament";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parròquia";
 
-"Phone" = "Telèfon";
-
 "Phone number" = "Número de telèfon";
 
 "Postal code" = "Codi postal";
@@ -94,15 +96,15 @@
 
 "Remove" = "Eliminar";
 
-"Remove bank account" = "Elimina el compte bancari";
-
-"Remove bank account ending in %@" = "Elimina el compte bancari que acaba en %@";
+"Remove bank account?" = "Voleu eliminar el compte bancari?";
 
 "Remove card" = "Elimina la targeta";
 
 "Search" = "Cerca";
 
 "Select card brand (optional)" = "Seleccioneu la marca de la targeta (opcional)";
+
+"Selection is empty." = "La selecció és buida.";
 
 "Sort code" = "Codi de classificació";
 

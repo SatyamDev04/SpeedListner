@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (campo facoltativo)";
 
+"(not accepted)" = "(non accettata)";
+
 "Account number" = "Numero conto";
 
 "Address" = "Indirizzo";
@@ -13,6 +15,8 @@
 "BLIK code" = "Codice BLIK";
 
 "BSB number" = "Numero BSB";
+
+"Bank account •••• %@" = "Conto bancario •••• %@";
 
 "Billing address is same as shipping" = "L'indirizzo di fatturazione è uguale all'indirizzo di spedizione";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Contea";
 
-"Phone" = "Telefono";
-
 "Phone number" = "Numero di telefono";
 
 "Postal code" = "Codice postale";
@@ -94,15 +96,15 @@
 
 "Remove" = "Rimuovi";
 
-"Remove bank account" = "Rimuovi conto bancario";
-
-"Remove bank account ending in %@" = "Rimuovi conto bancario che termina con %@";
+"Remove bank account?" = "Desideri rimuovere il conto bancario?";
 
 "Remove card" = "Rimuovi la carta";
 
 "Search" = "Cerca";
 
 "Select card brand (optional)" = "Seleziona il circuito della carta (facoltativo)";
+
+"Selection is empty." = "La selezione è vuota.";
 
 "Sort code" = "Sort code";
 

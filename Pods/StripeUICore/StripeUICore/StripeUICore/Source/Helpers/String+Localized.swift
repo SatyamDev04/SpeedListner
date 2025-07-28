@@ -77,10 +77,6 @@ import Foundation
 
     // MARK: - Phone number
 
-    static var phone: String {
-        STPLocalizedString("Phone", "Caption for Phone field on address form")
-    }
-
     static var phoneNumber: String {
         STPLocalizedString("Phone number", "Caption for Phone number field on address form")
     }
@@ -254,15 +250,15 @@ import Foundation
         STPLocalizedString("The account number you entered is incomplete.", "Error description for incomplete account number")
     }
 
-    static var removeBankAccountEndingIn: String {
+    static var bank_account_xxxx: String {
         STPLocalizedString(
-            "Remove bank account ending in %@",
-            "Content for alert popup prompting to confirm removing a saved bank account. e.g. 'Remove bank account ending in 4242'")
+            "Bank account •••• %@",
+            "Content for alert popup prompting to confirm removing a saved bank account. e.g. 'Bank account •••• 4242'")
     }
 
     static var removeBankAccount: String {
         STPLocalizedString(
-            "Remove bank account",
+            "Remove bank account?",
             "Title for confirmation alert to remove a saved bank account payment method")
     }
 
@@ -308,6 +304,13 @@ import Foundation
         )
     }
 
+    static var edit: String {
+        STPLocalizedString(
+            "Edit",
+            "Button title to enter editing mode"
+        )
+    }
+
     // MARK: - UPI
 
     static var upi_id: String {
@@ -344,5 +347,12 @@ import Foundation
 
     static var remove_card: String {
         STPLocalizedString("Remove card", "Label on a button for removing a card")
+    }
+    
+    static var brand_not_accepted: String {
+        STPLocalizedString(
+            "(not accepted)",
+            "Shown in a dropdown picker next to a card brand that is not accepted by a merchant. E.g. \"Visa (not accepted)\""
+       )
     }
 }

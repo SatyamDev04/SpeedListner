@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (valinnainen)";
 
+"(not accepted)" = "(ei hyväksytty)";
+
 "Account number" = "Tilinumero";
 
 "Address" = "Osoite";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK-koodi";
 
 "BSB number" = "BSB-numero";
+
+"Bank account •••• %@" = "Pankkitili •••• %@";
 
 "Billing address is same as shipping" = "Laskutusosoite on sama kuin toimitusosoite";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Kunta";
 
-"Phone" = "Puhelin";
-
 "Phone number" = "Puhelinnumero";
 
 "Postal code" = "Postinumero";
@@ -94,15 +96,15 @@
 
 "Remove" = "Poista";
 
-"Remove bank account" = "Poista pankkitili";
-
-"Remove bank account ending in %@" = "Poista pankkitili, joka päättyy numeroihin %@";
+"Remove bank account?" = "Poistetaanko pankkitili?";
 
 "Remove card" = "Poista kortti";
 
 "Search" = "Etsi";
 
 "Select card brand (optional)" = "Valitse korttimerkki (valinnainen)";
+
+"Selection is empty." = "Valinta on tyhjä.";
 
 "Sort code" = "Pankin tunnusnumero";
 

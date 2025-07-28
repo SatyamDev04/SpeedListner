@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (valikuline)";
 
+"(not accepted)" = "(pole aktsepteeritud)";
+
 "Account number" = "Kontonumber";
 
 "Address" = "Aadress";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK-kood";
 
 "BSB number" = "BSB-number";
+
+"Bank account •••• %@" = "Pangakonto •••• %@";
 
 "Billing address is same as shipping" = "Arveldusaadress on sama mis tarneaadress";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Vald";
 
-"Phone" = "Telefon";
-
 "Phone number" = "Telefoninumber";
 
 "Postal code" = "Sihtnumber";
@@ -94,15 +96,15 @@
 
 "Remove" = "Eemalda";
 
-"Remove bank account" = "Eemaldage pangakonto";
-
-"Remove bank account ending in %@" = "Eemaldage pangakonto lõpuga %@";
+"Remove bank account?" = "Kas soovite pangakonto eemaldada?";
 
 "Remove card" = "Eemalda kaart";
 
 "Search" = "Otsing";
 
 "Select card brand (optional)" = "Valige kaardi kaubamärk (valikuline)";
+
+"Selection is empty." = "Valik on tühi.";
 
 "Sort code" = "Sorteerimiskood";
 

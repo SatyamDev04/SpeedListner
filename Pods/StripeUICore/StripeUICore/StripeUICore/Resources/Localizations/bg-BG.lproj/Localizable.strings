@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (по желание)";
 
+"(not accepted)" = "(не се приема)";
+
 "Account number" = "Номер на сметката";
 
 "Address" = "Адрес";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK код";
 
 "BSB number" = "BSB номер";
+
+"Bank account •••• %@" = "Банкова сметка •••• %@";
 
 "Billing address is same as shipping" = "Адресът за фактуриране е същият като за доставка";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Енория";
 
-"Phone" = "Телефон";
-
 "Phone number" = "Телефонен номер";
 
 "Postal code" = "Пощенски код";
@@ -94,15 +96,15 @@
 
 "Remove" = "Премахване";
 
-"Remove bank account" = "Премахване на банкова сметка";
-
-"Remove bank account ending in %@" = "Премахване на банкова сметка, завършваща на %@";
+"Remove bank account?" = "Премахване на банкова сметка?";
 
 "Remove card" = "Премахване на банкова карта";
 
 "Search" = "Търсене";
 
 "Select card brand (optional)" = "Изберете марка на картата (по избор)";
+
+"Selection is empty." = "Изборът е празен.";
 
 "Sort code" = "Идентификационен банков код";
 

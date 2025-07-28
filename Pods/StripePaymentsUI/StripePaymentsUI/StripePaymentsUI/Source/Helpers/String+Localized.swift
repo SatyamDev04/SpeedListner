@@ -6,6 +6,7 @@
 //
 
 @_spi(STP) import StripeCore
+@_spi(STP) import StripePayments
 @_spi(STP) import StripeUICore
 
 // Localized strings that are used in multiple contexts. Collected here to avoid re-translation
@@ -52,10 +53,6 @@ extension String.Localized {
         STPLocalizedString("Shipping Address", "Title for shipping address entry section")
     }
 
-    @_spi(STP) public static var billing_address: String {
-        STPLocalizedString("Billing Address", "Title for billing address entry section")
-    }
-
     @_spi(STP) public static var billing_address_lowercase: String {
         STPLocalizedString("Billing address", "Billing address section title for card form entry.")
     }
@@ -76,11 +73,8 @@ extension String.Localized {
     @_spi(STP) public static var cvc_section_title: String {
         STPLocalizedString(
             "Confirm your %@",
-            "Section title for entering your CVC/CVV. e.g. 'Confirm your CVC' or 'Confirm your CVV'"
+            "Section title for entering your CVC. e.g. 'Confirm your CVC'"
         )
-    }
-    @_spi(STP) public static var cvv: String {
-        STPLocalizedString("CVV", "Label for entering CVV in text field")
     }
 
     @_spi(STP) public static var cvc: String {
@@ -98,7 +92,7 @@ extension String.Localized {
     @_spi(STP) public static var your_cards_security_code_is_incomplete: String {
         STPLocalizedString(
             "Your card's security code is incomplete.",
-            "Error message for card entry form when CVC/CVV is incomplete."
+            "Error message for card entry form when CVC is incomplete."
         )
     }
 
@@ -106,6 +100,13 @@ extension String.Localized {
         STPLocalizedString(
             "Your card's expiration date is invalid.",
             "Error message for card details form when expiration date is invalid"
+        )
+    }
+
+    @_spi(STP) public static var your_card_has_expired: String {
+        STPLocalizedString(
+            "Your card has expired.",
+            "Error message for card details form when expiration date has passed"
         )
     }
 
@@ -128,6 +129,50 @@ extension String.Localized {
             "Your card's expiration year is invalid.",
             "String to describe an invalid year in expiry date."
         )
+    }
+
+    @_spi(STP) public static var brand_not_allowed: String {
+        STPLocalizedString(
+            "%1$@ is not accepted",
+            "String to inform a user that specific card brands are not accepted. E.g. American Express is not accepted"
+        )
+    }
+
+    @_spi(STP) public static var generic_brand_not_allowed: String {
+        STPLocalizedString(
+            "The selected brand is not allowed",
+            "String to inform a user that specific card brands are not accepted."
+        )
+    }
+
+    @_spi(STP) public enum Funding {
+        @_spi(STP) public static var credit: String {
+            STPLocalizedString(
+                "%1$@ Credit",
+                "Label a credit funding source. E.g. in english 'Visa Credit', or in german 'Visa-Kreditkarte'"
+            )
+        }
+
+        @_spi(STP) public static var debit: String {
+            STPLocalizedString(
+                "%1$@ Debit",
+                "Label a debit funding source. E.g. 'Visa Debit'"
+            )
+        }
+
+        @_spi(STP) public static var prepaid: String {
+            STPLocalizedString(
+                "%1$@ Prepaid",
+                "Label a prepaid funding source. E.g. 'Visa Prepaid'"
+            )
+        }
+
+        @_spi(STP) public static var `default`: String {
+            STPLocalizedString(
+                "%1$@ Card",
+                "Label a default funding source, which we treat as a generic card. E.g. 'Visa Card'"
+            )
+        }
     }
 }
 

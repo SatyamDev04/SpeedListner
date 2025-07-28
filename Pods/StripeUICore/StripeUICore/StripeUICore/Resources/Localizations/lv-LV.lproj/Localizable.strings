@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (nav obligāti)";
 
+"(not accepted)" = "(netiek pieņemts)";
+
 "Account number" = "Konta numurs";
 
 "Address" = "Adrese";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK kods";
 
 "BSB number" = "BSB numurs";
+
+"Bank account •••• %@" = "Bankas konts •••• %@";
 
 "Billing address is same as shipping" = "Norēķinu adrese un piegādes adrese sakrīt";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Pagasts";
 
-"Phone" = "Tālrunis";
-
 "Phone number" = "Tālruņa numurs";
 
 "Postal code" = "Pasta indekss";
@@ -94,15 +96,15 @@
 
 "Remove" = "Noņemt";
 
-"Remove bank account" = "Noņemt bankas kontu";
-
-"Remove bank account ending in %@" = "Noņemt bankas kontu, kas beidzas ar %@";
+"Remove bank account?" = "Noņemt bankas kontu?";
 
 "Remove card" = "Noņemt karti";
 
 "Search" = "Meklēšana";
 
 "Select card brand (optional)" = "Atlasīt kartes zīmolu (pēc izvēles)";
+
+"Selection is empty." = "Atlase ir tukša.";
 
 "Sort code" = "Bankas filiāles kods";
 

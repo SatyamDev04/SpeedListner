@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (voliteľné)";
 
+"(not accepted)" = "(neprijaté)";
+
 "Account number" = "Číslo účtu";
 
 "Address" = "Adresa";
@@ -13,6 +15,8 @@
 "BLIK code" = "Kód BLIK";
 
 "BSB number" = "BSB číslo";
+
+"Bank account •••• %@" = "Bankový účet •••• %@";
 
 "Billing address is same as shipping" = "Fakturačná adresa je totožná s dodacou";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parish";
 
-"Phone" = "Telefón";
-
 "Phone number" = "Telefónne číslo";
 
 "Postal code" = "PSČ";
@@ -94,15 +96,15 @@
 
 "Remove" = "Odstrániť";
 
-"Remove bank account" = "Odstrániť bankový účet";
-
-"Remove bank account ending in %@" = "Odstrániť bankový účet končiaci na %@";
+"Remove bank account?" = "Odstrániť bankový účet?";
 
 "Remove card" = "Odstrániť kartu";
 
 "Search" = "Vyhľadať";
 
 "Select card brand (optional)" = "Vybrať značku karty (voliteľne)";
+
+"Selection is empty." = "Výber je prázdny.";
 
 "Sort code" = "Triediaci kód";
 

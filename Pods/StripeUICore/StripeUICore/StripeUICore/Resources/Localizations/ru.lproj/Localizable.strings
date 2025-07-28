@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (необязательно)";
 
+"(not accepted)" = "(не принимается)";
+
 "Account number" = "Номер счета";
 
 "Address" = "Адрес";
@@ -13,6 +15,8 @@
 "BLIK code" = "Код BLIK";
 
 "BSB number" = "Номер BSB";
+
+"Bank account •••• %@" = "Банковский счет ••••%@";
 
 "Billing address is same as shipping" = "Адрес выставления счетов такой же, как адрес доставки";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Приход";
 
-"Phone" = "Телефон";
-
 "Phone number" = "Номер телефона";
 
 "Postal code" = "Почтовый индекс";
@@ -94,15 +96,15 @@
 
 "Remove" = "Удалить";
 
-"Remove bank account" = "Удалить банковский счет";
-
-"Remove bank account ending in %@" = "Удалить банковский счет, оканчивающийся на %@";
+"Remove bank account?" = "Удалить банковский счет?";
 
 "Remove card" = "Удалить карту";
 
 "Search" = "Поиск";
 
 "Select card brand (optional)" = "Выберите бренд карты (необязательно)";
+
+"Selection is empty." = "Ничего не выбрано.";
 
 "Sort code" = "Код банка";
 

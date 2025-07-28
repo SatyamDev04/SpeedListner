@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (isteğe bağlı)";
 
+"(not accepted)" = "(kabul edilmedi)";
+
 "Account number" = "Hesap numarası";
 
 "Address" = "Adres";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK kodu";
 
 "BSB number" = "BSB numarası";
+
+"Bank account •••• %@" = "Banka hesabı •••• %@";
 
 "Billing address is same as shipping" = "Faturalama adresi, gönderim adresiyle aynı";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Dini bölge";
 
-"Phone" = "Telefon";
-
 "Phone number" = "Telefon numarası";
 
 "Postal code" = "Posta kodu";
@@ -94,15 +96,15 @@
 
 "Remove" = "Kaldır";
 
-"Remove bank account" = "Banka hesabını kaldır";
-
-"Remove bank account ending in %@" = "%@ ile biten banka hesabını kaldır";
+"Remove bank account?" = "Banka hesabı kaldırılsın mı?";
 
 "Remove card" = "Kartı kaldır";
 
 "Search" = "Ara";
 
 "Select card brand (optional)" = "Kart markasını seçin (isteğe bağlı)";
+
+"Selection is empty." = "Seçim boş.";
 
 "Sort code" = "Şube kodu";
 

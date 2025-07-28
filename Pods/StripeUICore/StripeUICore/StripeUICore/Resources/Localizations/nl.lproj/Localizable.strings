@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (optioneel)";
 
+"(not accepted)" = "(niet geaccepteerd)";
+
 "Account number" = "Rekeningnummer";
 
 "Address" = "Adres";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK-code";
 
 "BSB number" = "BSB-nummer";
+
+"Bank account •••• %@" = "Bankrekening •••• %@";
 
 "Billing address is same as shipping" = "Factuuradres is hetzelfde als het verzendadres";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parochie";
 
-"Phone" = "Telefoon";
-
 "Phone number" = "Telefoonnummer";
 
 "Postal code" = "Postcode";
@@ -94,15 +96,15 @@
 
 "Remove" = "Verwijderen";
 
-"Remove bank account" = "Bankrekening verwijderen";
-
-"Remove bank account ending in %@" = "Bankrekening verwijderen die eindigt op %@";
+"Remove bank account?" = "Bankrekening verwijderen?";
 
 "Remove card" = "Betaalkaart verwijderen";
 
 "Search" = "Zoeken";
 
 "Select card brand (optional)" = "Merk van betaalkaart selecteren (optioneel)";
+
+"Selection is empty." = "Selectie is leeg.";
 
 "Sort code" = "Bankcode";
 

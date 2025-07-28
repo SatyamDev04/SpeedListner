@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (opsional)";
 
+"(not accepted)" = "(tidak diterima)";
+
 "Account number" = "Nomor rekening";
 
 "Address" = "Alamat";
@@ -13,6 +15,8 @@
 "BLIK code" = "Kode BLIK";
 
 "BSB number" = "Nomor BSB";
+
+"Bank account •••• %@" = "Rekening bank •••• %@";
 
 "Billing address is same as shipping" = "Alamat tagihan sama dengan pengiriman";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parish";
 
-"Phone" = "Telepon";
-
 "Phone number" = "Nomor telepon";
 
 "Postal code" = "Kode pos";
@@ -94,15 +96,15 @@
 
 "Remove" = "Hapus";
 
-"Remove bank account" = "Hapus rekening bank";
-
-"Remove bank account ending in %@" = "Hapus rekening bank yang berakhiran dengan %@";
+"Remove bank account?" = "Hapus rekening bank?";
 
 "Remove card" = "Hapus kartu";
 
 "Search" = "Cari";
 
 "Select card brand (optional)" = "Pilih brand kartu (opsional)";
+
+"Selection is empty." = "Pilihannya kosong.";
 
 "Sort code" = "Kode sort";
 

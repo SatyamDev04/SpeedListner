@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (opcional)";
 
+"(not accepted)" = "(rejeitado)";
+
 "Account number" = "Número de conta";
 
 "Address" = "Endereço";
@@ -13,6 +15,8 @@
 "BLIK code" = "Código BLIK";
 
 "BSB number" = "Número de BSB";
+
+"Bank account •••• %@" = "Conta bancária •••• %@";
 
 "Billing address is same as shipping" = "O endereço de faturação é igual ao endereço de envio";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Paróquia";
 
-"Phone" = "Telefone";
-
 "Phone number" = "Número de telefone";
 
 "Postal code" = "Código postal";
@@ -94,15 +96,15 @@
 
 "Remove" = "Remover";
 
-"Remove bank account" = "Remover conta bancária";
-
-"Remove bank account ending in %@" = "Remover conta bancária a terminar em %@";
+"Remove bank account?" = "Remover conta bancária?";
 
 "Remove card" = "Eliminar cartão";
 
 "Search" = "Pesquisar";
 
 "Select card brand (optional)" = "Selecione a marca do cartão (opcional)";
+
+"Selection is empty." = "A seleção está vazia.";
 
 "Sort code" = "Código da agência bancária";
 

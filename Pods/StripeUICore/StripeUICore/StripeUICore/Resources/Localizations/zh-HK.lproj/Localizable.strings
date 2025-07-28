@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@（可選）";
 
+"(not accepted)" = "（未接受）";
+
 "Account number" = "賬號";
 
 "Address" = "地址";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK 代碼";
 
 "BSB number" = "BSB 號碼";
+
+"Bank account •••• %@" = "銀行賬戶 •••• %@";
 
 "Billing address is same as shipping" = "賬單地址與收貨地址相同";
 
@@ -42,7 +46,7 @@
 
 "Do Si" = "道/縣";
 
-"Do you want to close this form?" = "您確定要保存此表單嗎？";
+"Do you want to close this form?" = "您確定要儲存此表單嗎？";
 
 "Done" = "完成";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "堂區";
 
-"Phone" = "電話";
-
 "Phone number" = "手機號碼";
 
 "Postal code" = "郵區編號";
@@ -94,15 +96,15 @@
 
 "Remove" = "移除";
 
-"Remove bank account" = "移除銀行賬戶";
-
-"Remove bank account ending in %@" = "移除尾號為%@ 的銀行賬戶";
+"Remove bank account?" = "移除銀行賬戶？";
 
 "Remove card" = "解除綁定";
 
 "Search" = "搜尋";
 
 "Select card brand (optional)" = "選擇銀行卡品牌（可選）";
+
+"Selection is empty." = "選擇為空。";
 
 "Sort code" = "分類代碼";
 
@@ -136,7 +138,7 @@
 
 "Your email is invalid." = "您的電郵地址無效。";
 
-"Your payment information will not be saved." = "不會保存您的付款資訊。";
+"Your payment information will not be saved." = "不會儲存您的付款資訊。";
 
 "Your postal code is incomplete." = "您的郵區編號不完整。";
 

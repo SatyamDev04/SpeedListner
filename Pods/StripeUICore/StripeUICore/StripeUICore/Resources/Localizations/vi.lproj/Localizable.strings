@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (tùy chọn)";
 
+"(not accepted)" = "(không được chấp nhận)";
+
 "Account number" = "Số tài khoản";
 
 "Address" = "Địa chỉ";
@@ -13,6 +15,8 @@
 "BLIK code" = "Mã BLIK";
 
 "BSB number" = "Số BSB";
+
+"Bank account •••• %@" = "Tài khoản ngân hàng •••• %@";
 
 "Billing address is same as shipping" = "Địa chỉ xuất hóa đơn giống địa chỉ chuyển hàng";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Giáo xứ";
 
-"Phone" = "Điện thoại";
-
 "Phone number" = "Số điện thoại";
 
 "Postal code" = "Mã bưu điện";
@@ -94,15 +96,15 @@
 
 "Remove" = "Xóa";
 
-"Remove bank account" = "Bỏ tài khoản ngân hàng";
-
-"Remove bank account ending in %@" = "Bỏ tài khoản ngân hàng có các số cuối là %@";
+"Remove bank account?" = "Bỏ tài khoản ngân hàng?";
 
 "Remove card" = "Xóa thẻ";
 
 "Search" = "Tìm kiếm";
 
 "Select card brand (optional)" = "Chọn thương hiệu thẻ (tùy chọn)";
+
+"Selection is empty." = "Lựa chọn đang để trống.";
 
 "Sort code" = "Mã sắp xếp";
 

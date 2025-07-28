@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@(opsyonal)";
 
+"(not accepted)" = "(hindi tinatanggap)";
+
 "Account number" = "Numero ng account";
 
 "Address" = "Adres";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK code";
 
 "BSB number" = "Numero ng BSB";
+
+"Bank account •••• %@" = "Account sa bangko •••• %@";
 
 "Billing address is same as shipping" = "Ang address sa billing ay kapareho ng sa pagpapadala";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parokya";
 
-"Phone" = "Telepono";
-
 "Phone number" = "Numero ng telepono";
 
 "Postal code" = "Postal code";
@@ -94,15 +96,15 @@
 
 "Remove" = "Alisin";
 
-"Remove bank account" = "Alisin ang account sa bangko";
-
-"Remove bank account ending in %@" = "Alisin ang account sa bangko na nagtatapos sa %@";
+"Remove bank account?" = "Alisin ang account sa bangko?";
 
 "Remove card" = "Alisin ang kard";
 
 "Search" = "Maghanap";
 
 "Select card brand (optional)" = "Pumili ng brand ng kard (opsyonal)";
+
+"Selection is empty." = "Walang laman ang seleksyon.";
 
 "Sort code" = "Sort code";
 

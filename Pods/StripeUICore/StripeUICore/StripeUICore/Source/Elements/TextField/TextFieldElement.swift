@@ -30,7 +30,11 @@ import UIKit
     public private(set) lazy var text: String = {
         sanitize(text: configuration.defaultValue ?? "")
     }()
-    public private(set) var isEditing: Bool = false
+    public private(set) var isEditing: Bool = false {
+        didSet {
+            delegate?.didUpdate(element: self)
+        }
+    }
     private(set) var didReceiveAutofill: Bool = false
     public var validationState: ElementValidationState {
         return .init(
@@ -39,9 +43,9 @@ import UIKit
         )
     }
 
-    private let theme: ElementsUITheme
+    private let theme: ElementsAppearance
 
-#if !canImport(CompositorServices)
+#if !os(visionOS)
     public var inputAccessoryView: UIView? {
         get {
             return textFieldView.textField.inputAccessoryView
@@ -74,8 +78,8 @@ import UIKit
         let validationState: ValidationState
         let accessoryView: UIView?
         let shouldShowClearButton: Bool
-        let isEditable: Bool
-        let theme: ElementsUITheme
+        let editConfiguration: EditConfiguration
+        let theme: ElementsAppearance
     }
 
     var viewModel: ViewModel {
@@ -95,14 +99,14 @@ import UIKit
             validationState: configuration.validate(text: text, isOptional: configuration.isOptional),
             accessoryView: configuration.accessoryView(for: text, theme: theme),
             shouldShowClearButton: configuration.shouldShowClearButton,
-            isEditable: configuration.isEditable,
+            editConfiguration: configuration.editConfiguration,
             theme: theme
         )
     }
 
     // MARK: - Initializer
 
-    public required init(configuration: TextFieldElementConfiguration, theme: ElementsUITheme = .default) {
+    public required init(configuration: TextFieldElementConfiguration, theme: ElementsAppearance = .default) {
         self.configuration = configuration
         self.theme = theme
     }
@@ -130,6 +134,7 @@ import UIKit
 // MARK: - Element
 
 extension TextFieldElement: Element {
+    public var collectsUserInput: Bool { true }
     public var view: UIView {
         return textFieldView
     }
@@ -179,5 +184,12 @@ extension TextFieldElement: TextFieldViewDelegate {
     func textFieldViewContinueToNextField(view: TextFieldView) {
         isEditing = view.isEditing
         delegate?.continueToNextField(element: self)
+    }
+}
+
+// MARK: - DebugDescription
+extension TextFieldElement {
+    public var debugDescription: String {
+        return "<TextFieldElement: \(Unmanaged.passUnretained(self).toOpaque())>; label = \(configuration.label); text = \(text); validationState = \(validationState)"
     }
 }

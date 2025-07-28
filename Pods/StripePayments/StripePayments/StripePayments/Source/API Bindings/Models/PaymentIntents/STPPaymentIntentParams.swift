@@ -80,6 +80,10 @@ public class STPPaymentIntentParams: NSObject {
     /// This should be a boolean NSNumber, so that it can be `nil`
     @objc public var savePaymentMethod: NSNumber?
 
+    /// `@YES` to set this PaymentIntent’s PaymentMethod as the associated Customer's default
+    /// This should be a boolean NSNumber, so that it can be `nil`
+    @objc @_spi(STP) public var setAsDefaultPM: NSNumber?
+
     /// The URL to redirect your customer back to after they authenticate or cancel
     /// their payment on the payment method’s app or site.
     /// This should probably be a URL that opens your iOS app.
@@ -200,6 +204,8 @@ public class STPPaymentIntentParams: NSObject {
             // PaymentMethod
             "paymentMethodId = \(String(describing: paymentMethodId))",
             "paymentMethodParams = \(String(describing: paymentMethodParams))",
+            // Set as default payment method
+            "setAsDefaultPM = \(String(describing: setAsDefaultPM?.boolValue))",
             // Mandate
             "mandateData = \(String(describing: mandateData))",
             // PaymentMethodOptions
@@ -212,7 +218,7 @@ public class STPPaymentIntentParams: NSObject {
     }
 
     static internal let isClientSecretValidRegex: NSRegularExpression? = try? NSRegularExpression(
-        pattern: "^pi_[^_]+_secret_[^_]+$",
+        pattern: "^pi_[^_]+_(scoped_)?secret_[^_]+$",
         options: []
     )
 
@@ -250,6 +256,7 @@ extension STPPaymentIntentParams: STPFormEncodable {
             NSStringFromSelector(#selector(getter: sourceId)): "source",
             NSStringFromSelector(#selector(getter: receiptEmail)): "receipt_email",
             NSStringFromSelector(#selector(getter: savePaymentMethod)): "save_payment_method",
+            NSStringFromSelector(#selector(getter: setAsDefaultPM)): "set_as_default_payment_method",
             NSStringFromSelector(#selector(getter: returnURL)): "return_url",
             NSStringFromSelector(#selector(getter: useStripeSDK)): "use_stripe_sdk",
             NSStringFromSelector(#selector(getter: mandateData)): "mandate_data",
@@ -274,6 +281,7 @@ extension STPPaymentIntentParams: NSCopying {
         copy.sourceId = sourceId
         copy.receiptEmail = receiptEmail
         copy.savePaymentMethod = savePaymentMethod
+        copy.setAsDefaultPM = setAsDefaultPM
         copy.returnURL = returnURL
         copy.setupFutureUsage = setupFutureUsage
         copy.useStripeSDK = useStripeSDK

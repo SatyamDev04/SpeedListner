@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (προαιρετικό)";
 
+"(not accepted)" = "(μη αποδεκτή)";
+
 "Account number" = "Αριθμός λογαριασμού";
 
 "Address" = "Διεύθυνση";
@@ -13,6 +15,8 @@
 "BLIK code" = "Κωδικός BLIK";
 
 "BSB number" = "Αριθμός BSB";
+
+"Bank account •••• %@" = "Τραπεζικός λογαριασμός •••• %@";
 
 "Billing address is same as shipping" = "Η διεύθυνση τιμολόγησης είναι ίδια με τη διεύθυνση αποστολής";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Δήμος";
 
-"Phone" = "Τηλέφωνο";
-
 "Phone number" = "Αριθμός τηλεφώνου";
 
 "Postal code" = "Ταχυδρομικός κώδικας";
@@ -94,15 +96,15 @@
 
 "Remove" = "Αφαίρεση";
 
-"Remove bank account" = "Αφαίρεση τραπεζικού λογαριασμού";
-
-"Remove bank account ending in %@" = "Αφαίρεση του τραπεζικού λογαριασμού που λήγει σε %@";
+"Remove bank account?" = "Αφαίρεση τραπεζικού λογαριασμού;";
 
 "Remove card" = "Αφαίρεση κάρτας";
 
 "Search" = "Αναζήτηση";
 
 "Select card brand (optional)" = "Επιλέξτε επωνυμία κάρτας (προαιρετικό)";
+
+"Selection is empty." = "Η επιλογή είναι κενή.";
 
 "Sort code" = "Κωδικός sort";
 

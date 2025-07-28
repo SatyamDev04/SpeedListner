@@ -1,6 +1,9 @@
 /* The label of a text field that is optional. For example, 'Email (optional)' or 'Name (optional) */
 "%@ (optional)" = "%@ (optional)";
 
+/* Shown in a dropdown picker next to a card brand that is not accepted by a merchant. E.g. \"Visa (not accepted)\" */
+"(not accepted)" = "(not accepted)";
+
 /* Caption for account number */
 "Account number" = "Account number";
 
@@ -16,6 +19,9 @@ Section header for address fields */
 
 /* Label of an address field */
 "Area" = "Area";
+
+/* Content for alert popup prompting to confirm removing a saved bank account. e.g. 'Bank account •••• 4242' */
+"Bank account •••• %@" = "Bank account •••• %@";
 
 /* Label for a checkbox that makes customers billing address same as their shipping address */
 "Billing address is same as shipping" = "Billing address is same as shipping";
@@ -126,9 +132,6 @@ Label of an address field */
 /* Label of an address field */
 "Parish" = "Parish";
 
-/* Caption for Phone field on address form */
-"Phone" = "Phone";
-
 /* Caption for Phone number field on address form */
 "Phone number" = "Phone number";
 
@@ -147,10 +150,7 @@ Label of an address field */
 "Remove" = "Remove";
 
 /* Title for confirmation alert to remove a saved bank account payment method */
-"Remove bank account" = "Remove bank account";
-
-/* Content for alert popup prompting to confirm removing a saved bank account. e.g. 'Remove bank account ending in 4242' */
-"Remove bank account ending in %@" = "Remove bank account ending in %@";
+"Remove bank account?" = "Remove bank account?";
 
 /* Label on a button for removing a card */
 "Remove card" = "Remove card";
@@ -160,6 +160,9 @@ Label of an address field */
 
 /* Message when a user is selecting a card brand in a dropdown */
 "Select card brand (optional)" = "Select card brand (optional)";
+
+/* Error message for empty dropdown selection. */
+"Selection is empty." = "Selection is empty.";
 
 /* Placeholder for Bacs sort code (a bank routing number used in the UK and Ireland) */
 "Sort code" = "Sort code";

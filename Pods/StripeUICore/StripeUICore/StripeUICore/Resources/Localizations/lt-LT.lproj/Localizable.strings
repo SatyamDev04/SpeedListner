@@ -1,5 +1,7 @@
 "%@ (optional)" = "%@ (pasirenkamas)";
 
+"(not accepted)" = "(nepriimama)";
+
 "Account number" = "Sąskaitos numeris";
 
 "Address" = "Adresas";
@@ -13,6 +15,8 @@
 "BLIK code" = "BLIK kodas";
 
 "BSB number" = "BSB numeris";
+
+"Bank account •••• %@" = "Banko sąskaita •••• %@";
 
 "Billing address is same as shipping" = "Atsiskaitymo ir siuntimo adresai vienodi";
 
@@ -82,8 +86,6 @@
 
 "Parish" = "Parapija";
 
-"Phone" = "Telefonas";
-
 "Phone number" = "Telefono numeris";
 
 "Postal code" = "Pašto kodas";
@@ -94,15 +96,15 @@
 
 "Remove" = "Pašalinti";
 
-"Remove bank account" = "Pašalinti banko sąskaitą";
-
-"Remove bank account ending in %@" = "Pašalinti banko sąskaitą, kurios paskutiniai skaičiai %@";
+"Remove bank account?" = "Pašalinti banko sąskaitą?";
 
 "Remove card" = "Pašalinti kortelę";
 
 "Search" = "Paieška";
 
 "Select card brand (optional)" = "Pasirinkite kortelės prekės ženklą (neprivaloma)";
+
+"Selection is empty." = "Nieko nepasirinkta.";
 
 "Sort code" = "Identifikacinis kodas";
 

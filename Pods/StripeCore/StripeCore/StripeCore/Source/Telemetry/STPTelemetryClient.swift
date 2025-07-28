@@ -43,11 +43,19 @@ private let TelemetryURL = URL(string: "https://m.stripe.com/6")!
         forceSend: Bool = false,
         completion: ((Result<[String: Any], Error>) -> Void)? = nil
     ) {
+        let wrappedCompletion: ((Result<[String: Any], Error>) -> Void) = { result in
+            if case .failure(let error) = result {
+                let errorAnalytic = ErrorAnalytic(event: .fraudDetectionApiFailure, error: error)
+                STPAnalyticsClient.sharedClient.log(analytic: errorAnalytic)
+            }
+            completion?(result)
+        }
+
         guard forceSend || STPTelemetryClient.shouldSendTelemetry() else {
-            completion?(.failure(NSError.stp_genericConnectionError()))
+            wrappedCompletion(.failure(NSError.stp_genericConnectionError()))
             return
         }
-        sendTelemetryRequest(jsonPayload: payload, completion: completion)
+        sendTelemetryRequest(jsonPayload: payload, completion: wrappedCompletion)
     }
 
     @_spi(STP) public func updateFraudDetectionIfNecessary(
@@ -75,7 +83,7 @@ private let TelemetryURL = URL(string: "https://m.stripe.com/6")!
 
     private let urlSession: URLSession
 
-    @_spi(STP) public class func shouldSendTelemetry() -> Bool {
+    @_spi(STP) public static func shouldSendTelemetry() -> Bool {
         #if targetEnvironment(simulator)
             return false
         #else
@@ -113,7 +121,7 @@ private let TelemetryURL = URL(string: "https://m.stripe.com/6")!
     private var osVersion = UIDevice.current.systemVersion
 
     private var screenSize: String {
-        #if canImport(CompositorServices)
+        #if os(visionOS)
         return "visionOS"
         #else
         let screen = UIScreen.main

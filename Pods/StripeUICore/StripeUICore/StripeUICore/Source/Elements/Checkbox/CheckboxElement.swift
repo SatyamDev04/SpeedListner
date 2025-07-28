@@ -22,7 +22,7 @@ import UIKit
     }()
     let label: String
     let isSelectedByDefault: Bool
-    let theme: ElementsUITheme
+    let theme: ElementsAppearance
     var didToggle: (Bool) -> Void
     @_spi(STP) public var isSelected: Bool {
         get {
@@ -39,7 +39,7 @@ import UIKit
     }
 
     public init(
-        theme: ElementsUITheme,
+        theme: ElementsAppearance,
         label: String,
         isSelectedByDefault: Bool,
         didToggle: ((Bool) -> Void)? = nil
@@ -53,7 +53,18 @@ import UIKit
 
 /// :nodoc:
 extension CheckboxElement: Element {
+    public var collectsUserInput: Bool {
+        true
+    }
+
     public var view: UIView {
         return checkboxButton
+    }
+}
+
+// MARK: - DebugDescription
+extension CheckboxElement {
+    public var debugDescription: String {
+        return "<CheckboxElement: \(Unmanaged.passUnretained(self).toOpaque())>; label = \(label); isSelected = \(isSelected); validationState = \(validationState)"
     }
 }

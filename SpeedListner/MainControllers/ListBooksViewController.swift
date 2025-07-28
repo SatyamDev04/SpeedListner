@@ -370,7 +370,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
         self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","bi_bookmark-fill","Settings","fluent_person-1x"]
+        let imagesArr = ["bi_bookmark-fill","historyIcon","Settings","fluent_person-1x"]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in

@@ -338,6 +338,24 @@ class Secrets {
 struct BookmarkCacheManager {
     static let transcriptionKeyPrefix = "transcription_"
     static let summaryKeyPrefix = "summary_"
+    static let isStarKeyPrefix = "isStar_"
+    static let isNotesKeyPrefix = "isNotes_"
+    
+    
+    static func saveIsStar(_ bool: Bool, for identifier: String) {
+        UserDefaults.standard.set(bool, forKey: isStarKeyPrefix + identifier )
+    }
+    static func getIsStar(for identifier: String) -> Bool? {
+        return UserDefaults.standard.bool(forKey: isStarKeyPrefix + identifier)
+    }
+    
+    static func saveNotes(_ text: String, for identifier: String) {
+        UserDefaults.standard.set(text, forKey: isNotesKeyPrefix + identifier)
+    }
+    
+    static func getNotes(for identifier: String) -> String? {
+        return UserDefaults.standard.string(forKey: isNotesKeyPrefix + identifier)
+    }
     
     static func saveTranscription(_ text: String, for identifier: String) {
         UserDefaults.standard.set(text, forKey: transcriptionKeyPrefix + identifier)
@@ -358,5 +376,7 @@ struct BookmarkCacheManager {
     static func clearCache(for identifier: String) {
         UserDefaults.standard.removeObject(forKey: transcriptionKeyPrefix + identifier)
         UserDefaults.standard.removeObject(forKey: summaryKeyPrefix + identifier)
+        UserDefaults.standard.removeObject(forKey: isStarKeyPrefix + identifier)
+        UserDefaults.standard.removeObject(forKey: isNotesKeyPrefix + identifier)
     }
 }

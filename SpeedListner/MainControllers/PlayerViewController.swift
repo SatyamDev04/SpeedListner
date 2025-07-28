@@ -57,11 +57,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
    
     var currentValue: Float = 0.1
     weak var delegate: TabBarDataDelegate?
-    private let playImage = UIImage(named: "Group 4")
-    private let pauseImage = UIImage(named: "21")
+    private let playImage = UIImage(systemName:"play.fill")
+    private let pauseImage = UIImage(systemName:"pause.fill")
     private var coverImage = UIImage()
     private var routePickerView: AVRoutePickerView!
-
+    
     private let topMenu = DropDown()
     var taponMini = false
     lazy var dropDowns: [DropDown] = {
@@ -110,6 +110,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         
         return book.currentTime
     }
+    
     private var BookcurrentTimeInContext: TimeInterval {
         guard let book = self.book else {
             return 0.0
@@ -187,6 +188,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.loadLibrary()
         self.loadPreviousBook()
     }
+    
     
     private func loadPreviousBook() {
         guard let identifier = UserDefaults.standard.string(forKey: UserDefaultsConstants.lastPlayedBook),
@@ -266,6 +268,48 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.setProgress()
         self.loadLibrary()
     }
+    
+    private func isLibraryEmpty() -> Bool {
+        return getAllBooks(from: library).isEmpty || self.book == nil
+    }
+    
+    
+    
+    
+    
+    func getAllBooks(from library: Library) -> [Book] {
+        var result: [Book] = []
+
+        guard let items = library.items  else { return result }
+
+        for item in items {
+            if let book = item as? Book {
+                result.append(book)
+            } else if let playlist = item as? Playlist {
+                result.append(contentsOf: getAllBooks(from: playlist))
+            }
+        }
+
+        return result
+    }
+
+    func getAllBooks(from playlist: Playlist) -> [Book] {
+        var result: [Book] = []
+
+        if let books = playlist.books?.array as? [Book] {
+            result.append(contentsOf: books)
+        }
+
+        if let children = playlist.children as? Set<Playlist> {
+            for child in children {
+                result.append(contentsOf: getAllBooks(from: child))
+            }
+        }
+
+        return result
+    }
+    
+    
     private func setupAudioSession() {
            let audioSession = AVAudioSession.sharedInstance()
            do {
@@ -295,8 +339,16 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
         
     }
+    
+    override func shouldPerformSegue(withIdentifier identifier: String, sender: Any?) -> Bool {
+        if isLibraryEmpty() {
+            self.showToast("Please add a book to the library. If already added, then press Play.")
+            return false
+        }
+        return true
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        
         
         if let navigationController = segue.destination as? UINavigationController,
            let viewController = navigationController.viewControllers.first as? ChaptersViewController,
@@ -464,6 +516,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func btnReapte_Action(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        
         switch PlayerManager.shared.playbackMode {
         case .shuffleMode :
             PlayerManager.shared.playbackMode = .linearMode
@@ -486,11 +543,18 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func btnShowPlayList_Action(_ sender: Any) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         self.openPlayList()
     }
     
     @IBAction func btnAddBookmark_Action(_ sender: Any) {
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         let vc: BookmarkPopUpVC = self.storyboard?.instantiateViewController(withIdentifier: "BookmarkPopUpVC") as! BookmarkPopUpVC
         vc.playerstaus = PlayerManager.shared.isPlaying
         vc.delegateBookmarkVC = self
@@ -501,6 +565,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @IBAction func presentMore(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewController(withIdentifier: "MoreViewController") as! MoreViewController
         
@@ -509,6 +577,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @objc func remaingBtnTap(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        
         let c = Double(self.book?.duration ?? 0)
         let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
         let d = c / roundedX
@@ -542,6 +615,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     var preSpeed:Float = 1.0
     @objc func speedEscBtnTap(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
         if sender.tag == 0 {
             sender.tag = 1
@@ -590,7 +667,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
     }
     @IBAction func showImgBtnTap(_ sender:UIButton){
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         if let img = coverImageView.image {
             let agrume = Agrume(image: img)
             agrume.show(from: self)
@@ -609,6 +689,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func nextChapter(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         guard let book = self.book else {
             return
         }
@@ -622,6 +706,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func previousChapter(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         guard let book = self.book else {
             return
         }
@@ -636,7 +724,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func btnDecrease_Action(_ sender: Any) {
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         
         if currentValue >= 0 {
             
@@ -658,7 +749,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func btnIncrease_Action(_ sender: Any) {
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         if currentValue <= 10 {
             currentValue =  currentValue + 0.1
             var currentValue1 = round(currentValue * 100) / 100.0
@@ -671,7 +765,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     // previousChapter
     func handleNextChapterAction() {
-        
+       
         if #available(iOS 10.0, *) {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } else {
@@ -909,7 +1003,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func presentSpeed(_ sender: UIButton) {
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         let vc:ListeningSpeedVC = self.storyboard?.instantiateViewController(withIdentifier: "ListeningSpeedVC") as! ListeningSpeedVC
         
         vc.delegateSpeedListeningVC = self
@@ -939,15 +1036,13 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.topMenu.bottomOffset = CGPoint(x: -90, y: sender.bounds.height + 8)
         self.topMenu.textColor = .black
         self.topMenu.cornerRadius = 5.0
-        //        self.topMenu.borderWidth = 1
-        //        self.topMenu.borderColor = #colorLiteral(red: 0.3842016757, green: 0.2161925137, blue: 0.7387148142, alpha: 1)
         self.topMenu.separatorColor = .clear
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","Settings","fluent_person-1x"]
-        //  let imagesArr = ["Vector","Settings","bi_bookmark-fill"]
+        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
+        let imagesArr = ["bi_bookmark-fill","historyIcon","Settings","fluent_person-1x"]
+       
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
             
@@ -955,8 +1050,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 return
             }
             cell.img1.image = UIImage(named: imagesArr[index])
-            // UIImage(systemName: imagesArr[index])
-            // cell.lbltitle.text = aArr[index]
+            
         }
         self.topMenu.selectionAction = { [unowned self] (index, item) in
             if index == 0 {
@@ -967,17 +1061,20 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 self.navigationController?.pushViewController(vc, animated: true)
             }else   if index == 1{
                 
-                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
-                //self.hidesBottomBarWhenPushed = true
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "HistoryViewController") as! HistoryViewController
+              
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
+            }else if index == 2{
              //   Help & Feedback
                 
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
+           
+                self.navigationController?.pushViewController(vc, animated: true)
+            }else{
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
-                //self.hidesBottomBarWhenPushed = true
+           
                 self.navigationController?.pushViewController(vc, animated: true)
             }
-            //
         }
         self.topMenu.show()
         
@@ -985,6 +1082,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @IBAction func dropSpeedEscBtnTap(_ sender:UIButton){
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         let dropDown = DropDown()
         dropDown.anchorView = sender
         dropDown.bottomOffset = CGPoint(x: 0,  y: sender.bounds.height )
@@ -1011,7 +1112,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @IBAction func didPressSleepTimer(_ sender: UIButton) {
-        
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         
         let vc: PauseTimerVC = self.storyboard?.instantiateViewController(withIdentifier: "PauseTimerVC") as! PauseTimerVC
         
@@ -1022,10 +1126,18 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func didPressNextBook(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         handleNextBookAction()
     }
     
     @IBAction func didPressPreviousBook(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         handlePreviousBookAction()
     }
     
@@ -1116,16 +1228,28 @@ extension PlayerViewController: AVAudioPlayerDelegate {
     
     //skip time forward
     @IBAction func forwardPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         PlayerManager.shared.forward()
     }
     
     //skip time backwards
     @IBAction func rewindPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         PlayerManager.shared.rewind()
     }
     
     //toggle play/pause of book
     @IBAction func playPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
         if !PlayerManager.shared.isPlaying {
             
         }

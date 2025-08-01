@@ -23,6 +23,7 @@ struct BookmarksModel: Codable {
     var transcription:String?
     var summary:String?
     var audioClipPath:URL?
+    var playbackRate: Double?
 }
 
 struct BookmarkSegment{
@@ -48,25 +49,28 @@ extension BookmarkDisplayItem {
         }
     }
 }
+
 class AudioBookmarkExtractor {
 
-    /// Groups adjacent bookmarks within `threshold` seconds
-    static func groupBookmarks(_ bookmarks: [BookmarksModel], threshold: TimeInterval = 300) -> [BookmarkSegment] {
+    /// Groups adjacent bookmarks within `threshold` seconds (default 20s gap allowed between segments)
+    static func groupBookmarks(_ bookmarks: [BookmarksModel], threshold: TimeInterval = 20) -> [BookmarkSegment] {
         let sorted = bookmarks.sorted(by: { $0.timeStamp < $1.timeStamp })
         var segments: [BookmarkSegment] = []
         var currentGroup: [BookmarksModel] = []
+        var mergedTimestamps: [Double] = []
 
         print("All Timestamps: \(sorted.map { $0.timeStamp })")
 
         for bookmark in sorted {
             if let last = currentGroup.last {
                 let gap = bookmark.timeStamp - (last.timeStamp + 5)
-                if gap <= 20 {
+                if gap <= threshold {
                     currentGroup.append(bookmark)
                 } else {
                     if currentGroup.count > 1 {
+                        mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
                         segments.append(BookmarkSegment(
-                            identifiers: "",
+                            identifiers: UUID().uuidString,
                             startTime: currentGroup.first!.timeStamp,
                             endTime: currentGroup.last!.timeStamp + 5,
                             url: nil
@@ -79,23 +83,26 @@ class AudioBookmarkExtractor {
             }
         }
 
+        // Final group
         if currentGroup.count > 1 {
+            mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
             segments.append(BookmarkSegment(
-                identifiers: "",
+                identifiers: UUID().uuidString,
                 startTime: currentGroup.first!.timeStamp,
                 endTime: currentGroup.last!.timeStamp + 5,
                 url: nil
             ))
         }
 
+        print("\nMerged Timestamps: \(mergedTimestamps)")
         return segments
     }
 
-    /// Extract audio segments for each grouped segment
+    /// Extract audio segments for each grouped segment (returns multiple URLs if needed)
     static func extractGroupedBookmarks(
         from inputURL: URL,
         bookmarks: [BookmarksModel],
-        threshold: TimeInterval = 300,
+        threshold: TimeInterval = 20,
         progressHandler: ((Double) -> Void)? = nil,
         completion: @escaping (Bool, [BookmarkSegment]?, Error?) -> Void
     ) {
@@ -105,7 +112,7 @@ class AudioBookmarkExtractor {
         var processedSegments = 0
 
         guard totalSegments > 0 else {
-            completion(false, nil, NSError(domain: "No valid merged segments", code: 2))
+            completion(false, nil, NSError(domain: "No bookmarks found", code: 2))
             return
         }
 
@@ -122,7 +129,12 @@ class AudioBookmarkExtractor {
                 processedSegments += 1
 
                 if success, let url = url {
-                    outputURLs.append(BookmarkSegment(identifiers: "\(segment.startTime)-\(segment.endTime)", startTime: segment.startTime, endTime: segment.endTime, url: url))
+                    outputURLs.append(BookmarkSegment(
+                        identifiers: segment.identifiers,
+                        startTime: segment.startTime,
+                        endTime: segment.endTime,
+                        url: url
+                    ))
                 }
 
                 progressHandler?(Double(processedSegments) / Double(totalSegments))
@@ -138,7 +150,7 @@ class AudioBookmarkExtractor {
         }
     }
 
-    /// Extract a single audio segment from start to end
+    /// Extract a single segment (helper function)
     private static func extractSingleSegment(
         from inputURL: URL,
         startTime: Double,
@@ -197,6 +209,7 @@ class AudioBookmarkExtractor {
         }
     }
 }
+
 
 
 struct AITranscriptionResult {

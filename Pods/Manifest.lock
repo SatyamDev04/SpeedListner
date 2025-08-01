@@ -47,7 +47,6 @@ PODS:
   - IDZSwiftCommonCrypto (0.16.1)
   - IQKeyboardManager (6.5.19)
   - MarqueeLabel (4.5.0)
-  - MBProgressHUD (1.2.0)
   - Movin (1.2.0)
   - NVActivityIndicatorView (5.2.0):
     - NVActivityIndicatorView/Base (= 5.2.0)
@@ -91,7 +90,6 @@ DEPENDENCIES:
   - IDZSwiftCommonCrypto
   - IQKeyboardManager
   - MarqueeLabel
-  - MBProgressHUD (~> 1.2.0)
   - Movin
   - NVActivityIndicatorView
   - ReachabilitySwift
@@ -121,7 +119,6 @@ SPEC REPOS:
     - IDZSwiftCommonCrypto
     - IQKeyboardManager
     - MarqueeLabel
-    - MBProgressHUD
     - Movin
     - NVActivityIndicatorView
     - PromisesObjC
@@ -157,7 +154,6 @@ SPEC CHECKSUMS:
   IDZSwiftCommonCrypto: aefd3487b88dc3d7a1de2553188c720ac3194940
   IQKeyboardManager: c8665b3396bd0b79402b4c573eac345a31c7d485
   MarqueeLabel: 4b46d196abd253448e830cbd976f9eacc3af0849
-  MBProgressHUD: 3ee5efcc380f6a79a7cc9b363dd669c5e1ae7406
   Movin: 02a488d93913e46de77774d6a2cc2fa0eec83760
   NVActivityIndicatorView: fe52a6a68664c2df8991d7d9e3d86d8d19453c53
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -172,6 +168,6 @@ SPEC CHECKSUMS:
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4
   SwiftyJSON: f5b1bf1cd8dd53cd25887ac0eabcfd92301c6a5a
 
-PODFILE CHECKSUM: 89ad54f337b0a76cfce336da770d0ea437f44532
+PODFILE CHECKSUM: 54335d1bceeea9345cd083ee8774a854729d0feb
 
 COCOAPODS: 1.16.2

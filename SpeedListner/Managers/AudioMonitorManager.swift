@@ -55,7 +55,7 @@ final class AudioMonitorManager: NSObject {
         AudioBookmarkExtractor.extractGroupedBookmarks(
             from: book.fileURL,
             bookmarks: bookmarks,
-            progressHandler: { progress in
+            playbackRate: Double(PlayerManager.shared.speed), progressHandler: { progress in
                 print("Merging Progress: \(Int(progress * 100))%")
             },
             completion: { [weak self] success, segments, error in

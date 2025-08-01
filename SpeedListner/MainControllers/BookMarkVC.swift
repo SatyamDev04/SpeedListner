@@ -171,6 +171,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         AudioBookmarkExtractor.extractGroupedBookmarks(
             from: inputAudioURL,
             bookmarks: arrBookmarksNotes,
+            playbackRate: Double(PlayerManager.shared.speed),
             progressHandler: { progress in
                 print("Progress: \(progress * 100)%")
             },

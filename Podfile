@@ -8,7 +8,7 @@ target 'SpeedListner' do
   # Pods for SpeedListner
 
   
-pod 'MBProgressHUD', '~> 1.2.0'
+
 pod 'DeckTransition', '~> 2.0'
 pod 'DropDown'
 pod 'IQKeyboardManager'

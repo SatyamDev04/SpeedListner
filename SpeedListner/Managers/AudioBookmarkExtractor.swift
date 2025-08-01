@@ -23,7 +23,7 @@ struct BookmarksModel: Codable {
     var transcription:String?
     var summary:String?
     var audioClipPath:URL?
-    var playbackRate: Double?
+    
 }
 
 struct BookmarkSegment{
@@ -70,7 +70,7 @@ class AudioBookmarkExtractor {
                     if currentGroup.count > 1 {
                         mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
                         segments.append(BookmarkSegment(
-                            identifiers: UUID().uuidString,
+                            identifiers: "",
                             startTime: currentGroup.first!.timeStamp,
                             endTime: currentGroup.last!.timeStamp + 5,
                             url: nil
@@ -87,7 +87,7 @@ class AudioBookmarkExtractor {
         if currentGroup.count > 1 {
             mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
             segments.append(BookmarkSegment(
-                identifiers: UUID().uuidString,
+                identifiers: "",
                 startTime: currentGroup.first!.timeStamp,
                 endTime: currentGroup.last!.timeStamp + 5,
                 url: nil
@@ -130,7 +130,7 @@ class AudioBookmarkExtractor {
 
                 if success, let url = url {
                     outputURLs.append(BookmarkSegment(
-                        identifiers: segment.identifiers,
+                        identifiers: "\(segment.startTime)-\(segment.endTime)",
                         startTime: segment.startTime,
                         endTime: segment.endTime,
                         url: url

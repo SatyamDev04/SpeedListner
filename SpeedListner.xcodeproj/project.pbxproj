@@ -60,13 +60,11 @@
 		DD0EF0032C8F31BD004F2863 /* UploadFileCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF12C8F31B8004F2863 /* UploadFileCell.swift */; };
 		DD0EF0042C8F31BD004F2863 /* SubsPlanCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF22C8F31B9004F2863 /* SubsPlanCell.swift */; };
 		DD0EF0052C8F31BD004F2863 /* ChapterCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF32C8F31B9004F2863 /* ChapterCell.swift */; };
-		DD0EF0062C8F31BD004F2863 /* imgCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF42C8F31B9004F2863 /* imgCell.swift */; };
 		DD0EF0072C8F31BD004F2863 /* BookMarkExpandCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF52C8F31B9004F2863 /* BookMarkExpandCell.swift */; };
 		DD0EF0082C8F31BD004F2863 /* ModelClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF62C8F31BA004F2863 /* ModelClass.swift */; };
 		DD0EF0092C8F31BD004F2863 /* SettingCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF72C8F31BA004F2863 /* SettingCell.swift */; };
 		DD0EF00A2C8F31BD004F2863 /* tableSortCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF82C8F31BA004F2863 /* tableSortCell.swift */; };
 		DD0EF00B2C8F31BD004F2863 /* CustomDropDownCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFF92C8F31BB004F2863 /* CustomDropDownCell.swift */; };
-		DD0EF00C2C8F31BD004F2863 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFA2C8F31BB004F2863 /* InfoView.swift */; };
 		DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFB2C8F31BB004F2863 /* DropDownCell.swift */; };
 		DD0EF00F2C8F31BD004F2863 /* HoursMinutesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFD2C8F31BC004F2863 /* HoursMinutesCell.swift */; };
 		DD0EF0102C8F31BD004F2863 /* AlphabetsCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD0EEFFE2C8F31BC004F2863 /* AlphabetsCell.swift */; };
@@ -215,13 +213,11 @@
 		DD0EEFF12C8F31B8004F2863 /* UploadFileCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UploadFileCell.swift; sourceTree = "<group>"; };
 		DD0EEFF22C8F31B9004F2863 /* SubsPlanCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubsPlanCell.swift; sourceTree = "<group>"; };
 		DD0EEFF32C8F31B9004F2863 /* ChapterCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChapterCell.swift; sourceTree = "<group>"; };
-		DD0EEFF42C8F31B9004F2863 /* imgCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = imgCell.swift; sourceTree = "<group>"; };
 		DD0EEFF52C8F31B9004F2863 /* BookMarkExpandCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BookMarkExpandCell.swift; sourceTree = "<group>"; };
 		DD0EEFF62C8F31BA004F2863 /* ModelClass.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ModelClass.swift; sourceTree = "<group>"; };
 		DD0EEFF72C8F31BA004F2863 /* SettingCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingCell.swift; sourceTree = "<group>"; };
 		DD0EEFF82C8F31BA004F2863 /* tableSortCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = tableSortCell.swift; sourceTree = "<group>"; };
 		DD0EEFF92C8F31BB004F2863 /* CustomDropDownCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomDropDownCell.swift; sourceTree = "<group>"; };
-		DD0EEFFA2C8F31BB004F2863 /* InfoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		DD0EEFFB2C8F31BB004F2863 /* DropDownCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DropDownCell.swift; sourceTree = "<group>"; };
 		DD0EEFFD2C8F31BC004F2863 /* HoursMinutesCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HoursMinutesCell.swift; sourceTree = "<group>"; };
 		DD0EEFFE2C8F31BC004F2863 /* AlphabetsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AlphabetsCell.swift; sourceTree = "<group>"; };
@@ -557,8 +553,6 @@
 				DD0EEFF92C8F31BB004F2863 /* CustomDropDownCell.swift */,
 				DD0EEFFB2C8F31BB004F2863 /* DropDownCell.swift */,
 				DD0EEFFD2C8F31BC004F2863 /* HoursMinutesCell.swift */,
-				DD0EEFF42C8F31B9004F2863 /* imgCell.swift */,
-				DD0EEFFA2C8F31BB004F2863 /* InfoView.swift */,
 				DD0EEFF62C8F31BA004F2863 /* ModelClass.swift */,
 				DD0EF0002C8F31BC004F2863 /* MyBookCell.swift */,
 				DD0EF0022C8F31BD004F2863 /* Mycell.swift */,
@@ -751,9 +745,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SpeedListner/Pods-SpeedListner-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SpeedListner/Pods-SpeedListner-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -812,9 +810,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SpeedListner-SpeedListnerUITests/Pods-SpeedListner-SpeedListnerUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-SpeedListner-SpeedListnerUITests/Pods-SpeedListner-SpeedListnerUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -915,7 +917,6 @@
 				DD0EF04E2C8F320F004F2863 /* LogoutPopup2VC.swift in Sources */,
 				DD0EEFC32C8F2F5B004F2863 /* EndPoints.swift in Sources */,
 				DD0EF00F2C8F31BD004F2863 /* HoursMinutesCell.swift in Sources */,
-				DD0EF00C2C8F31BD004F2863 /* InfoView.swift in Sources */,
 				DD0EF0042C8F31BD004F2863 /* SubsPlanCell.swift in Sources */,
 				DD0EEE4A2C8F269F004F2863 /* ArtworkColors+CoreDataClass.swift in Sources */,
 				DD0EEE452C8F269F004F2863 /* Chapter+CoreDataClass.swift in Sources */,
@@ -950,7 +951,6 @@
 				DD0EF0132C8F31BD004F2863 /* BookDetailsCell.swift in Sources */,
 				DD0EEFBC2C8F2F5B004F2863 /* Constants.swift in Sources */,
 				DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */,
-				DD0EF0062C8F31BD004F2863 /* imgCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

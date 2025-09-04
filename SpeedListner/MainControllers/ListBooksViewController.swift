@@ -26,7 +26,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet weak var sortByTxt: UILabel!
     @IBOutlet weak var searchTblV: UITableView!
     @IBOutlet weak var searchTblVH: NSLayoutConstraint!
-    
+    private var keyboardHideWorkItem: DispatchWorkItem?
     var debounceWorkItem: DispatchWorkItem?
     var checked = false
     var recentChecked = true
@@ -294,7 +294,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     @IBAction func uploadFileBtn(_ sender: Any) {
-        self.addAction()
+   //     self.addAction()
+        self.creatFolder()
     }
     
     func addAction() {
@@ -326,6 +327,12 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @objc func updatedFiles(_ notification:Notification) {
         self.loadFiles()
     }
+    
+    @IBAction func btnCross_Action(_ sender: UIButton) {
+        self.searchTxt.text = ""
+        self.filterTextfieldData(newString: "")
+    }
+    
     @IBAction func btnBookShowCover_Action(_ sender: UIButton) {
         
         if checked {
@@ -566,7 +573,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         
     }
 }
-extension ListBooksViewController{
+
+extension ListBooksViewController {
     
     private func handleAppearanceMode() {
         if traitCollection.userInterfaceStyle == .dark {
@@ -596,15 +604,13 @@ extension ListBooksViewController{
         self.tableView.register(UINib(nibName: "BookDetailCell", bundle: nil), forCellReuseIdentifier: "BookDetailCell")
       //  UserDefaults.standard.set(true, forKey: "autoTranscribeWhileListening")
         searchTxt.delegate = self
-        searchTxt.clearButtonMode = .never
-        let clearButton = UIButton(type: .custom)
-        clearButton.setBackgroundImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        clearButton.tintColor = .gray
-        clearButton.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
-        clearButton.addTarget(self, action: #selector(clearSearchText), for: .touchUpInside)
-        
-        searchTxt.rightView = clearButton
-        searchTxt.rightViewMode = .always
+        searchTxt.autocorrectionType = .no
+        searchTxt.autocapitalizationType = .none
+        searchTxt.spellCheckingType = .no
+        searchTxt.smartDashesType = .no
+        searchTxt.smartQuotesType = .no
+        searchTxt.smartInsertDeleteType = .no
+        searchTxt.reloadInputViews()
     }
 
     
@@ -670,6 +676,7 @@ extension ListBooksViewController{
         
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget(self, action: #selector(didPressPlay1(_:)))
+      
     }
     
     private func registerNotifications() {
@@ -1443,21 +1450,20 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
     }
     
     func filterTextfieldData(newString: String) {
-        
+        // ---- 1) Debounce filtering (1s) ----
         debounceWorkItem?.cancel()
 
-        let workItem = DispatchWorkItem { [weak self] in
+        let filterWork = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
 
             if !newString.isEmpty {
                 let lowercasedInput = newString.lowercased()
+
                 let filteredArray = t_items.filter { item in
-                    let titleWords = item.title?.lowercased().split(separator: " ") ?? []
+                    let titleWords  = item.title?.lowercased().split(separator: " ") ?? []
                     let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
-
-                    let titleMatch = titleWords.contains { $0.hasPrefix(lowercasedInput) }
+                    let titleMatch  = titleWords.contains { $0.hasPrefix(lowercasedInput) }
                     let authorMatch = authorWords.contains { $0.hasPrefix(lowercasedInput) }
-
                     return titleMatch || authorMatch
                 }
                 self.items = filteredArray
@@ -1466,33 +1472,38 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
             }
 
             filteredBooks = getAllBooks(from: library).filter {
-                   $0.title?.localizedCaseInsensitiveContains(newString) == true
-               }
-            let rowHeight: CGFloat = 40 // or your cell height
-                let maxHeight: CGFloat = 200
-                let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
+                $0.title?.localizedCaseInsensitiveContains(newString) == true
+            }
+
+            let rowHeight: CGFloat = 40
+            let maxHeight: CGFloat = 200
+            let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
 
             searchTblVH.constant = calculatedHeight
             UIView.animate(withDuration: 0.25) {
                 self.searchTblV.alpha = 1.0
                 self.searchTblV.isHidden = self.filteredBooks.isEmpty
             }
-            self.searchTblV.reloadData()
-            print(filteredBooks.map({$0.title}),"filteredBooks")
-            
-            matchedPlaylists = getAllPlaylists(from: library).filter {
-                  $0.title?.localizedCaseInsensitiveContains(newString) == true
-              }
-            print(matchedPlaylists.map({$0.title}),"matchedPlaylists")
-            self.tableView.reloadData()
 
-            DispatchQueue.main.async {
-                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            self.searchTblV.reloadData()
+
+            matchedPlaylists = getAllPlaylists(from: library).filter {
+                $0.title?.localizedCaseInsensitiveContains(newString) == true
             }
+
+            self.tableView.reloadData()
         }
 
-        debounceWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
+        debounceWorkItem = filterWork
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: filterWork)
+
+        // ---- 2) Debounce keyboard hide (10s idle) ----
+        keyboardHideWorkItem?.cancel()
+        let hideWork = DispatchWorkItem { [weak self] in
+            self?.view.endEditing(true)   // hides keyboard after 10s of no typing
+        }
+        keyboardHideWorkItem = hideWork
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideWork)
     }
     
     func getAllPlaylists(from library: Library) -> [Playlist] {
@@ -1805,14 +1816,57 @@ extension ListBooksViewController: UIDocumentPickerDelegate {
                     completion()
                     return
                 }
-                
-                let bookUrl = BookURL(original: url, processed: processedURL)
-                self.queue.addOperation {
-                    NewDataMannagerClass.insertBooks(from: [bookUrl], into: nil, or: self.library) {
-                        DispatchQueue.main.async {
-                            completion()
-                        }
+
+           
+                guard let items = self.library.items?.array as? [LibraryItem] else {
+                    completion()
+                    return
+                }
+                let existingBooks = items.compactMap { $0 as? Book }
+
+                let asset = AVAsset(url: processedURL)
+                let newDuration = CMTimeGetSeconds(asset.duration)
+                let newTitle = processedURL.deletingPathExtension().lastPathComponent
+
+                if let duplicateBook = existingBooks.first(where: { book in
+                   
+                    let normalizedNewTitle = newTitle
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression) // remove punctuation
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      let normalizedExistingTitle = (book.title ?? "")
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      print("Comparing:", normalizedNewTitle, "vs", normalizedExistingTitle)
+
+                      let isSameTitle = normalizedNewTitle.contains(normalizedExistingTitle) ||
+                                        normalizedExistingTitle.contains(normalizedNewTitle)
+                      
+                      let isSameDuration = abs(book.duration - newDuration) < 2
+                    
+                    print(newTitle,newDuration,book.title?.lowercased(),book.duration,"isSameDuration")
+                      return isSameTitle && isSameDuration
+                }) {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(
+                            title: "Duplicate Audiobook",
+                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                            completion() // skip this file
+                        }))
+                        alert.addAction(UIAlertAction(title: "Upload Anyway", style: .default, handler: { _ in
+                            self.insertBook(url: processedURL, original: url, completion: completion)
+                        }))
+                        self.present(alert, animated: true)
                     }
+                } else {
+                    // No duplicate → insert directly
+                    self.insertBook(url: processedURL, original: url, completion: completion)
                 }
             }
         } else {
@@ -1820,7 +1874,19 @@ extension ListBooksViewController: UIDocumentPickerDelegate {
             completion()
         }
     }
+
+    private func insertBook(url: URL, original: URL, completion: @escaping () -> Void) {
+        let bookUrl = BookURL(original: original, processed: url)
+        self.queue.addOperation {
+            NewDataMannagerClass.insertBooks(from: [bookUrl], into: nil, or: self.library) {
+                DispatchQueue.main.async {
+                    completion()
+                }
+            }
+        }
+    }
 }
+
 
 class BookCellView: UITableViewCell {
     

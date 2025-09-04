@@ -29,7 +29,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     @IBOutlet weak var footerHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var footerPlayButton: UIButton!
     @IBOutlet weak var bookmarksCountLable: UILabel!
-    @IBOutlet weak var transCribeBtn: UIButton!
+//    @IBOutlet weak var transCribeBtn: UIButton!
     @IBOutlet weak var autoTranscribeChecked: UIButton!
     
     // MARK: - Properties
@@ -69,6 +69,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
+        print("Table view connected: \(tblV != nil)")
+        print("Table view data source: \(tblV.dataSource != nil)")
+        print("Table view delegate: \(tblV.delegate != nil)")
         getBookmarks()
     }
 
@@ -94,7 +97,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         tblV.register(UINib(nibName: "MergeBookMarkCell", bundle: nil), forCellReuseIdentifier: "MergeBookMarkCell")
         tblV.delegate = self
         tblV.dataSource = self
-        transCribeBtn.addTarget(self, action: #selector(transcribeAllBtnAction), for: .touchUpInside)
+     //   transCribeBtn.addTarget(self, action: #selector(transcribeAllBtnAction), for: .touchUpInside)
         
         autoTranscribeChecked.addTarget(self, action: #selector(autoTranscribeCheckAction), for: .touchUpInside)
     }
@@ -117,32 +120,46 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     func getBookmarks(){
-        
-        guard let book = currentBok else {return}
-        self.book = book
-        self.currentTitleBook.text = book.title
-        
-        let userDefaults = UserDefaults.standard
-        if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
-            
-            do{
-                let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-                if savedBookmarks.count > 0 {
-                    let validBookmarks = savedBookmarks.filter { bookmark in
-                        if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
-                            return FileManager.default.fileExists(atPath: url.path)
-                        }
-                        return false
-                    }
-                    self.arrBookmarksNotes = validBookmarks
-                    updateBookmarkSummary()
-                    mergeAdjecntBookmarks()
-                }
-            } catch {
-                
-            }
-        }
-        
+        guard let book = currentBok else { return }
+           self.book = book
+           self.currentTitleBook.text = book.title
+           
+           let userDefaults = UserDefaults.standard
+           if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
+               do {
+                   let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
+                   
+                   // DEBUG: Print count of saved bookmarks
+                   print("Saved bookmarks count: \(savedBookmarks.count)")
+                   
+                   if savedBookmarks.count > 0 {
+                       let validBookmarks = savedBookmarks.filter { bookmark in
+                           if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
+                               return FileManager.default.fileExists(atPath: url.path)
+                           }
+                           return false
+                       }
+                       
+                       // DEBUG: Print count of valid bookmarks
+                       print("Valid bookmarks count: \(validBookmarks.count)")
+                       
+                       self.arrBookmarksNotes = validBookmarks
+                       updateBookmarkSummary()
+                       
+                       // DEBUG: Check if we have bookmarks to display
+                       if validBookmarks.isEmpty {
+                           print("No valid bookmarks found - audio files might be missing")
+                       } else {
+                           mergeAdjecntBookmarks()
+                       }
+                   }
+               } catch {
+                   print("Error decoding bookmarks: \(error)")
+               }
+           } else {
+               print("No saved bookmarks data found")
+           }
+      
         UserDefaults.standard.set("ByTime", forKey: "BookmarkSorting")
         if let sort = UserDefaults.standard.object(forKey: "BookmarkSorting") as? String,sort == "ByDate"{
             self.currentSortType = .byDate
@@ -182,9 +199,13 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                         // Play or share each URL as needed
                         self?.arrMergedBookmarksNotes = urls
                         self?.prepareDisplayItems()
+                        self?.transcribeAllBtnAction()
                         self?.tblV.reloadData()
-                        
+                        print("Table view should now show data")
                     } else {
+                        self?.prepareDisplayItems()
+                        self?.tblV.reloadData()
+                        self?.transcribeAllBtnAction()
                         print("Error: \(error?.localizedDescription ?? "Unknown error")")
                     }
                 }
@@ -194,20 +215,77 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     private func prepareDisplayItems() {
         displayItems = []
-
+   
+        print("Bookmarks count: \(arrBookmarksNotes.count)")
+        
         for bookmark in arrBookmarksNotes {
-            if let _ = AudioClipUtils.getClipURL(for: bookmark.timeStamp){
+           
+            if let _ = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
                 displayItems.append(.bookmark(bookmark))
+                print("Added bookmark: \(bookmark.timeStamp)")
+            } else {
+                print("Bookmark audio file not found: \(bookmark.timeStamp)")
+            }
+        }
+        
+        for segment in arrMergedBookmarksNotes {
+            displayItems.append(.segment(BookmarkSegment(identifiers: segment.identifiers,
+                                                       startTime: segment.startTime,
+                                                       endTime: segment.endTime,
+                                                       url: segment.url,
+                                                       bookmarksTxt: BookmarkCacheManager.getNotes(for: segment.identifiers),
+                                                         isStar: BookmarkCacheManager.getIsStar(for: segment.identifiers), date: segment.date)))
+            print("Added segment: \(segment.startTime)-\(segment.endTime)")
+        }
+        
+        print("Total display items: \(displayItems.count)")
+        displayItems = buildDisplayItems(bookmarks: self.arrBookmarksNotes, segments: self.arrMergedBookmarksNotes)
+        DispatchQueue.main.async {
+            self.tblV.reloadData()
+            print("Table view reloaded")
+        }
+        
+    }
+    
+    func buildDisplayItems(bookmarks: [BookmarksModel], segments: [BookmarkSegment]) -> [BookmarkDisplayItem] {
+        var items: [BookmarkDisplayItem] = []
+
+        var mergedTimestamps: Set<Double> = []
+        for seg in segments {
+            let range = seg.startTime...seg.endTime
+            let included = bookmarks.filter { range.contains($0.timeStamp) }
+            mergedTimestamps.formUnion(included.map { $0.timeStamp })
+        }
+
+        // 1) Add unmerged bookmarks only
+        for bm in bookmarks {
+            if !mergedTimestamps.contains(bm.timeStamp) {
+                items.append(.bookmark(bm))
             }
         }
 
-        for segment in arrMergedBookmarksNotes {
-            
-            displayItems.append(.segment(BookmarkSegment(identifiers: segment.identifiers, startTime: segment.startTime, endTime: segment.endTime, url: segment.url,bookmarksTxt: BookmarkCacheManager.getNotes(for: segment.identifiers), isStar: BookmarkCacheManager.getIsStar(for: segment.identifiers))))
+        // 2) Add merged segments
+        for seg in segments {
+            items.append(.segment(seg))
         }
-        
-        print(displayItems)
+
+        // 3) Sort by start time for display
+        items.sort { lhs, rhs in
+            switch (lhs, rhs) {
+            case (.bookmark(let b1), .bookmark(let b2)):
+                return b1.timeStamp < b2.timeStamp
+            case (.bookmark(let b1), .segment(let s2)):
+                return b1.timeStamp < s2.startTime
+            case (.segment(let s1), .bookmark(let b2)):
+                return s1.startTime < b2.timeStamp
+            case (.segment(let s1), .segment(let s2)):
+                return s1.startTime < s2.startTime
+            }
+        }
+
+        return items
     }
+
     
     @IBAction func didPressPlay(_ sender: UIButton){
         PlayerManager.shared.playPause()
@@ -256,14 +334,21 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     
-    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return displayItems.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let item = displayItems[indexPath.row]
-
+      
+        print("Configuring cell for index: \(indexPath.row)")
+           
+           guard indexPath.row < displayItems.count else {
+               print("ERROR: Index out of bounds")
+               return UITableViewCell()
+           }
+           
+           let item = displayItems[indexPath.row]
+           print("Item type: \(item)")
         switch item {
         case .bookmark(let model):
             guard let cell = tableView.dequeueReusableCell(withIdentifier: "BookMarkExpandCell", for: indexPath) as? BookMarkExpandCell else {
@@ -274,7 +359,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.selectionStyle = .none
             cell.optionBtn.tag = indexPath.row
             cell.detailtxt.text = model.bookmarksTxt
-            cell.bookmarkTimelbl.text = "\(model.time) - \(model.date)"
+            cell.bookmarkTimelbl.text = "\(model.time) on \(model.date)"
             cell.bottomView.isHidden = !(model.bookmarksTxt.count > 0 || model.isStar == true)
             cell.isStarBookMark.isHidden = !(model.isStar ?? false)
             cell.starBG.isHidden = !(model.isStar ?? false)
@@ -300,7 +385,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.transcriptionBtn.tag = indexPath.row
             cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
 
-            cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime)) - \(formatTime(from: segment.endTime))"
+        
+            cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime)) ➔ \(formatTime(from: segment.endTime)) on \(segment.date)"
+           
             cell.detailtxt.text = segment.bookmarksTxt
             cell.bottomView.isHidden = !((segment.bookmarksTxt?.count ?? 0) > 0 || segment.isStar == true)
             cell.isStarBookMark.isHidden = !(segment.isStar ?? false)
@@ -377,7 +464,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     
-    @objc func transcribeAllBtnAction(){
+     func transcribeAllBtnAction(){
         
         self.transcribeAllSegments()
         self.transcribeAllBookmarks()
@@ -394,7 +481,37 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
         
     }
-    
+    @IBAction func playAllBookmarksClips(_ sender:UIButton) {
+        var urls: [URL] = []
+
+        for item in displayItems {
+            switch item {
+            case .bookmark(let model):
+                if let clipURL = AudioClipUtils.getClipURL(for: model.timeStamp) {
+                    urls.append(clipURL)
+                }
+            case .segment(let segment):
+                if let clipURL = segment.url {
+                    urls.append(clipURL)
+                }
+            }
+        }
+
+        guard !urls.isEmpty else {
+            showToast("No bookmark clips to play")
+            return
+        }
+
+        let playerVC = BottomSheetAudioPlayerVC()
+        playerVC.urls = urls.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) // sort if needed
+        playerVC.modalPresentationStyle = .pageSheet
+        if let sheet = playerVC.sheetPresentationController {
+            sheet.detents = [.medium()]
+            sheet.prefersGrabberVisible = true
+        }
+        present(playerVC, animated: true)
+    }
+
     @objc func playBookmarkClip(_ sender:UIButton){
         
         let index = sender.tag
@@ -616,7 +733,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
         
-        self.topMenu.dataSource.append(contentsOf: ["Time","Date"])
+        self.topMenu.dataSource.append(contentsOf: ["Chronological ","Created"])
         let imagesArr = ["bx_time-five","calendar"]
         
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
@@ -728,7 +845,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                             if let originalIndex = self.arrMergedBookmarksNotes.firstIndex(where: { $0.identifiers == segment.identifiers }) {
                                 self.arrMergedBookmarksNotes.remove(at: originalIndex)
                             }
-    
                             self.displayItems.remove(at: index)
                             self.tblV.reloadData()
                         }
@@ -749,19 +865,19 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     
     func sortBookmarks() {
-        print(arrBookmarksNotes,"before sorting")
+       // print(arrBookmarksNotes,"before sorting")
         switch currentSortType {
             
         case .byTime:
             
-            let sortedArray = arrBookmarksNotes.sorted { compareTimes($0.time, $1.time) }
+            let sortedArray = arrBookmarksNotes.sorted {compareTimes($0.time, $1.time) }
             self.arrBookmarksNotes = sortedArray
         case .byDate:
             let sortedArray = arrBookmarksNotes.sorted { compareDates($0.date, $1.date) }
             self.arrBookmarksNotes = sortedArray
         }
         self.tblV.reloadData()
-        print(arrBookmarksNotes,"after sorting")
+      //  print(arrBookmarksNotes,"after sorting")
         
     }
     
@@ -853,10 +969,10 @@ extension BookMarkVC {
     
     func compareDates(date1: String, date2: String) -> ComparisonResult? {
         let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "dd/MM/yyyy"
+        dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a"
         
-        if let date1 = dateFormatter.date(from: date1), let date2 = dateFormatter.date(from: date2) {
-            return date1.compare(date2)
+        if let d1 = dateFormatter.date(from: date1), let d2 = dateFormatter.date(from: date2) {
+            return d1.compare(d2)
         } else {
             print("Invalid date format")
             return nil

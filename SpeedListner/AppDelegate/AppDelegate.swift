@@ -79,6 +79,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
 
         }
+    
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
         // Called when a new scene session is being created.
         // Use this method to select a configuration to create the new scene with.
@@ -117,6 +118,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             }
         }
     }
+    
     @objc func handleAudioRouteChange(_ notification: Notification) {
         guard PlayerManager.shared.isPlaying,
             let userInfo = notification.userInfo,
@@ -133,72 +135,92 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             break
         }
     }
+ 
+
     func setupMPRemoteCommands() {
+        let commandCenter = MPRemoteCommandCenter.shared()
+        
         // Play / Pause
-        MPRemoteCommandCenter.shared().togglePlayPauseCommand.isEnabled = true
-        MPRemoteCommandCenter.shared().togglePlayPauseCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.togglePlayPauseCommand.isEnabled = true
+        commandCenter.togglePlayPauseCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.playPause()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().playCommand.isEnabled = true
-        MPRemoteCommandCenter.shared().playCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.playCommand.isEnabled = true
+        commandCenter.playCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.play()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().pauseCommand.isEnabled = true
-        MPRemoteCommandCenter.shared().pauseCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.pauseCommand.isEnabled = true
+        commandCenter.pauseCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.pause()
             return .success
         }
 
         // Forward
-        MPRemoteCommandCenter.shared().skipForwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.forwardInterval)]
-
-        MPRemoteCommandCenter.shared().skipForwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.skipForwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.forwardInterval)]
+        commandCenter.skipForwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.forward()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().nextTrackCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.nextTrackCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.forward()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().seekForwardCommand.addTarget { (commandEvent) -> MPRemoteCommandHandlerStatus in
+        commandCenter.seekForwardCommand.addTarget { (commandEvent) -> MPRemoteCommandHandlerStatus in
             guard let cmd = commandEvent as? MPSeekCommandEvent, cmd.type == .endSeeking else {
                 return .success
             }
-
-            // End seeking
             PlayerManager.shared.forward()
             return .success
         }
 
         // Rewind
-        MPRemoteCommandCenter.shared().skipBackwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.rewindInterval)]
-
-        MPRemoteCommandCenter.shared().skipBackwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.skipBackwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.rewindInterval)]
+        
+        commandCenter.skipBackwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.rewind()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().previousTrackCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+        commandCenter.previousTrackCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.rewind()
             return .success
         }
 
-        MPRemoteCommandCenter.shared().seekBackwardCommand.addTarget { (commandEvent) -> MPRemoteCommandHandlerStatus in
+        commandCenter.seekBackwardCommand.addTarget { (commandEvent) -> MPRemoteCommandHandlerStatus in
             guard let cmd = commandEvent as? MPSeekCommandEvent, cmd.type == .endSeeking else {
                 return .success
             }
-
-            // End seeking
             PlayerManager.shared.rewind()
             return .success
         }
+
+        // 🔹 Custom Bookmark Button (re-using the system "like" command)
+        commandCenter.bookmarkCommand.isEnabled = true
+        commandCenter.likeCommand.localizedTitle = "Bookmark"
+        commandCenter.likeCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
+            print("🔖 Bookmark button pressed from lock screen")
+            guard let book = PlayerManager.shared.currentBook else {
+                return .success
+            }
+            BookmarkManager.shared.saveWithoutNote(book: book ) { success in
+                if success {
+                    print("Bookmark saved successfully")
+                } else {
+                    print("Failed to save bookmark")
+                }
+            }
+          
+     
+            return .success
+        }
     }
+
 
     private func showAlert(title: String, message: String) {
         guard let window = window else { return }

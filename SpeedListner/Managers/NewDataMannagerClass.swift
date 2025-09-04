@@ -195,7 +195,7 @@ class NewDataMannagerClass {
             library?.addToItems(newPlaylist)
         }
 
-        self.saveContext()  // Ensure playlist is saved after creation
+        self.saveContext()
         DispatchQueue.main.async { completion(newPlaylist) }
     }
     

@@ -14,6 +14,7 @@ import StoreKit
 import DropDown
 import Agrume
 import AVKit
+import EasyTipView
 //let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
 var currentItem: LibraryItem!
 class PlayerViewController: UIViewController,TabBarDataDelegate {
@@ -40,7 +41,6 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     @IBOutlet weak var speedButton: UIButton!
     @IBOutlet weak var sleepButton: UIButton!
     @IBOutlet weak var speedlbl: UILabel!
-    @IBOutlet weak var speedlbl2: UILabel!
     @IBOutlet weak var totalbookTimelbl: UILabel!
     @IBOutlet weak var remaininglbl: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
@@ -54,14 +54,14 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     @IBOutlet weak var grandTotalTime: UILabel!
     @IBOutlet weak var wordPerMinuteLbl: UILabel!
     @IBOutlet weak var timeSavedMinute: UILabel!
-   
+    @IBOutlet weak var mRALable: UILabel!
     var currentValue: Float = 0.1
     weak var delegate: TabBarDataDelegate?
     private let playImage = UIImage(systemName:"play.fill")
     private let pauseImage = UIImage(systemName:"pause.fill")
     private var coverImage = UIImage()
     private var routePickerView: AVRoutePickerView!
-    
+    private var tipView: EasyTipView?
     private let topMenu = DropDown()
     var taponMini = false
     lazy var dropDowns: [DropDown] = {
@@ -188,9 +188,12 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         UserDetail.shared.setPreviousUserId(currentId)
         self.loadLibrary()
         self.loadPreviousBook()
+        mRALable.isUserInteractionEnabled = true
+        let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.handleMraValueTap))
+        mRALable.addGestureRecognizer(gestureRecognizer)
     }
     
-    
+   
     private func loadPreviousBook() {
         guard let identifier = UserDefaults.standard.string(forKey: UserDefaultsConstants.lastPlayedBook),
         let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
@@ -490,25 +493,62 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         })
     }
     
+    
+    
     @objc func sliderChanged(_ sender: UISlider) {    }
-//    var tipView: EasyTipView?
+    @IBAction func infoWpmBtnTap(_ sender:UIButton){
+        if sender.tag == 1 {
+              
+                tipView?.dismiss()
+                sender.tag = 0
+        } else {
+            var preferences = EasyTipView.Preferences()
+            preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
+            preferences.drawing.foregroundColor = UIColor.white
+            preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+            preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
+
+            tipView = EasyTipView(text: "WPM Stands For Words-Per-Minute. The Average Reading Speed Is 200 To 250 WPM. Fast Readers Zip To 400+, Around 11% Of Readers Get To 600+. With SpeedListener And SpeedEscalation, You Can Easily Crush These Speeds!", preferences: preferences)
+            tipView?.show(forView: sender, withinSuperview: self.view)
+            sender.tag = 1
+        }
+    }
+    
+    @IBAction func infoMraBtnTap(_ sender:UIButton){
+        if sender.tag == 1 {
+              
+                tipView?.dismiss()
+                sender.tag = 0
+        } else {
+            var preferences = EasyTipView.Preferences()
+            preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
+            preferences.drawing.foregroundColor = UIColor.white
+            preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+            preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
+
+            tipView = EasyTipView(text: "3MRA Stands For Three-Month-Rolling-Average. This Is Your Average Listening Speed Over The Last 3 Months, Refreshed Daily. A Great Way To Track Progress Over Time.", preferences: preferences)
+            tipView?.show(forView: sender, withinSuperview: self.view)
+            sender.tag = 1
+        }
+    }
+    
     @IBAction func infoBtnTap(_ sender:UIButton){
-//        if sender.tag == 1 {
-//                // Hide the tipView if it's already shown
-//                tipView?.dismiss()
-//                sender.tag = 0
-//            } else {
-//                // Show the tipView if it's not already shown
-//                var preferences = EasyTipView.Preferences()
-//                preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
-//                preferences.drawing.foregroundColor = UIColor.white
-//                preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
-//                preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
-//
-//                tipView = EasyTipView(text: "Gradually increases playback speed automatically every 1, 2, 3, 4 or 5 minutes.", preferences: preferences)
-//                tipView?.show(forView: sender, withinSuperview: self.view)
-//                sender.tag = 1
-//            }
+        if sender.tag == 1 {
+              
+                tipView?.dismiss()
+                sender.tag = 0
+            } else {
+             
+                var preferences = EasyTipView.Preferences()
+                preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
+                preferences.drawing.foregroundColor = UIColor.white
+                preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+                preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
+
+                tipView = EasyTipView(text: "Gradually increases playback speed automatically every 1, 2, 3, 4 or 5 minutes.", preferences: preferences)
+                tipView?.show(forView: sender, withinSuperview: self.view)
+                sender.tag = 1
+            }
     }
     
     
@@ -682,12 +722,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             }
         }
     }
-    @IBAction func presentChapter(_ sender: UIButton) {
-        //        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        //        let vc = storyboard.instantiateViewController(withIdentifier: "ChaptersViewController") as! ChaptersViewController
-        //
-        //        self.present(vc, animated: true, completion: nil)
-    }
+    @IBAction func presentChapter(_ sender: UIButton) { }
     
     @IBAction func nextChapter(_ sender: UIButton) {
         guard !isLibraryEmpty() else {
@@ -791,31 +826,62 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         
     }
     
+//    func handlePreviousChapterAction() {
+//        
+//        if #available(iOS 10.0, *) {
+//            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+//        } else {
+//            // Fallback on earlier versions
+//        }
+//        if let currentChapter = self.book?.currentChapter{
+//            
+//            if let nextChapter = PlayerManager.shared.previousChapter(after: currentChapter){
+//                PlayerManager.shared.jumpTo(nextChapter.start + 0.01)
+//                
+//            }
+//        } else {
+//            let result = self.nextBookOfPlayList()
+//            guard !self.plalistItems.isEmpty else {return}
+//            guard let index = result.1 else {return}
+//            guard let books = Array(self.plalistItems.suffix(from: index)) as? [Book] else {
+//                return
+//            }
+//            
+//            self.setupPlayer(books: books)
+//        }
+//        
+//    }
+    
     func handlePreviousChapterAction() {
-        
         if #available(iOS 10.0, *) {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        } else {
-            // Fallback on earlier versions
         }
-        if let currentChapter = self.book?.currentChapter{
-            
-            if let nextChapter = PlayerManager.shared.previousChapter(after: currentChapter){
-                PlayerManager.shared.jumpTo(nextChapter.start + 0.01)
-                
-            }
-        } else {
+
+        guard let currentChapter = self.book?.currentChapter else {
+            // fallback: if no current chapter, go to previous book in playlist
             let result = self.nextBookOfPlayList()
-            guard !self.plalistItems.isEmpty else {return}
-            guard let index = result.1 else {return}
-            guard let books = Array(self.plalistItems.suffix(from: index)) as? [Book] else {
-                return
-            }
-            
+            guard !self.plalistItems.isEmpty else { return }
+            guard let index = result.1 else { return }
+            guard let books = Array(self.plalistItems.suffix(from: index)) as? [Book] else { return }
             self.setupPlayer(books: books)
+            return
         }
-        
+
+        // ⏮ Current playback time
+        let currentTime = PlayerManager.shared.currentTime
+
+        if currentTime - currentChapter.start > 3 {
+            // If >3s into the chapter → restart current chapter
+            PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
+        } else if let previous = PlayerManager.shared.previousChapter(after: currentChapter) {
+            // If already near start → go back one chapter
+            PlayerManager.shared.jumpTo(previous.start + 0.01)
+        } else {
+            // Already at first chapter → just restart it
+            PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
+        }
     }
+    
     func handleNextBookAction() {
         
         if #available(iOS 10.0, *) {
@@ -826,32 +892,14 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
         
         if let currentItem1 = currentBok{
-            if var book =  PlayerManager.shared.getNextBookInLibrary(after: currentItem1){
+            if let book =  PlayerManager.shared.getNextBookInLibrary(after: currentItem1){
                 if  Int(book.currentTime) == Int(book.duration){
                     book.currentTime = 0.0
                 }
                 currentBok = book
                  self.setupPlayer(books: [book])
             }
-//            let result = self.nextBook(after: currentItem1)
-//            guard let nextItem = result.0 else{return}
-//            guard let index = result.1 else{return}
-//            currentItem = nextItem
-//            
-//            if let book = nextItem as? Book {
-//                self.playlist = nil
-//                self.setupPlayer(books: [book])
-//                
-//            } else if let playlist = nextItem as? Playlist {
-//                
-//                PlayerManager.shared.currentPlayList = playlist
-//                PlayerManager.shared.currentPlayListIndex = index
-//                self.playlist = playlist
-//                self.setupPlayer(books: playlist.getRemainingBooks())
-//                
-//            }
-        } else {
-            
+
         }
     }
     
@@ -1286,38 +1334,18 @@ extension PlayerViewController: AVAudioPlayerDelegate {
         }else{
             
         }
-        
+       
+
+        // All-time average
+       
     }
     func updateTimer2() {
-        //         PlayerManager2.shared.currentSpeed = PlayerManager2.shared.speed
-        //      //  print(PlayerManager.sharedInstance.speedEsalbutton,cureenTime)
-        //         let speedEscTime = UserDefaults.standard.object(forKey: "speedEscTime") as? Int ?? 1
-        //         let t = speedEscTime*60
-        //         if PlayerManager2.shared.speedEsalbutton == true {
-        //            if  PlayerManager.sharedInstance.currentSpeed < 10.1 {
-        //              print(Int(self.currentTimeInContext),t)
-        //                if Int(self.currentTimeInContext) % t == 0 {
-        //
-        //                    PlayerManager2.shared.currentSpeed += 0.1
-        //
-        //                    let roundedX = Double(round(PlayerManager2.shared.currentSpeed * 10) / 10)
-        //
-        //                    PlayerManager2.shared.speed = Float(roundedX)
-        //                }
-        //
-        //            }
-        //
-        //
-        //        }else{
-        //
-        //        }
         
         let originalValue: Double = Double(PlayerManager.shared.speed)
         let roundedValue = String(format: "%.1f", originalValue)
         print(roundedValue) // This will print "12.3"
         
         self.speedlbl.text =  "\(roundedValue)x"
-        self.speedlbl2.text =  "\(roundedValue)x"
         let c = Double(self.book?.duration ?? 0)
         self.grandTotalTime.text = "\(self.formatTime(Int(c))) (\(1)x)"
         let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
@@ -1330,28 +1358,45 @@ extension PlayerViewController: AVAudioPlayerDelegate {
         let cureenTime = Double(BookcurrentTimeInContext)
         let roundedX2 = Double(round(PlayerManager.shared.speed * 10) / 10)
         let d2 = cureenTime / roundedX2
-        //        self.sliderView.value = percentage
-        //        //update current time label
-        //        self.currentTimeLabel.text = timeText
-        //        PlayerManager.sharedInstance.currentBookCurrentTime = timeText
-        //update book read percentage
+       
         if remainingButton.tag == 0 {
             self.remainingTime.text = "\(self.formatTime(Int(d2)))"
-            // remaininglbl.text = "Completed"
+            
         }else{
             
             let r = d - d2
             self.remainingTime.text = self.formatTime(Int(r))
-            //remaininglbl.text = "Remaning"
+         
         }
         self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.audioPlayer?.duration ?? 0.0, currentSpeed: Double(PlayerManager.shared.audioPlayer?.rate ?? 0)))"
-        //      print("Rounded Speed:", roundedSpeed)
         
+        let uid = PlayerManager.shared.currentUserID
+        if let avg = SpeedAnalyticsManager.shared.averageAllTime(userID: uid) {
+          print(String(format: "Avg Speed: %.2fx", avg))
+            mRALable.text = "3MRA ≈\(String(format: "%.2fx", avg))"
+        }
+
+        // 3-month rolling
+         let avg3m = SpeedAnalyticsManager.shared.monthlySeries(userID: uid, months: 3)
+            print(String(format: "3-Month Avg: %.2fx", avg3m))
+        
+
+        // Daily/Monthly series for charts
+        let last30 = SpeedAnalyticsManager.shared.dailySeries(userID: uid, days: 30)
+        print(String(format: "last30 Avg: %.2fx", last30))
+        let last12m = SpeedAnalyticsManager.shared.monthlySeries(userID: uid, months: 12)
+        print(String(format: "last12m Avg: %.2fx", last12m))
+        
+       
         
     }
+    
+    @objc func handleMraValueTap(){
+        let vc = SpeedStatsViewController()
+        navigationController?.pushViewController(vc, animated: true)
+    }
      func openThroughURL(fileURL:URL) {
-         //self.showAlert(for: "\(fileURL) aya")
-   
+        
         let destinationFolder = NewDataMannagerClass.getProcessedFolderURL()
         
         NewDataMannagerClass.processFile(at: fileURL, destinationFolder: destinationFolder) { (processedURL) in
@@ -1467,7 +1512,7 @@ extension PlayerViewController:DelegateforListeningSpeedVC,DelegateforBookmarkPo
         // This will print "12.3"
         
         self.speedlbl.text =  "\(roundedValue)x"
-        self.speedlbl2.text =  "\(roundedValue)x"
+       
     }
     
     func setSpeed(currentValue:Float){
@@ -1488,7 +1533,7 @@ extension PlayerViewController:DelegateforListeningSpeedVC,DelegateforBookmarkPo
         // This will print "12.3"
         
         self.speedlbl.text =  "\(roundedValue)x"
-        self.speedlbl2.text =  "\(roundedValue)x"
+     
         
         let c = Double(self.book?.duration ?? 0)
         self.grandTotalTime.text = "\(self.formatTime(Int(c))) (\(1)x)"

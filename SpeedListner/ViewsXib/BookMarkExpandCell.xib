@@ -146,10 +146,10 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b07-Xt-Oni">
-                                <rect key="frame" x="321" y="18" width="6" height="22"/>
+                                <rect key="frame" x="312" y="29" width="15" height="40"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="22" id="92o-4I-G9Z"/>
-                                    <constraint firstAttribute="width" constant="6" id="PS7-vl-Lar"/>
+                                    <constraint firstAttribute="height" constant="40" id="92o-4I-G9Z"/>
+                                    <constraint firstAttribute="width" constant="15" id="PS7-vl-Lar"/>
                                 </constraints>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" backgroundImage="dotts"/>
@@ -160,7 +160,7 @@
                         </subviews>
                         <color key="backgroundColor" name="White-Gray"/>
                         <constraints>
-                            <constraint firstItem="b07-Xt-Oni" firstAttribute="top" secondItem="dQT-lI-mKu" secondAttribute="top" constant="18" id="OWc-zU-sMW"/>
+                            <constraint firstItem="b07-Xt-Oni" firstAttribute="centerY" secondItem="dQT-lI-mKu" secondAttribute="centerY" id="QCe-2C-lOq"/>
                             <constraint firstItem="b07-Xt-Oni" firstAttribute="leading" relation="greaterThanOrEqual" secondItem="9EN-5K-2wH" secondAttribute="trailing" constant="18" id="WZZ-yI-cyo"/>
                             <constraint firstAttribute="trailing" secondItem="b07-Xt-Oni" secondAttribute="trailing" constant="20" id="XTW-pE-CLE"/>
                             <constraint firstAttribute="bottom" secondItem="9EN-5K-2wH" secondAttribute="bottom" constant="16" id="bA7-j0-DeQ"/>

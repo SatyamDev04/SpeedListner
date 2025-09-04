@@ -114,6 +114,7 @@ extension Notification.Name {
         public static let reloadData = Notification.Name(rawValue: "com.reloaddata")
         public static let playerPresented = Notification.Name(rawValue: "com.player.presented")
         public static let playerDismissed = Notification.Name(rawValue: "com.player.dismissed")
+        public static let bookMarkadd = Notification.Name(rawValue: "com.bookmark.add")
     }
 }
 extension UITextView {

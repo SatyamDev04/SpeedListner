@@ -35,7 +35,7 @@ struct BookmarkSegment{
     var summary:String?
     var bookmarksTxt: String? = nil
     var isStar: Bool? = false
-    
+    let date: String
     var isProcessed: Bool {
            return (transcription?.isEmpty == false && summary?.isEmpty == false)
        }
@@ -63,18 +63,21 @@ class AudioBookmarkExtractor {
 
         for bookmark in sorted {
             if let last = currentGroup.last {
-                let gap = bookmark.timeStamp - (last.timeStamp + 5)
+                let gap = bookmark.timeStamp - (last.timeStamp + 10) 
                 if gap <= threshold {
                     currentGroup.append(bookmark)
                 } else {
                     if currentGroup.count > 1 {
                         mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-                        segments.append(BookmarkSegment(
-                            identifiers: "",
-                            startTime: currentGroup.first!.timeStamp,
-                            endTime: currentGroup.last!.timeStamp + 5,
-                            url: nil
-                        ))
+                        segments.append(
+                            BookmarkSegment(
+                                identifiers: "",
+                                startTime: max(currentGroup.first!.timeStamp - 5, 0),
+                                endTime: currentGroup.last!.timeStamp + 10,
+                                url: nil,
+                                date: currentGroup.last?.date ?? ""
+                            )
+                        )
                     }
                     currentGroup = [bookmark]
                 }
@@ -86,12 +89,15 @@ class AudioBookmarkExtractor {
         // Final group
         if currentGroup.count > 1 {
             mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-            segments.append(BookmarkSegment(
-                identifiers: "",
-                startTime: currentGroup.first!.timeStamp,
-                endTime: currentGroup.last!.timeStamp + 5,
-                url: nil
-            ))
+            segments.append(
+                BookmarkSegment(
+                    identifiers: "",
+                    startTime: max(currentGroup.first!.timeStamp - 5, 0),
+                    endTime: currentGroup.last!.timeStamp + 10,
+                    url: nil,
+                    date: currentGroup.last?.date ?? ""
+                )
+            )
         }
 
         print("\nMerged Timestamps: \(mergedTimestamps)")
@@ -129,12 +135,15 @@ class AudioBookmarkExtractor {
                 processedSegments += 1
 
                 if success, let url = url {
-                    outputURLs.append(BookmarkSegment(
-                        identifiers: "\(segment.startTime)-\(segment.endTime)",
-                        startTime: segment.startTime,
-                        endTime: segment.endTime,
-                        url: url
-                    ))
+                    outputURLs.append(
+                        BookmarkSegment(
+                            identifiers: "\(segment.startTime)-\(segment.endTime)",
+                            startTime: segment.startTime,
+                            endTime: segment.endTime,
+                            url: url,
+                            date: segment.date
+                        )
+                    )
                 }
 
                 progressHandler?(Double(processedSegments) / Double(totalSegments))
@@ -209,6 +218,7 @@ class AudioBookmarkExtractor {
         }
     }
 }
+
 
 
 

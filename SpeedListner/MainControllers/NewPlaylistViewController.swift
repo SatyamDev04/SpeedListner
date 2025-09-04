@@ -8,6 +8,7 @@
 
 import UIKit
 import DropDown
+import AVFoundation
 
 class NewPlaylistViewController: UIViewController {
     
@@ -47,7 +48,7 @@ class NewPlaylistViewController: UIViewController {
     var filteredBooks: [Book] = []
     var matchedPlaylists: [Playlist] = []
     var isSearching = false
-    
+    private var keyboardHideWorkItem: DispatchWorkItem?
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -63,15 +64,13 @@ class NewPlaylistViewController: UIViewController {
         self.tableView.register(UINib(nibName: "BookDetailCell", bundle: nil), forCellReuseIdentifier: "BookDetailCell")
         
         searchTxt.delegate = self
-        searchTxt.clearButtonMode = .never
-        let clearButton = UIButton(type: .custom)
-        clearButton.setBackgroundImage(UIImage(systemName: "xmark.circle.fill"), for: .normal)
-        clearButton.tintColor = .gray
-        clearButton.frame = CGRect(x: 0, y: 0, width: 36, height: 36)
-        clearButton.addTarget(self, action: #selector(clearSearchText), for: .touchUpInside)
-        
-        searchTxt.rightView = clearButton
-        searchTxt.rightViewMode = .always
+        searchTxt.autocorrectionType = .no
+        searchTxt.autocapitalizationType = .none
+        searchTxt.spellCheckingType = .no
+        searchTxt.smartDashesType = .no
+        searchTxt.smartQuotesType = .no
+        searchTxt.smartInsertDeleteType = .no
+        searchTxt.reloadInputViews()
         
     }
 
@@ -253,6 +252,10 @@ class NewPlaylistViewController: UIViewController {
            isSelectionModeEnabled.toggle()
            tableView.reloadData()
        }
+    @IBAction func btnCross_Action(_ sender: UIButton) {
+        self.searchTxt.text = ""
+        self.filterData(newString: "")
+    }
     
     @IBAction func btnDot_Action(_ sender: UIButton) {
         
@@ -305,23 +308,24 @@ class NewPlaylistViewController: UIViewController {
     }
     
     @IBAction func addAction() {
-        let alertController = UIAlertController(
-            title: nil,
-            message: "You can also add files via AirDrop. Send an audiobook file to your device and select SpeedListner from the list that appears.",
-            preferredStyle: .actionSheet
-        )
-        
-        alertController.addAction(UIAlertAction(title: "Import files", style: .default) { (_) in
-            self.importBook()
-        })
-        
-        alertController.addAction(UIAlertAction(title: "Create Folder", style: .default) { (_) in
-            self.createPlaylist()
-        })
-        
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        self.present(alertController, animated: true, completion: nil)
+        self.createPlaylist()
+//        let alertController = UIAlertController(
+//            title: nil,
+//            message: "You can also add files via AirDrop. Send an audiobook file to your device and select SpeedListner from the list that appears.",
+//            preferredStyle: .actionSheet
+//        )
+//        
+//        alertController.addAction(UIAlertAction(title: "Import files", style: .default) { (_) in
+//            self.importBook()
+//        })
+//        
+//        alertController.addAction(UIAlertAction(title: "Create Folder", style: .default) { (_) in
+//            self.createPlaylist()
+//        })
+//        
+//        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+//        
+//        self.present(alertController, animated: true, completion: nil)
     }
     @IBAction func sortDot_Action(_ sender: UIButton) {
         
@@ -674,6 +678,7 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
             }
         }
     }
+    
     func searchResultBookPlay(_ book:Book?){
        PlayerManager.shared.miniPlayerIsHidden = false
        
@@ -791,8 +796,6 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
 
 extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDelegate{
   
-    
-    
     
     
     func presentPlaylistTableView(item:LibraryItem) {
@@ -939,9 +942,8 @@ extension NewPlaylistViewController{
         self.filterData(newString: textField.text ?? "")
     }
     func filterData(newString: String) {
-        // Cancel any previous work item
+        // ---- debounce filtering (1s) ----
         debounceWorkItem?.cancel()
-        
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
 
@@ -951,38 +953,43 @@ extension NewPlaylistViewController{
                 let filteredArray = t_items.filter { item in
                     let titleWords = item.title?.lowercased().split(separator: " ") ?? []
                     let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
-
                     let titleMatch = titleWords.contains { $0.hasPrefix(searchPrefix) }
                     let authorMatch = authorWords.contains { $0.hasPrefix(searchPrefix) }
-
                     return titleMatch || authorMatch
                 }
-
                 self.playlistItems = filteredArray
             } else {
                 self.playlistItems = self.t_items
             }
 
             filteredBooks = getAllBooks(from: library).filter {
-                   $0.title?.localizedCaseInsensitiveContains(newString) == true
-               }
-            let rowHeight: CGFloat = 40 // or your cell height
-                let maxHeight: CGFloat = 200
-                let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
+                $0.title?.localizedCaseInsensitiveContains(newString) == true
+            }
+
+            let rowHeight: CGFloat = 40
+            let maxHeight: CGFloat = 200
+            let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
 
             searchTblVH.constant = calculatedHeight
             searchTblV.isHidden = filteredBooks.isEmpty
-            self.searchTblV.reloadData()
-            print(filteredBooks.map({$0.title}),"filteredBooks")
-            
-            self.tableView.reloadData()
-            DispatchQueue.main.async {
-                      UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
-                  }
-        }
 
+            self.searchTblV.reloadData()
+            self.tableView.reloadData()
+        }
         debounceWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
+
+        // ---- debounce keyboard hide (10s idle) ----
+        keyboardHideWorkItem?.cancel()
+        let hideItem = DispatchWorkItem { [weak self] in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                // hides whatever is first responder (your search field)
+                self.view.endEditing(true)
+            }
+        }
+        keyboardHideWorkItem = hideItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideItem)
     }
     
     func getAllBooks(from library: Library) -> [Book] {
@@ -1026,9 +1033,9 @@ extension NewPlaylistViewController{
     }
     
     @objc func createPlaylist() {
-        let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Folder", message: "Enter Name Of New Folder", preferredStyle: .alert)
         alert.addTextField { (textField) in
-            textField.placeholder = "Playlist Title"
+            textField.placeholder = "Folder Name"
         }
         
         let createAction = UIAlertAction(title: "Create", style: .default) { _ in
@@ -1181,11 +1188,8 @@ extension NewPlaylistViewController: UIDocumentPickerDelegate {
     
     func processFilesSequentially(at urls: [URL], index: Int) {
         guard index < urls.count else {
-          
             NewDataMannagerClass.saveContext()
             self.fetchPlaylistItems()
-            
-            
             DispatchQueue.main.async {
                 self.tableView.reloadData()
             }
@@ -1211,12 +1215,56 @@ extension NewPlaylistViewController: UIDocumentPickerDelegate {
                     return
                 }
                 
-                let bookUrl = BookURL(original: url, processed: processedURL)
-                self.queue.addOperation {
-                    // Insert books into the library or playlist
-                    NewDataMannagerClass.insertBooks(from: [bookUrl], into: self.playlist, or: self.library) {
-                        completion()
+                guard let items = self.library.items?.array as? [LibraryItem] else {
+                    completion()
+                    return
+                }
+                let existingBooks = items.compactMap { $0 as? Book }
+                
+               
+                let asset = AVAsset(url: processedURL)
+                let newDuration = CMTimeGetSeconds(asset.duration)
+                let newTitle = processedURL.deletingPathExtension().lastPathComponent
+                
+                if let duplicateBook = existingBooks.first(where: { book in
+                    
+                    let normalizedNewTitle = newTitle
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression) // remove punctuation
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      let normalizedExistingTitle = (book.title ?? "")
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      print("Comparing:", normalizedNewTitle, "vs", normalizedExistingTitle)
+
+                      let isSameTitle = normalizedNewTitle.contains(normalizedExistingTitle) ||
+                                        normalizedExistingTitle.contains(normalizedNewTitle)
+                      
+                      let isSameDuration = abs(book.duration - newDuration) < 2
+                    
+                    print(newTitle,newDuration,book.title?.lowercased(),book.duration,"isSameDuration")
+                      return isSameTitle && isSameDuration
+                }) {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(
+                            title: "Duplicate Audiobook",
+                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                            completion()
+                        }))
+                        alert.addAction(UIAlertAction(title: "Upload Anyway", style: .default, handler: { _ in
+                            self.insertBook(url: processedURL, original: url, completion: completion)
+                        }))
+                        self.present(alert, animated: true)
                     }
+                } else {
+    
+                    self.insertBook(url: processedURL, original: url, completion: completion)
                 }
             }
         } else {
@@ -1224,7 +1272,19 @@ extension NewPlaylistViewController: UIDocumentPickerDelegate {
             completion()
         }
     }
+    
+    private func insertBook(url: URL, original: URL, completion: @escaping () -> Void) {
+        let bookUrl = BookURL(original: original, processed: url)
+        self.queue.addOperation {
+            NewDataMannagerClass.insertBooks(from: [bookUrl], into: self.playlist, or: self.library) {
+                DispatchQueue.main.async {
+                    completion()
+                }
+            }
+        }
+    }
 }
+
 extension NewPlaylistViewController:UICollectionViewDelegate,UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         AlphabetArr.count

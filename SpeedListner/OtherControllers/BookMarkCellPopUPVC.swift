@@ -1,11 +1,11 @@
 //
 //  BookMarkCellPopUPVC.swift
 //  SpeedListners
-//
 //  Created by ravi on 19/08/22.
 //
 
 import UIKit
+import MediaPlayer
 
 class BookMarkCellPopUPVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
@@ -17,10 +17,12 @@ class BookMarkCellPopUPVC: UIViewController,UITableViewDelegate,UITableViewDataS
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+      
+          
         self.tblSort.register(UINib(nibName: "tableSortCell", bundle: nil), forCellReuseIdentifier: "tableSortCell")
-        // Do any additional setup after loading the view.
+        
     }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 40
     }
@@ -35,6 +37,7 @@ class BookMarkCellPopUPVC: UIViewController,UITableViewDelegate,UITableViewDataS
             self.tblSort.isScrollEnabled = false
             return cell
         }
+    
         func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
             self.tblSort.isHidden = true
         }

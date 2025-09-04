@@ -61,6 +61,9 @@ final class AudioMonitorManager: NSObject {
                 DispatchQueue.main.async {
                     guard success, let segments = segments else {
                         print("Merge failed:", error?.localizedDescription ?? "Unknown error")
+                        Task {
+                            await self?.transcribeMissingBookmark(bookmarks)
+                        }
                         return
                     }
                     
@@ -174,6 +177,5 @@ final class AudioMonitorManager: NSObject {
         self.showAlert1(for: "All bookmarks processed for transcription and summary in: \(bookTitle)")
         print("All bookmarks processed for transcription and summary in: \(bookTitle)")
      
-       
     }
 }

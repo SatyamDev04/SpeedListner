@@ -7,17 +7,26 @@
 
 
 
-import UIKit
 import AVFoundation
+import UIKit
 
 class BottomSheetAudioPlayerVC: UIViewController {
 
+    
+    var url: URL?
+    var urls: [URL]?
+
+    // Player
     var player: AVPlayer?
     var playerItem: AVPlayerItem?
-    var url: URL?
+
+    // Track state
+    private var currentIndex: Int = 0
     var currentValue: Float = 0.1
     private var timeObserverToken: Any?
-
+   
+    private weak var timeObserverPlayer: AVPlayer?
+    // UI
     private let playPauseButton = UIButton()
     private let rewindButton = UIButton()
     private let forwardButton = UIButton()
@@ -30,36 +39,72 @@ class BottomSheetAudioPlayerVC: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         setupUI()
-        if let url = url {
-            if FileManager.default.fileExists(atPath:url.path) {
-                print("File exists ✅")
-            } else {
-                print("File does not exist ❌ at path:", url.path)
-            }
+
+        if let urls = urls, !urls.isEmpty {
+            currentIndex = 0
+            setupPlayer(with: urls[currentIndex])
+        } else if let url = url {
             setupPlayer(with: url)
         }
     }
 
     deinit {
-        if let timeObserverToken = timeObserverToken {
-            player?.removeTimeObserver(timeObserverToken)
+        if let token = timeObserverToken, let owner = timeObserverPlayer {
+            owner.removeTimeObserver(token)
         }
+        NotificationCenter.default.removeObserver(self)
     }
 
+    // MARK: - Setup Player
     private func setupPlayer(with url: URL) {
+        // Remove old observer safely before creating new player
+        if let token = timeObserverToken, let oldPlayer = timeObserverPlayer {
+            oldPlayer.removeTimeObserver(token)
+            timeObserverToken = nil
+            timeObserverPlayer = nil
+        }
+
         playerItem = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: playerItem)
 
-        timeObserverToken = player?.addPeriodicTimeObserver(forInterval: CMTime(seconds: 1, preferredTimescale: 1), queue: .main) { [weak self] time in
+        // Add slider sync observer
+        timeObserverToken = player?.addPeriodicTimeObserver(
+            forInterval: CMTime(seconds: 1, preferredTimescale: 1),
+            queue: .main
+        ) { [weak self] time in
             guard let self = self,
                   let duration = self.playerItem?.duration.seconds,
                   duration > 0 else { return }
-
             let currentTime = time.seconds
             self.progressSlider.value = Float(currentTime / duration)
         }
+        timeObserverPlayer = player // 👈 Save the owner
+
+        // Observe when finished
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(itemDidFinishPlaying),
+                                               name: .AVPlayerItemDidPlayToEndTime,
+                                               object: playerItem)
+
+        // Auto play
+        player?.play()
+        player?.rate = PlayerManager.shared.speed
+        playPauseButton.setImage(UIImage(named: "21"), for: .normal)
     }
 
+
+    @objc private func itemDidFinishPlaying() {
+        // If multiple -> load next
+        if let urls = urls, currentIndex < urls.count - 1 {
+            currentIndex += 1
+            setupPlayer(with: urls[currentIndex])
+        } else {
+            print("✅ All clips finished")
+            playPauseButton.setImage(UIImage(named: "Group 4"), for: .normal)
+        }
+    }
+
+    // MARK: - UI Setup
     private func setupUI() {
         playPauseButton.setImage(UIImage(named: "Group 4"), for: .normal)
         rewindButton.setImage(UIImage(named: "Player Controls"), for: .normal)
@@ -111,6 +156,7 @@ class BottomSheetAudioPlayerVC: UIViewController {
         ])
     }
 
+    // MARK: - Controls
     @objc private func sliderValueChanged(_ sender: UISlider) {
         guard let duration = playerItem?.duration.seconds, duration > 0 else { return }
         let seekTime = CMTime(seconds: Double(sender.value) * duration, preferredTimescale: 1)
@@ -119,7 +165,7 @@ class BottomSheetAudioPlayerVC: UIViewController {
 
     @objc private func playPauseTapped() {
         guard let player = player else { return }
-        if playPauseButton.currentImage == UIImage(named: "21") {
+        if player.timeControlStatus == .playing {
             player.pause()
             playPauseButton.setImage(UIImage(named: "Group 4"), for: .normal)
         } else {
@@ -134,8 +180,6 @@ class BottomSheetAudioPlayerVC: UIViewController {
             currentValue += 0.1
             let currentValue1 = round(currentValue * 100) / 100.0
             setSpeed(currentValue: currentValue1)
-        } else {
-            print("Maximum speed reached.")
         }
     }
 
@@ -146,7 +190,6 @@ class BottomSheetAudioPlayerVC: UIViewController {
             setSpeed(currentValue: currentValue1)
         } else {
             setSpeed(currentValue: 0.1)
-            print("Minimum speed reached.")
         }
     }
 
@@ -169,6 +212,8 @@ class BottomSheetAudioPlayerVC: UIViewController {
         PlayerManager.shared.speed = roundedValue
         player?.rate = roundedValue
         speedLabel.text = "Speed: \(roundedValue)x"
-        print("Speed set to:", String(format: "%.1f", roundedValue))
     }
+  
+    
+
 }

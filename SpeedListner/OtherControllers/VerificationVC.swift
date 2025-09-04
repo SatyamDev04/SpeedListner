@@ -31,7 +31,7 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
 //            lightModeEnabled()
 //            print("Light Mode is active")
 //        }
-
+        self.showAlert(for: "Use 1234 as the OTP for testing email/phone verification for now.")
         txt1.delegate = self
         txt2.delegate = self
         txt3.delegate = self
@@ -61,6 +61,7 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
 
         
     }
+    
     
     @objc func textFieldDidChange(textField: UITextField){
             let text = textField.text
@@ -96,6 +97,7 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
 
             }
         }
+    
     
     @IBAction func btnBack_Action(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)

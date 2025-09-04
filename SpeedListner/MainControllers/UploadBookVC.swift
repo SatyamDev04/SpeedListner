@@ -111,7 +111,7 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
        
     }
     @IBAction func uploadFileBtn(_ sender: Any) {
-        self.addAction()
+        self.presentImportFilesAlert()
     }
     func addAction() {
         let alertController = UIAlertController(
@@ -508,15 +508,13 @@ extension UploadBookVC{
         self.present(playlistAlert, animated: true, completion: nil)
     }
     func presentImportFilesAlert() {
-        let providerList = UIDocumentMenuViewController(documentTypes: ["public.audio"], in: .import)
-        providerList.delegate = self
-        self.present(providerList, animated: true, completion: nil)
-
-        if #available(iOS 11.0, *) {
-          //  providerList.allowsMultipleSelection = true
-        }
-
-       // self.present(providerList, animated: true, completion: nil)
+        let supportedTypes = ["public.audio"] // you can add "com.apple.m4a-audio", "public.mp3", etc.
+        
+        let picker = UIDocumentPickerViewController(documentTypes: supportedTypes, in: .import)
+        picker.delegate = self
+        picker.allowsMultipleSelection = true  // optional
+        
+        self.present(picker, animated: true, completion: nil)
     }
 }
 extension UploadBookVC :UIDocumentPickerDelegate{

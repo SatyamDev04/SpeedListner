@@ -113,7 +113,7 @@ class SignUpVC: UIViewController {
                  if dictData!["msg_type"] as? String == "true" {
 
                      if self.flag == true {
-                         self.showToast("Sign up successfully.")
+                    //     self.showToast("otp sent ===> \(dictData!["otp"] as? Int  ?? 0000).")
                          PlayerManager.shared.email = self.txt_Email.text ?? ""
                              DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
                          let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC") as! VerificationVC

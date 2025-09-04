@@ -85,7 +85,7 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
             self.footerView.isHidden = false
         }
         guard let b = currentBok else{return}
-        self.setupMiniPlayer(book: b)
+        //self.setupMiniPlayer(book: b)
     }
     @IBAction func btnBack_Action(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
@@ -354,7 +354,7 @@ extension CreateProfileVC {
         }
        
         currentBok = book
-        setupMiniPlayer(book: book)
+        //setupMiniPlayer(book: book)
      // setupMiniPlayer(book: book)
     }
     @objc private func bookChange(_ notification: Notification) {

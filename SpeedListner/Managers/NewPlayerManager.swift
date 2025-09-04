@@ -55,6 +55,12 @@ class PlayerManager: NSObject {
     // 599 = 10 mins
     private let smartRewindThreshold = 599.0
     private let maxSmartRewind = 30.0
+    var currentUserID: String { return UserDetail.shared.getUserId() }
+
+    // MARK: - Analytics timer (for average speed)
+    private var speedTickTimer: Timer?
+    private var lastTickDate: Date?
+    
     
     func load(_ books: [Book], completion:@escaping (Bool) -> Void) {
         guard let book = books.first else {
@@ -109,6 +115,19 @@ class PlayerManager: NSObject {
                 )
                 
                 MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+                if #available(iOS 16.1, *) {
+//                    LiveActivityManager.start(
+//                        bookID: book.identifier ?? "",
+//                        title: book.title ?? "Unknown",
+//                        duration: book.duration,
+//                        isPlaying: self.isPlaying,
+//                        currentTime: self.currentTime
+//                    )
+                } else {
+                    // Fallback on earlier versions
+                }
+
+               
                 if book.currentTime == audioplayer.duration{
                     book.currentTime = 0.0
                 }
@@ -128,9 +147,49 @@ class PlayerManager: NSObject {
             
         }
     }
-    
-    // Called every second by the timer
+
+    private func startAnalyticsTimer() {
+        // Avoid multiple timers
+        if speedTickTimer != nil { return }
+        lastTickDate = Date()
+        speedTickTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+            self?.tickSpeedAnalytics()
+        }
+        RunLoop.main.add(speedTickTimer!, forMode: .common)
+    }
+
+    // Call this from your existing pause/stop code
+    private func stopAnalyticsTimer() {
+        speedTickTimer?.invalidate()
+        speedTickTimer = nil
+        lastTickDate = nil
+    }
+    private func tickSpeedAnalytics() {
+        guard let last = lastTickDate else {
+            lastTickDate = Date()
+            return
+        }
+        let now = Date()
+        var delta = now.timeIntervalSince(last)
+        // clamp to avoid spikes if app lags
+        delta = max(0, min(delta, 5))
+        lastTickDate = now
+
+        // Only count time while actually playing
+        if audioPlayer?.isPlaying == true {
+            // Ensure AVAudioPlayer can change rate
+            // (somewhere during setup: audioPlayer?.enableRate = true)
+            
+            let rateToRecord = Double(speed)
+            SpeedAnalyticsManager.shared.recordTick(
+                userID: currentUserID,
+                rate: Float(rateToRecord),
+                delta: delta
+            )
+        }
+    }
     @objc func update() {
+        
         guard let audioplayer = self.audioPlayer, let book = self.currentBook else {
             return
         }
@@ -405,7 +464,7 @@ class PlayerManager: NSObject {
         }
         
         self.update()
-        
+        stopAnalyticsTimer()
         audioplayer.pause()
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 0.0
@@ -431,6 +490,7 @@ class PlayerManager: NSObject {
         
         if audioplayer.isPlaying {
             self.pause()
+            stopAnalyticsTimer()
         } else {
             self.play()
             guard let currentBook = self.currentBook else {
@@ -438,12 +498,13 @@ class PlayerManager: NSObject {
                 return
             }
             autoTranscribeIfNeeded(for: currentBook)
+            startAnalyticsTimer()
         }
     }
     
     func stop() {
         self.audioPlayer?.stop()
-        
+        stopAnalyticsTimer()
         var userInfo: [AnyHashable: Any]?
         
         if let book = self.currentBook {
@@ -471,13 +532,18 @@ class PlayerManager: NSObject {
         return self.chapterArray[Int(chapter.index)]
     }
     public func previousChapter(after chapter: Chapter) -> Chapter? {
-        guard !self.chapterArray.isEmpty else {
-            return nil
-        }
+//        guard !self.chapterArray.isEmpty else {
+//            return nil
+//        }
+//        
+//        if chapter == self.chapterArray.first { return nil }
+//        
+//        return self.chapterArray[Int(chapter.index ) - 2]
         
-        if chapter == self.chapterArray.first { return nil }
-        
-        return self.chapterArray[Int(chapter.index ) - 2]
+        guard !self.chapterArray.isEmpty else { return nil }
+            let idx = Int(chapter.index) - 1
+            guard idx > 0 else { return nil }   // no previous if at index 0
+            return self.chapterArray[idx - 1]
     }
     
     func autoTranscribeIfNeeded(for book: Book?) {

@@ -5,6 +5,7 @@
 //
 
 import UIKit
+import MediaPlayer
 
 protocol DelegateforBookmarkPopUpVC {
     func MethodforPop(string:String)
@@ -32,10 +33,27 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     var displayItems: [BookmarkDisplayItem] = []
     let COMMENTS_LIMIT = 255
     
+    let playbackRate = PlayerManager.shared.speed
+    let baseDuration: Double = 10.0
+
+    lazy var calculatedDuration: Double = {
+            return baseDuration / Double(playbackRate)
+        }()
+    
+    lazy var displayDuration: Double = {
+          max(1.5, calculatedDuration)
+      }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        let commandCenter = MPRemoteCommandCenter.shared()
+        commandCenter.bookmarkCommand.isEnabled = true
+        commandCenter.likeCommand.localizedTitle = "Bookmark"
+        commandCenter.likeCommand.addTarget{ (_) -> MPRemoteCommandHandlerStatus in
+            print("🔖 Bookmark button pressed from lock screenhytythythythythyth")
+            return .success
+          
+        }
         setupView()
     }
     
@@ -44,7 +62,10 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         super.viewWillAppear(animated)
        
         if index == nil {
-            self.timer = Timer.scheduledTimer(timeInterval: 1, target: self, selector: #selector(timerTap), userInfo: nil, repeats: true)
+            if tapOnText == 0 {
+                scheduleAutoDismiss()
+            }
+            
         }
     }
     
@@ -52,6 +73,33 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         super.viewWillDisappear(animated)
         
     }
+    
+    func scheduleAutoDismiss() {
+     
+        let playbackRate = Double(PlayerManager.shared.speed)
+        let baseDuration: Double = 10.0
+        let calculatedDuration = baseDuration / playbackRate
+        let displayDuration = max(1.5, calculatedDuration)
+
+        print("[BookmarkPopUpVC] Popup will stay for \(displayDuration) seconds at rate: \(playbackRate)x")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + displayDuration) { [weak self] in
+            guard let self = self else { return }
+            if self.presentingViewController != nil {
+                self.dismiss(animated: true) {
+                    if self.playerstaus {
+                        PlayerManager.shared.play()
+                    } else {
+                        PlayerManager.shared.pause()
+                    }
+                    self.view.removeFromSuperview()
+                    self.delegateBookmarkVC?.MethodforPop(string: "")
+                    self.saveWithoutNote()
+                }
+            }
+        }
+    }
+
     
     private func setupView(){
         
@@ -92,8 +140,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                             }
                             
                         }
-                        
-                      
+                       
                     }
                     
                 }
@@ -108,31 +155,31 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         
     }
     
-    @objc func timerTap(){
-        print("timer")
-        guard self.book != nil else {
-            DispatchQueue.main.async{
-                self.showToast("Please add a book to the library if already added then play")
-                self.dismiss(animated: true)
-            }
-            return
-        }
-        runCount += 1
-        if runCount == 3 && tapOnText == 0  {
-            self.timer.invalidate()
-            self.dismiss(animated: true) {
-                
-                if self.playerstaus == true{
-                    PlayerManager.shared.play()
-                }else{
-                    PlayerManager.shared.pause()
-                }
-                self.view.removeFromSuperview()
-                self.delegateBookmarkVC?.MethodforPop(string: "")
-                self.saveWithoutNote()
-            }
-        }
-    }
+//    @objc func timerTap(){
+//        print("timer")
+//        guard self.book != nil else {
+//            DispatchQueue.main.async{
+//                self.showToast("Please add a book to the library if already added then play")
+//                self.dismiss(animated: true)
+//            }
+//            return
+//        }
+//        runCount += 1
+//        if runCount == 3 && tapOnText == 0  {
+//            self.timer.invalidate()
+//            self.dismiss(animated: true) {
+//                
+//                if self.playerstaus == true{
+//                    PlayerManager.shared.play()
+//                }else{
+//                    PlayerManager.shared.pause()
+//                }
+//                self.view.removeFromSuperview()
+//                self.delegateBookmarkVC?.MethodforPop(string: "")
+//                self.saveWithoutNote()
+//            }
+//        }
+//    }
     
   
     
@@ -259,7 +306,8 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         
         
     }
-    func saveWithoutNote(){
+    
+    @objc func saveWithoutNote(){
         guard self.book != nil else {
             DispatchQueue.main.async{
                 self.showToast("Please add a book to the library if already added then play")
@@ -296,16 +344,14 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     }
     
     @IBAction func btnCross_Actioin(_ sender: UIButton) {
-        self.timer.invalidate()
+        
         self.dismiss(animated: true) {
             self.view.removeFromSuperview()
             self.delegateBookmarkVC?.MethodforPop(string: "")
-            if self.txt_notes.text == ""{
-                self.saveWithoutNote()
-            }
+            
         }
-        
     }
+    
     
 }
 
@@ -351,13 +397,9 @@ extension BookmarkPopUpVC {
 
 extension Date {
 
- static func getCurrentDate() -> String {
-
+    static func getCurrentDate() -> String {
         let dateFormatter = DateFormatter()
-
-        dateFormatter.dateFormat = "MM/dd/yyyy"
-
+        dateFormatter.dateFormat = "MM/dd/yyyy hh:mm a" 
         return dateFormatter.string(from: Date())
-
     }
 }

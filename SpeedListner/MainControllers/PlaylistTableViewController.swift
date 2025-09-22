@@ -153,6 +153,7 @@ class PlaylistTableViewController: UITableViewController {
          //   removeDescendants(of: playlist, startingAt: index + 1)
             if !items.isEmpty {
                 delegate?.didSelectPlaylist(item.playlist, from: self.items)
+                dismiss(animated: true, completion: nil)
             } else {
                 delegate?.didSelectPlaylist(item.playlist, from: self.item)
                 dismiss(animated: true, completion: nil)

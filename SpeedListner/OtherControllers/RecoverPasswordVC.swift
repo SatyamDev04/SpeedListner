@@ -13,6 +13,7 @@ class RecoverPasswordVC: UIViewController {
     @IBOutlet weak var view_Submit: UIView!
     @IBOutlet weak var view_Email: UIView!
     let loading = indicator()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -29,8 +30,6 @@ class RecoverPasswordVC: UIViewController {
         self.view_Email.layer.borderWidth = 1
         self.view_Email.layer.borderColor = UIColor(red:70/255, green:0/255, blue:100/255, alpha: 1).cgColor
         
-
-        
     }
     
     func validateEmail(YourEMailAddress: String) -> Bool {
@@ -38,6 +37,7 @@ class RecoverPasswordVC: UIViewController {
         REGEX = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,3}"
         return NSPredicate(format: "SELF MATCHES %@", REGEX).evaluate(with: YourEMailAddress)
     }
+    
     func validation() -> Bool {
         
         if txt_EmailPhone.text?.count == 0 {
@@ -50,14 +50,15 @@ class RecoverPasswordVC: UIViewController {
                 return false
             }
             
-        } else if txt_EmailPhone.text?.isNumeric == true || txt_EmailPhone.text!.count != 10 {
-            if  !txt_EmailPhone.text!.isValidPhone(){
-                self.popupAlert(title: "Error", message: "Please enter valid phone number.", actionTitles: ["Ok"], actions:[{action1 in}])
-                return false
-            }
+        } else if let phone = txt_EmailPhone.text, !phone.isValidUSPhone() {
+            self.popupAlert(title: "Error",
+                            message: "Please enter valid phone number.",
+                            actionTitles: ["Ok"],
+                            actions:[{_ in}])
+            return false
+        }
         
-    }
-        
+
         return true
     }
 
@@ -67,16 +68,16 @@ class RecoverPasswordVC: UIViewController {
     }
     
     @IBAction func btnSubmit_Action(_ sender: Any) {
-        guard validation() else {
-            return }
+        
+        guard validation() else { return }
+        
         let jsonDict : [String:Any] = ["email" : self.txt_EmailPhone.text ?? ""]
                print(jsonDict,"jsonDict")
 
-               let loginURL = baseURL.baseURL + appEndPoints.send_forget_password //+appEndPoints.signup
-
+               let loginURL = baseURL.baseURL + appEndPoints.send_forget_password
                print(loginURL, "loginURL")
+              self.loading.showActivityIndicator(uiView: self.view)
         
-                  self.loading.showActivityIndicator(uiView: self.view)
                WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { (json, statusCode) in
                    self.loading.hideActivityIndicator(uiView: self.view)
                    let dict = "\(json)"
@@ -93,20 +94,16 @@ class RecoverPasswordVC: UIViewController {
                  if dictData!["msg_type"] as? String == "success" {
                      
                      let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC1") as! VerificationVC1
-                     vc.EmailPhone = self.txt_EmailPhone.text ?? ""
-                     self.navigationController?.pushViewController(vc, animated: true)
                      
-
+                     vc.EmailPhone = self.txt_EmailPhone.text ?? ""
+                   self.navigationController?.pushViewController(vc, animated: true)
+                  
                  } else    {
                        let responseMessage = dictData!["msg"] as! String
                        AlertController.alert(title: "", message: responseMessage)
                    }
-                   //            hideHud()
                })
-        
-        
-//        let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC1") as! VerificationVC1
-//        self.navigationController?.pushViewController(vc, animated: true)
+   
 
     }
     

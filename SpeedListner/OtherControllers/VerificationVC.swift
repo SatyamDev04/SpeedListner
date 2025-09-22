@@ -20,6 +20,7 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
     @IBOutlet weak var txt_View1: UIView!
     var emailid:String!
     let loading = indicator()
+    var myIntegerVariable = Int()
     override func viewDidLoad() {
         super.viewDidLoad()
 //        if traitCollection.userInterfaceStyle == .dark {
@@ -111,54 +112,59 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
             AlertController.alert(title: "", message: "Please enter Otp")
             
         } else {
-      
-        let otp = "\((txt1.text)!)\((txt2.text)!)\((txt3.text)!)\((txt4.text)!)"
+            let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
+            vc.a = true
             
-            let jsonDict : [String:Any] = ["email" :emailid! ,"otp" : otp]
-       
-        print(jsonDict,"jsonDict")
-        
-        let loginURL = baseURL.baseURL + appEndPoints.verify_otp //+appEndPoints.getOtpSignUp
-        
-        print(loginURL, "loginURL")
+            vc.userid = myIntegerVariable
+            self.navigationController?.pushViewController(vc, animated: true)
             
-            self.loading.showActivityIndicator(uiView: self.view)
-        
-        WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { (json, statusCode) in
-            self.loading.hideActivityIndicator(uiView: self.view)
-            let dict = "\(json)"
-            var dictData : [String:Any]?
-            if let data = dict.data(using: .utf8) {
-                do {
-                    dictData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-                    
-                    
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
-          if dictData!["msg_type"] as? String == "success"{
-              
-              let myStringVariable = (dictData!["user_id"] as? String)!
-              
-              let myIntegerVariable = Int(myStringVariable) ?? 0
-              
-             UserDetail.shared.setUserId(String(myIntegerVariable))
-              let userid1 = UserDetail.shared.getUserId()
-            print(userid1, "user_id Verification VC")
-                
-              let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
-              vc.a = true
-              vc.userid = myIntegerVariable
-              self.navigationController?.pushViewController(vc, animated: true)
-              
-               // completionHandler("\(String(describing: dictData!["message"] as? String))", "")
-            }  else    {
-                let responseMessage =   "Invalid Code Please Try Again"//dictData!["msg"] as! String
-                AlertController.alert(title: "", message: responseMessage)
-            }
-            //            hideHud()
-        })
+//        let otp = "\((txt1.text)!)\((txt2.text)!)\((txt3.text)!)\((txt4.text)!)"
+//            
+//            let jsonDict : [String:Any] = ["email" :emailid! ,"otp" : otp]
+//       
+//        print(jsonDict,"jsonDict")
+//        
+//        let loginURL = baseURL.baseURL + appEndPoints.verify_otp //+appEndPoints.getOtpSignUp
+//        
+//        print(loginURL, "loginURL")
+//            
+//            self.loading.showActivityIndicator(uiView: self.view)
+//        
+//        WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { (json, statusCode) in
+//            self.loading.hideActivityIndicator(uiView: self.view)
+//            let dict = "\(json)"
+//            var dictData : [String:Any]?
+//            if let data = dict.data(using: .utf8) {
+//                do {
+//                    dictData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
+//                    
+//                    
+//                } catch {
+//                    print(error.localizedDescription)
+//                }
+//            }
+//          if dictData!["msg_type"] as? String == "success"{
+//              
+//              let myStringVariable = (dictData!["user_id"] as? String)!
+//              
+//              let myIntegerVariable = Int(myStringVariable) ?? 0
+//              
+//             UserDetail.shared.setUserId(String(myIntegerVariable))
+//              let userid1 = UserDetail.shared.getUserId()
+//            print(userid1, "user_id Verification VC")
+//                    
+//              let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
+//              vc.a = true
+//              vc.userid = myIntegerVariable
+//              self.navigationController?.pushViewController(vc, animated: true)
+//              
+//               // completionHandler("\(String(describing: dictData!["message"] as? String))", "")
+//            }  else    {
+//                let responseMessage =   "Invalid Code Please Try Again"//dictData!["msg"] as! String
+//                AlertController.alert(title: "", message: responseMessage)
+//            }
+//            //            hideHud()
+//        })
         
 //            let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
 //            vc.a = true
@@ -176,7 +182,7 @@ class VerificationVC: UIViewController,UITextFieldDelegate {
 
                print(loginURL, "loginURL")
         
-                  self.loading.showActivityIndicator(uiView: self.view)
+                self.loading.showActivityIndicator(uiView: self.view)
                WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { (json, statusCode) in
                    self.loading.hideActivityIndicator(uiView: self.view)
                    let dict = "\(json)"

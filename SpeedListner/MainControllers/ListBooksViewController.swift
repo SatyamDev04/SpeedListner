@@ -366,7 +366,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         
     }
     
-    @IBAction func btnDot_Action(_ sender: UIButton) {
+    @IBAction func btnDot_Action(_ sender: UIButton){
         
         self.topMenu.anchorView = sender
         self.topMenu.bottomOffset = CGPoint(x: -90, y: sender.bounds.height + 8)
@@ -376,8 +376,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","historyIcon","Settings","fluent_person-1x"]
+        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help","Feedback"])
+        let imagesArr = ["bi_bookmark-fill","history","Settings","question","fluent_person-1x"]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -406,9 +406,13 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
            
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
-                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
+            }else if index == 3{
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
            
+                self.navigationController?.pushViewController(vc, animated: true)
+            }else{
+              
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
             }
         }
@@ -530,6 +534,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         
         present(alert, animated: true, completion: nil)
     }
+    
     private func creatFolderAndInsertBooks(item:LibraryItem){
         
         let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
@@ -900,18 +905,34 @@ extension ListBooksViewController: UITableViewDataSource {
             sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
             sheet.addAction(UIAlertAction(title: "Existing Folder", style: .default) { _ in
-                let playlistTableVC = PlaylistTableViewController()
-                playlistTableVC.playlists = self.items.compactMap {
-                    if let playlist = $0 as? Playlist, !selectedItems.contains(playlist) {
-                        return playlist
-                    }
-                    return nil
-                }
-               playlistTableVC.items = selectedItems
                 
-                playlistTableVC.delegate = self
-                let navController = UINavigationController(rootViewController: playlistTableVC)
+//                func presentPlaylistTableView(item:LibraryItem) {
+                    let playlistTableVC = PlaylistTableViewController()
+                playlistTableVC.playlists = self.items.compactMap {
+                                   if let playlist = $0 as? Playlist, !selectedItems.contains(playlist) {
+                                       return playlist
+                                   }
+                                   return nil
+                               }
+                    playlistTableVC.items = selectedItems
+                    playlistTableVC.delegate = self
+                    playlistTableVC.allowMoveToParent = false
+                    playlistTableVC.allowMoveToRoot = false
+                    let navController = UINavigationController(rootViewController: playlistTableVC)
                 self.present(navController, animated: true, completion: nil)
+//                }
+//                let playlistTableVC = PlaylistTableViewController()
+//                playlistTableVC.playlists = self.items.compactMap {
+//                    if let playlist = $0 as? Playlist, !selectedItems.contains(playlist) {
+//                        return playlist
+//                    }
+//                    return nil
+//                }
+//               playlistTableVC.items = selectedItems
+//                
+//                playlistTableVC.delegate = self
+//                let navController = UINavigationController(rootViewController: playlistTableVC)
+//                self.present(navController, animated: true, completion: nil)
             })
 
             sheet.addAction(UIAlertAction(title: "New Folder", style: .default) { _ in
@@ -1045,14 +1066,21 @@ extension ListBooksViewController: UITableViewDataSource {
         guard let book = books.first else { return }
         
         guard NewDataMannagerClass.exists(book) else {
-            self.showAlert("File missing!", message: "This book’s file was removed from your device. Import the file again to play the book", style: .alert)
-            
+            self.showAlert(
+                "File Missing!",
+                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                style: .alert
+            )
             return
         }
         
         PlayerManager.shared.load(books) { (loaded) in
             guard loaded else {
-                self.showAlert("File error!", message: "This book's file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert(
+                    "File Missing!",
+                    message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                    style: .alert
+                )
                 return
             }
             PlayerManager.shared.playPause()

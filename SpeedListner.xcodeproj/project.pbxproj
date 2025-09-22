@@ -122,9 +122,6 @@
 		DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */; };
 		DD8E537D2E1686F500DF31C2 /* TranscriptionSummaryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */; };
 		DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */; };
-		DD9382732E5DBEDE00CE3314 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD9382722E5DBEDE00CE3314 /* WidgetKit.framework */; };
-		DD9382752E5DBEDE00CE3314 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DD9382742E5DBEDE00CE3314 /* SwiftUI.framework */; };
-		DD9382862E5DBEE000CE3314 /* SpeedListerExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = DD9382712E5DBEDE00CE3314 /* SpeedListerExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		DD93829A2E5DD40100CE3314 /* BookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9382992E5DD40100CE3314 /* BookmarkManager.swift */; };
 		DD9D3EBF2DC8B76600E72CBB /* AudioBookmarkExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */; };
 		DDA453882E17E62F000A3196 /* HistoryViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDA453872E17E60F000A3196 /* HistoryViewController.swift */; };
@@ -156,13 +153,6 @@
 			remoteGlobalIDString = DD0EED792C8F2456004F2863;
 			remoteInfo = SpeedListner;
 		};
-		DD9382842E5DBEE000CE3314 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = DD0EED722C8F2456004F2863 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DD9382702E5DBEDE00CE3314;
-			remoteInfo = SpeedListerExtension;
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -172,7 +162,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				DD9382862E5DBEE000CE3314 /* SpeedListerExtension.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -303,7 +292,6 @@
 		DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksActivityItemProvider.swift; sourceTree = "<group>"; };
 		DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionSummaryVC.swift; sourceTree = "<group>"; };
 		DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitorManager.swift; sourceTree = "<group>"; };
-		DD9382712E5DBEDE00CE3314 /* SpeedListerExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SpeedListerExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD9382722E5DBEDE00CE3314 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		DD9382742E5DBEDE00CE3314 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
 		DD9382992E5DD40100CE3314 /* BookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkManager.swift; sourceTree = "<group>"; };
@@ -325,13 +313,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		DD93828A2E5DBEE000CE3314 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = DD9382702E5DBEDE00CE3314 /* SpeedListerExtension */;
-		};
 		DD9382972E5DC71100CE3314 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -343,7 +324,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		DD9382762E5DBEDE00CE3314 /* SpeedLister */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DD9382972E5DC71100CE3314 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, DD93828A2E5DBEE000CE3314 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SpeedLister; sourceTree = "<group>"; };
+		DD9382762E5DBEDE00CE3314 /* SpeedLister */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (DD9382972E5DC71100CE3314 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SpeedLister; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -369,15 +350,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				51BF78FCE81270D1D2967A51 /* Pods_SpeedListner_SpeedListnerUITests.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DD93826E2E5DBEDE00CE3314 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DD9382752E5DBEDE00CE3314 /* SwiftUI.framework in Frameworks */,
-				DD9382732E5DBEDE00CE3314 /* WidgetKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -428,7 +400,6 @@
 				DD0EED7A2C8F2456004F2863 /* SpeedListner.app */,
 				DD0EED932C8F2457004F2863 /* SpeedListnerTests.xctest */,
 				DD0EED9D2C8F2457004F2863 /* SpeedListnerUITests.xctest */,
-				DD9382712E5DBEDE00CE3314 /* SpeedListerExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -678,7 +649,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				DD9382852E5DBEE000CE3314 /* PBXTargetDependency */,
 			);
 			name = SpeedListner;
 			packageProductDependencies = (
@@ -727,28 +697,6 @@
 			productReference = DD0EED9D2C8F2457004F2863 /* SpeedListnerUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		DD9382702E5DBEDE00CE3314 /* SpeedListerExtension */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DD93828B2E5DBEE000CE3314 /* Build configuration list for PBXNativeTarget "SpeedListerExtension" */;
-			buildPhases = (
-				DD93826D2E5DBEDE00CE3314 /* Sources */,
-				DD93826E2E5DBEDE00CE3314 /* Frameworks */,
-				DD93826F2E5DBEDE00CE3314 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				DD9382762E5DBEDE00CE3314 /* SpeedLister */,
-			);
-			name = SpeedListerExtension;
-			packageProductDependencies = (
-			);
-			productName = SpeedListerExtension;
-			productReference = DD9382712E5DBEDE00CE3314 /* SpeedListerExtension.appex */;
-			productType = "com.apple.product-type.app-extension";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -769,9 +717,6 @@
 					DD0EED9C2C8F2457004F2863 = {
 						CreatedOnToolsVersion = 15.0;
 						TestTargetID = DD0EED792C8F2456004F2863;
-					};
-					DD9382702E5DBEDE00CE3314 = {
-						CreatedOnToolsVersion = 16.4;
 					};
 				};
 			};
@@ -794,7 +739,6 @@
 				DD0EED792C8F2456004F2863 /* SpeedListner */,
 				DD0EED922C8F2457004F2863 /* SpeedListnerTests */,
 				DD0EED9C2C8F2457004F2863 /* SpeedListnerUITests */,
-				DD9382702E5DBEDE00CE3314 /* SpeedListerExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -833,13 +777,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		DD0EED9B2C8F2457004F2863 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DD93826F2E5DBEDE00CE3314 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1088,13 +1025,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DD93826D2E5DBEDE00CE3314 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -1107,11 +1037,6 @@
 			isa = PBXTargetDependency;
 			target = DD0EED792C8F2456004F2863 /* SpeedListner */;
 			targetProxy = DD0EED9E2C8F2457004F2863 /* PBXContainerItemProxy */;
-		};
-		DD9382852E5DBEE000CE3314 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = DD9382702E5DBEDE00CE3314 /* SpeedListerExtension */;
-			targetProxy = DD9382842E5DBEE000CE3314 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1333,7 +1258,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = E3EC947E04888BAF2988905C /* Pods-SpeedListnerTests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1354,7 +1278,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 40767F0EE90A0197E606281F /* Pods-SpeedListnerTests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1375,7 +1298,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 7E3C6FBA3AFDDE4981D7851B /* Pods-SpeedListner-SpeedListnerUITests.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 52853JTM76;
@@ -1394,7 +1316,6 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 4A579A439736E10123D1EBD6 /* Pods-SpeedListner-SpeedListnerUITests.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 52853JTM76;
@@ -1406,64 +1327,6 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = SpeedListner;
-			};
-			name = Release;
-		};
-		DD9382882E5DBEE000CE3314 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 52853JTM76;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SpeedLister/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = SpeedLister;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.speedListner.ios.SpeedListner.SpeedLister;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		DD9382892E5DBEE000CE3314 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 52853JTM76;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = SpeedLister/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = SpeedLister;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@executable_path/../../Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.speedListner.ios.SpeedListner.SpeedLister;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SKIP_INSTALL = YES;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -1502,15 +1365,6 @@
 			buildConfigurations = (
 				DD0EEDAE2C8F2457004F2863 /* Debug */,
 				DD0EEDAF2C8F2457004F2863 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		DD93828B2E5DBEE000CE3314 /* Build configuration list for PBXNativeTarget "SpeedListerExtension" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DD9382882E5DBEE000CE3314 /* Debug */,
-				DD9382892E5DBEE000CE3314 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

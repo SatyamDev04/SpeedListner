@@ -236,7 +236,11 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         guard let book = books.first else { return }
         
         guard NewDataMannagerClass.exists(book) else {
-            self.showAlert("File missing!", message: "This book’s file was removed from your device. Import the file again to play the book", style: .alert)
+            self.showAlert(
+                "File Missing!",
+                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                style: .alert
+            )
             
             return
         }
@@ -244,7 +248,7 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         PlayerManager.shared.load(books) { (loaded) in
             guard loaded else {
                 //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This book's file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
                 return
             }
             self.showPlayerView(book: book)
@@ -260,7 +264,10 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
             playerVC.book = book
             
             PlayerManager.shared.play()
-            self.tabBarController?.selectedIndex = 1
+            if tabBarController?.selectedIndex == 1{
+                self.navigationController?.popToRootViewController(animated: false)
+            }else{
+                self.tabBarController?.selectedIndex = 1}
         }
     }
     
@@ -327,6 +334,10 @@ extension HistoryViewController {
         tableView.delegate = self
         tableView.dataSource = self
        
+    }
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.navigationController?.popToRootViewController(animated: false)
     }
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -413,11 +424,14 @@ extension HistoryViewController {
             let playerVC = storyboard.instantiateViewController(withIdentifier: "PlayerViewController") as! PlayerViewController
             guard let b = currentBok else {return}
             playerVC.book = b
-            
-            tabBarController?.selectedIndex = 1
+        
+        
+            if tabBarController?.selectedIndex == 1{
+                self.navigationController?.popToRootViewController(animated: false)
+            }else{
+                self.tabBarController?.selectedIndex = 1}
         }
-        
-        
+         
     }
     
     @IBAction func miniplayerBookmarksBtn_Action(_ sender: UIButton){

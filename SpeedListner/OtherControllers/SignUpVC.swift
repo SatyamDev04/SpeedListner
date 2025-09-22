@@ -50,21 +50,21 @@ class SignUpVC: UIViewController {
         if txt_Email.text?.count == 0 {
             self.popupAlert(title: "Error", message: "Email can't be empty.", actionTitles: ["Ok"], actions:[{action1 in}])
             return false
-        
+            
         } else if txt_Email.text?.isNumeric == false {
             if  !validateEmail(YourEMailAddress: txt_Email.text!){
                 self.popupAlert(title: "Error", message: "Please enter valid email.", actionTitles: ["Ok"], actions:[{action1 in}])
                 return false
             }
             
-        } else if txt_Email.text?.isNumeric == true || txt_Email.text!.count != 10 {
-            if  !txt_Email.text!.isValidPhone(){
-                self.popupAlert(title: "Error", message: "Please enter valid phone number.", actionTitles: ["Ok"], actions:[{action1 in}])
-                return false
-            }
-        
-    }
-        
+        } else if let phone = txt_Email.text, !phone.isValidUSPhone() {
+            self.popupAlert(title: "Error",
+                            message: "Please enter valid phone number.",
+                            actionTitles: ["Ok"],
+                            actions:[{_ in}])
+            return false
+        }
+    
         return true
     }
     @IBAction func btn_AgreeAction(_ sender: UIButton) {
@@ -83,16 +83,24 @@ class SignUpVC: UIViewController {
     @IBAction func btnBack_Action(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
     }
+    
+    
     @IBAction func BtnSignUp_Action(_ sender: Any) {
         print("Sign up Button Action")
        
         guard validation() else {
             return }
+         guard self.flag else {
+            self.popupAlert(title: "Error", message: "Please Select Agree With Terms & Conditions To Proceed.", actionTitles: ["Ok"], actions:[{action1 in}])
+            return
+        }
+
+       
         
         let jsonDict : [String:Any] = ["email" : self.txt_Email.text ?? ""]
                print(jsonDict,"jsonDict")
 
-               let loginURL = baseURL.baseURL + appEndPoints.signup //+appEndPoints.signup
+               let loginURL = baseURL.baseURL + appEndPoints.signup
 
                print(loginURL, "loginURL")
         
@@ -112,18 +120,18 @@ class SignUpVC: UIViewController {
                    }
                  if dictData!["msg_type"] as? String == "true" {
 
-                     if self.flag == true {
-                    //     self.showToast("otp sent ===> \(dictData!["otp"] as? Int  ?? 0000).")
+                  
+                         //     self.showToast("otp sent ===> \(dictData!["otp"] as? Int  ?? 0000).")
                          PlayerManager.shared.email = self.txt_Email.text ?? ""
-                             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
-                         let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC") as! VerificationVC
-                                 vc.emailid = txt_Email.text ?? ""
-                            
-                                 self.navigationController?.pushViewController(vc, animated: true) } }else {
-                                 self.popupAlert(title: "Error", message: "Please Select Agree With Terms & Conditions To Proceed.", actionTitles: ["Ok"], actions:[{action1 in}])
-                                 return
-                             }
-                     
+                         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+                             let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC") as! VerificationVC
+                             vc.emailid = txt_Email.text ?? ""
+                             let id = dictData!["user_id"] as? Int ?? 0
+                             vc.myIntegerVariable = id
+                             UserDetail.shared.setUserId(String(id))
+                             
+                             self.navigationController?.pushViewController(vc, animated: true) }
+                  
 
                  } else    {
                      
@@ -205,5 +213,19 @@ extension SignUpVC {
     private func darkModeEnabled() {
         txt_Email.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedString.Key.foregroundColor: UIColor.white])
     
+    }
+}
+extension String {
+  
+    func isValidUSPhone() -> Bool {
+        let digits = self.components(separatedBy: CharacterSet.decimalDigits.inverted).joined()
+        
+        // Check for 10-digit (local) or 11-digit starting with 1 (country code)
+        if digits.count == 10 {
+            return true
+        } else if digits.count == 11, digits.hasPrefix("1") {
+            return true
+        }
+        return false
     }
 }

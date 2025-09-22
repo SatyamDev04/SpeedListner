@@ -80,7 +80,7 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
             self.txt_phone.text = PlayerManager.shared.email
         }
         
-       
+        
         if PlayerManager.shared.isPlaying {
             self.footerView.isHidden = false
         }
@@ -95,7 +95,7 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
         guard validation() else {
             return }
         let imageData1 =  self.imgProfile.image!.pngData()
-       
+        
         
         //let userid = UserDetail.shared.getUserId()
         
@@ -124,10 +124,10 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
                 
                 //self.showToast("Profile created successfully.")
                 
-               // DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
+                // DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
                 
-                    let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarVC") as! TabBarVC
-                    self.navigationController?.pushViewController(vc, animated: true)
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarVC") as! TabBarVC
+                self.navigationController?.pushViewController(vc, animated: true)
                 //}
                 // completionHandler("\(String(describing: dictData!["message"] as? String))", "")
             }  else    {
@@ -140,12 +140,12 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
         
         
         
-//        let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarViewController") as! TabBarViewController
-//        self.navigationController?.pushViewController(vc, animated: true)
+        //        let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarViewController") as! TabBarViewController
+        //        self.navigationController?.pushViewController(vc, animated: true)
     }
     //Playback may be interrupted by calls. Handle pause
     @objc func play_pauseImgSet(_ notification:Notification){
-       
+        
         
     }
     /**
@@ -155,9 +155,9 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
     
     @objc func handleAudioInterruptions(_ notification:Notification){
         
-   
+        
     }
-
+    
     
     
     @IBAction func btnSelectProfile_ImageAction(_ sender: Any) {
@@ -209,7 +209,7 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
         if txt_Name.text?.count == 0 {
             self.popupAlert(title: "Error", message: "Name can't be empty.", actionTitles: ["Ok"], actions:[{action1 in}])
             return false
-        
+            
         } else if txt_Email.text?.isNumeric == false {
             if  !validateEmail(YourEMailAddress: txt_Email.text!){
                 self.popupAlert(title: "Error", message: "Please enter valid email.", actionTitles: ["Ok"], actions:[{action1 in}])
@@ -217,43 +217,26 @@ class CreateProfileVC: UIViewController, UIImagePickerControllerDelegate,UINavig
             }
             
         }
-        if txt_phone.text?.isNumeric == true || txt_phone.text!.count != 17 {
-            if  !txt_phone.text!.isValidPhone(){
-                self.popupAlert(title: "Error", message: "Please enter valid phone number.", actionTitles: ["Ok"], actions:[{action1 in}])
-                return false
-            }
+        if  let phone = txt_phone.text, !phone.isValidUSPhone() {
+            self.popupAlert(title: "Error",
+                            message: "Please enter valid phone number.",
+                            actionTitles: ["Ok"],
+                            actions:[{_ in}])
+            return false
+        }
         
-    }
-
+        
         return true
     }
-    //mask example: `+X (XXX) XXX-XXXX`
-    func format(with mask: String, phone: String) -> String {
-        let numbers = phone.replacingOccurrences(of: "[^0-9]", with: "", options: .regularExpression)
-        var result = ""
-        var index = numbers.startIndex // numbers iterator
-
-        // iterate over the mask characters until the iterator of numbers ends
-        for ch in mask where index < numbers.endIndex {
-            if ch == "X" {
-                // mask requires a number in this place, so take the next one
-                result.append(numbers[index])
-
-                // move numbers iterator to the next index
-                index = numbers.index(after: index)
-
-            } else {
-                result.append(ch) // just append a mask character
-            }
-        }
-        return result
-    }
-    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
-        guard let text = txt_phone.text else { return false }
-        let newString = (text as NSString).replacingCharacters(in: range, with: string)
-        txt_phone.text = format(with: "+X (XXX) XXX-XXXX", phone: newString)
-        return false
-    }
+   
+//    
+//    func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
+//        guard let text = txt_phone.text else { return false }
+//        let newString = (text as NSString).replacingCharacters(in: range, with: string)
+//        txt_phone.text = format(with: "+X (XXX) XXX-XXXX", phone: newString)
+//        return false
+//    }
+    
     @IBAction func didPressPlay(_ sender: UIButton){
         PlayerManager.shared.playPause()
         self.setPlayImage()

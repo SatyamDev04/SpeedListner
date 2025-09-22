@@ -69,7 +69,7 @@ class CreatePasswordVC: UIViewController {
         
         if txt_NewPassword.text == txt_ConfirmPassword.text {
             
-            let jsonDict : [String:Any] = ["user_id" :"\(userid!)" ,"password" : txt_ConfirmPassword.text!]
+            let jsonDict : [String:Any] = ["user_id" :"\(userid ?? 0)" ,"password" : txt_ConfirmPassword.text ?? ""]
        
         print(jsonDict,"jsonDict")
         

@@ -133,7 +133,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     var chapters: [Chapter]?
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+    
         playButton.layer.cornerRadius = 25
         DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
             if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
@@ -148,12 +148,12 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             }else{
                 self.showToast("no Scene delegate")
             }
-
+            
         }
                 
         setupAudioSession()
         setupRoutePickerView()
-        
+        self.startObservingRouteChanges()
         //Drop shadow on cover view
         coverImageView.layer.shadowColor = UIColor.black.cgColor
         coverImageView.layer.shadowOffset = CGSize(width: 0, height: 4)
@@ -191,6 +191,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         mRALable.isUserInteractionEnabled = true
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.handleMraValueTap))
         mRALable.addGestureRecognizer(gestureRecognizer)
+        playButton.tintColor = UIColor { traitCollection in
+            return traitCollection.userInterfaceStyle == .dark ? .black : .white
+            
+
+        }
     }
     
    
@@ -408,7 +413,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         
         self.authorLabel.text = self.book?.author
         self.titleLabel.text = self.book?.title
-     
+        
+       
                 
         self.setChapterLabel()
         
@@ -419,6 +425,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             if traitCollection.userInterfaceStyle == .dark {
                 // Dark mode is active
                 self.dropSpeedEscTimeLbl.textColor = .white
+                
                 
             } else {
                 self.dropSpeedEscTimeDropImgV.tintColor = .black
@@ -967,7 +974,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         guard let book = books.first else { return }
         
         guard NewDataMannagerClass.exists(book) else {
-            self.showAlert("File missing!", message: "This book’s file was removed from your device. Import the file again to play the book", style: .alert)
+            self.showAlert(
+                "File Missing!",
+                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                style: .alert
+            )
             
             return
         }
@@ -978,7 +989,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         PlayerManager.shared.load(books) { (loaded) in
             guard loaded else {
                 //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This book's file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
                 return
             }
             //  self.showPlayerView(book: book)
@@ -1089,8 +1100,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help & Feedback"])
-        let imagesArr = ["bi_bookmark-fill","historyIcon","Settings","fluent_person-1x"]
+        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help","Feedback"])
+        let imagesArr = ["bi_bookmark-fill","history","Settings","question","fluent_person-1x"]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -1119,9 +1130,13 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
            
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
-                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
+            }else if index == 3{
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
            
+                self.navigationController?.pushViewController(vc, animated: true)
+            }else{
+              
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
             }
         }
@@ -1197,7 +1212,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                       break
                   }
               }
+    
     }
+    
     override var preferredStatusBarUpdateAnimation : UIStatusBarAnimation {
         return .slide
     }
@@ -1271,6 +1288,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         PlayerManager.shared.play()
         self.viewWillAppear(true)
     }
+    deinit {
+           stopObservingRouteChanges()
+       }
 }
 
 extension PlayerViewController: AVAudioPlayerDelegate {
@@ -1392,8 +1412,8 @@ extension PlayerViewController: AVAudioPlayerDelegate {
     }
     
     @objc func handleMraValueTap(){
-        let vc = SpeedStatsViewController()
-        navigationController?.pushViewController(vc, animated: true)
+//        let vc = SpeedStatsViewController()
+//        navigationController?.pushViewController(vc, animated: true)
     }
      func openThroughURL(fileURL:URL) {
         
@@ -1578,4 +1598,107 @@ extension PlayerViewController:DelegateforPauseTimer{
 }
 protocol TapOnOptions {
     func tapped(conditionValue:Int)
+}
+
+// --- Add these methods inside PlayerViewController class ---
+
+extension PlayerViewController{
+    private func startObservingRouteChanges() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioRouteChanged(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: nil)
+    }
+    
+    // Call from deinit()
+    private func stopObservingRouteChanges() {
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
+    }
+    
+    @objc private func handleAudioRouteChanged(_ notification: Notification) {
+        // Inspect reason (optional)
+        if let info = notification.userInfo,
+           let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
+           let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) {
+            switch reason {
+            case .newDeviceAvailable, .oldDeviceUnavailable, .categoryChange:
+                DispatchQueue.main.async { [weak self] in
+                    self?.dismissRoutePickerIfNeeded()
+                }
+            default:
+                break
+            }
+        } else {
+            DispatchQueue.main.async { [weak self] in
+                self?.dismissRoutePickerIfNeeded()
+            }
+        }
+    }
+    
+    // Improved dismissal: search all windows and their presented view controllers
+    private func dismissRoutePickerIfNeeded() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Search across all windows to find a presented view controller that looks like the route picker.
+            let windows: [UIWindow]
+            if #available(iOS 13.0, *) {
+                windows = UIApplication.shared.connectedScenes
+                    .compactMap { $0 as? UIWindowScene }
+                    .flatMap { $0.windows }
+            } else {
+                windows = [UIApplication.shared.keyWindow].compactMap { $0 }
+            }
+            
+            for window in windows {
+                if let candidate = self.topMostPresentedViewController(startingAt: window.rootViewController) {
+                    let className = NSStringFromClass(type(of: candidate))
+                    print(className)
+                    let likelyRoutePicker = className.contains("AVRoute") ||
+                    className.contains("AirPlay") ||
+                    className.contains("AVSystem") ||
+                    candidate is UIAlertController
+                    
+                    if likelyRoutePicker {
+                        candidate.dismiss(animated: true, completion: nil)
+                        return
+                    }
+                    
+                    // Also sometimes the system uses a UISheetPresentation or private container — try dismissing
+                    // any UIAlertController or any controller with "AV" in name as a fallback:
+                    if className.contains("AV") || className.contains("Route") || className.contains("AirPlay") {
+                        candidate.dismiss(animated: true, completion: nil)
+                        return
+                    }
+                }
+            }
+        }
+    }
+    
+    // Walk presented view controllers starting from a given root
+    private func topMostPresentedViewController(startingAt root: UIViewController?) -> UIViewController? {
+        var top = root
+        while let presented = top?.presentedViewController {
+            top = presented
+        }
+        return top
+    }
+    
+    // Call this when you programmatically tap the hidden route picker button
+    private func attemptDismissAfterDelay(_ delay: TimeInterval = 0.35) {
+        // First quick attempt after short delay
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+            self?.dismissRoutePickerIfNeeded()
+        }
+        
+        // And try again a bit later as a fallback (covers race conditions)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.35) { [weak self] in
+            self?.dismissRoutePickerIfNeeded()
+        }
+        
+        
+        
+    }
+    
 }

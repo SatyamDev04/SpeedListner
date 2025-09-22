@@ -147,6 +147,23 @@ class NewPlaylistViewController: UIViewController {
             sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
 
             sheet.addAction(UIAlertAction(title: "Existing Folder", style: .default) { _ in
+                
+//                let playlistTableVC = PlaylistTableViewController()
+//                playlistTableVC.playlists = self.playlistItems.compactMap {
+//                    if let playlist = $0 as? Playlist, playlist.title != item.title {
+//                        return playlist
+//                    }
+//                    return nil
+//                }
+//                playlistTableVC.item = item
+//                playlistTableVC.delegate = self
+//                playlistTableVC.allowMoveToParent = self.playlist.parent != nil
+//                playlistTableVC.allowMoveToRoot = true
+//                playlistTableVC.parentPlaylist = self.playlist.parent
+//                let navController = UINavigationController(rootViewController: playlistTableVC)
+//                present(navController, animated: true, completion: nil)
+                
+                
                 let playlistTableVC = PlaylistTableViewController()
                 playlistTableVC.playlists = self.playlistItems.compactMap {
                     if let playlist = $0 as? Playlist, !selectedItems.contains(playlist) {
@@ -154,8 +171,10 @@ class NewPlaylistViewController: UIViewController {
                     }
                     return nil
                 }
-               playlistTableVC.items = selectedItems
-                
+                playlistTableVC.items = selectedItems
+                playlistTableVC.allowMoveToParent = self.playlist.parent != nil
+                playlistTableVC.allowMoveToRoot = true
+                playlistTableVC.parentPlaylist = self.playlist.parent
                 playlistTableVC.delegate = self
                 let navController = UINavigationController(rootViewController: playlistTableVC)
                 self.present(navController, animated: true, completion: nil)
@@ -761,7 +780,11 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
         guard let book = books.first else { return }
         
         guard NewDataMannagerClass.exists(book) else {
-            self.showAlert("File missing!", message: "This book’s file was removed from your device. Import the file again to play the book", style: .alert)
+            self.showAlert(
+                "File Missing!",
+                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                style: .alert
+            )
             
             return
         }
@@ -772,7 +795,7 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
         PlayerManager.shared.load(books) { (loaded) in
             guard loaded else {
                 //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This book's file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
                 return
             }
             self.showPlayerView(book: book)
@@ -866,6 +889,7 @@ extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDeleg
               self.didSelectPlaylist(playlist, from: [item])
           }
       }
+    
     @IBAction func btnBookShowCover_Action(_ sender: UIButton) {
         
         if checked {

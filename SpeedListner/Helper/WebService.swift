@@ -34,7 +34,7 @@ class LogoutManger:NSObject{
             print("Failed to find topmost view controller")
             return
         }
-        topViewController.showOkAlertWithHandler("Account has been auto-logout due to modification of Subscription type.") {
+        topViewController.showOkAlertWithHandler("Account has been auto-logout due to Unaurhorised Access. Please login again to continue.") {
             let storyB = UIStoryboard(name: "Main", bundle: nil)
             
             let vc = storyB.instantiateViewController(withIdentifier: "LoginVC") as! LoginVC
@@ -76,7 +76,12 @@ class WebService {
             "Authorization":"Bearer \(TokenManager.shared.getToken() ?? "")"
         ]
         AF.request(reuestUrl, method: .post, parameters: parameters, encoding: encodingFormat, headers: headers).responseJSON{ (responseData) in
-            
+            guard let statusCode = responseData.response?.statusCode else {return}
+            if statusCode == 401  {
+                self.showAlert(title: "", message: "Unauthorized")
+                TokenManager.shared.removeToken()
+                LogoutManger.shared.logout()
+            }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
                 do{
@@ -133,6 +138,13 @@ class WebService {
         AF.request(reuestUrl, method: .post, parameters: parameters, encoding: encodingFormat, headers: headers).responseJSON{ (responseData) in
             print(parameters, "parameters")
             print(headers, "headers")
+            
+            guard let statusCode = responseData.response?.statusCode else {return}
+            if statusCode == 401  {
+                self.showAlert(title: "", message: "Unauthorized")
+                TokenManager.shared.removeToken()
+                LogoutManger.shared.logout()
+            }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
                 do{
@@ -188,7 +200,12 @@ class WebService {
         method: .get,
         encoding: encodingFormat,
                    headers: headers).responseJSON{ (responseData) in
-            
+            guard let statusCode = responseData.response?.statusCode else {return}
+            if statusCode == 401  {
+                self.showAlert(title: "", message: "Unauthorized")
+                TokenManager.shared.removeToken()
+                LogoutManger.shared.logout()
+            }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
                 do{
@@ -261,7 +278,12 @@ class WebService {
                    encoding: encodingFormat,
                    headers: headers).validate()
             .responseData(emptyResponseCodes: [200, 204, 205,404]) { responseData in
-                
+                guard let statusCode = responseData.response?.statusCode else {return}
+                if statusCode == 401  {
+                    self.showAlert(title: "", message: "Unauthorized")
+                    TokenManager.shared.removeToken()
+                    LogoutManger.shared.logout()
+                }
 //        AF.request(reuestUrl,
 //        method: .get,
 //        encoding: URLEncoding.default,
@@ -361,7 +383,12 @@ class WebService {
                 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -442,7 +469,12 @@ class WebService {
 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -526,8 +558,13 @@ class WebService {
 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
-                print(responseData)
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
+                    print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
                     do{
@@ -606,7 +643,12 @@ class WebService {
 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -673,7 +715,12 @@ class WebService {
                 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -762,7 +809,12 @@ class WebService {
                 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -830,7 +882,12 @@ class WebService {
                 
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
+                        TokenManager.shared.removeToken()
+                        LogoutManger.shared.logout()
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -866,10 +923,6 @@ class WebService {
             })
     }
     
-    
-    
-    
-
     func uploadCertificateImageWithParameter(_ request: String,_ imageMbbs:Data?,_ imageMCI:Data?,_ parameters: [String:Any]?,mbbsCertName:String,mciCertName:String, withCompletion completionHandler: @escaping webServiceResponse) {
             
             let reuestUrl = request
@@ -900,7 +953,13 @@ class WebService {
                     print("Upload Progress: \(progress.fractionCompleted)")
                 })
                 .responseJSON(completionHandler: { responseData in
-                // Do what ever you want to do with response
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                      self.showAlert(title: "", message: "Unauthorized")
+                      TokenManager.shared.removeToken()
+                      LogoutManger.shared.logout()
+                      
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -935,7 +994,6 @@ class WebService {
                 }
             })
         
-       
     }
     
     
@@ -969,7 +1027,14 @@ class WebService {
                     print("Upload Progress: \(progress.fractionCompleted)")
                 })
                 .responseJSON(completionHandler: { responseData in
-                //Do what ever you want to do with response
+                   
+                    guard let statusCode = responseData.response?.statusCode else {return}
+                    if statusCode == 401  {
+                      self.showAlert(title: "", message: "Unauthorized")
+                      TokenManager.shared.removeToken()
+                      LogoutManger.shared.logout()
+                      
+                    }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -995,9 +1060,11 @@ class WebService {
                         }
                     }catch{
                         print("Unexpected error: \(error).")
+                        self.showAlert(title: "", message: "Sever Error")
                        // alertUser(strTitle: "Message", strMessage: "  Could not connect to the server.")
                     }
                 }else{
+                    self.showAlert(title: "", message: "Sever Error")
                    // alertUser(strTitle: "Message", strMessage: "  Could not connect to the server.")
                 }
             })
@@ -1030,8 +1097,14 @@ class WebService {
             print("Upload Progress: \(progress.fractionCompleted)")
         }
         .responseData { response in
-            let statusCode = response.response?.statusCode ?? 0
-            
+            guard let statusCode = response.response?.statusCode else {return}
+            print(response.response?.statusCode ?? 0,"statusCode from postman" )
+            if statusCode == 401  {
+              self.showAlert(title: "", message: "Unauthorized")
+              TokenManager.shared.removeToken()
+              LogoutManger.shared.logout()
+              
+            }
             switch response.result {
             case .success(let data):
                 if let utf8Text = String(data: data, encoding: .utf8) {
@@ -1041,26 +1114,47 @@ class WebService {
                 do {
                     let json = try JSON(data: data)
                     print("JSON:", json)
-
+                    let statusCode = response.response?.statusCode ?? 0
                     if let dict = json.dictionaryObject,
                        let code = dict["code"] as? Int,
-                       code == 403 {
+                       code == 403 || statusCode == 401  {
+                        self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        
                     }
-
-                    let statusCode = response.response?.statusCode ?? 0
-                    completionHandler(json, statusCode)                } catch {
+                    completionHandler(json,statusCode)
+                 
+                } catch {
+                    self.showAlert(title: "", message: "Sever Error")
                     print("JSON Parsing Error:", error.localizedDescription)
-                    completionHandler(JSON([:]), statusCode)
+                //    completionHandler(JSON([:]), statusCode)
                 }
 
             case .failure(let error):
                 print("Network or Parsing Error:", error.localizedDescription)
-                completionHandler(JSON([:]), statusCode)
+                self.showAlert(title: "", message: "Sever Error")
             }
         }
     }
     
+    private func showAlert(title: String, message: String) {
+        guard let topViewController = getTopViewController() else { return }
+      
+        DispatchQueue.main.async {
+            topViewController.showToast(message)
+        }
+    }
 
+    private func getTopViewController(base: UIViewController? = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController) -> UIViewController? {
+        if let navController = base as? UINavigationController {
+            return getTopViewController(base: navController.visibleViewController)
+        } else if let tabBarController = base as? UITabBarController,
+                  let selected = tabBarController.selectedViewController {
+            return getTopViewController(base: selected)
+        } else if let presented = base?.presentedViewController {
+            return getTopViewController(base: presented)
+        }
+        return base
+    }
 }

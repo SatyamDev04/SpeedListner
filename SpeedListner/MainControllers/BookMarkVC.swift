@@ -882,15 +882,44 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     
-    @IBAction func btnBookmark_shareAction(_ sender: Any) {
+    @IBAction func btnBookmark_shareAction(_ sender: UIButton) {
         guard let book = self.book else {return}
         
-        if !MFMailComposeViewController.canSendMail() {
-            showExportController(currentItem: book, bookmarks:  self.displayItems)
-            return
-        }
-        
-        self.showEmailExport(book: book, displayItems: self.displayItems)
+        let sheet = UIAlertController(title: nil,
+                                              message: nil,
+                                              preferredStyle: .actionSheet)
+
+                // Send via Email
+                let emailAction = UIAlertAction(title: "Send via Email", style: .default) { [weak self] _ in
+                    self?.showEmailExport(book: book, displayItems: self?.displayItems ?? [])
+                
+                }
+                sheet.addAction(emailAction)
+
+                // Send by Other App
+                let otherAction = UIAlertAction(title: "Send by Other App", style: .default) { [weak self] _ in
+                    self?.showExportController(currentItem: book, bookmarks:  self?.displayItems ?? [])
+                }
+                sheet.addAction(otherAction)
+
+                // Cancel
+                sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+
+                // iPad: anchor properly
+        if let popover = sheet.popoverPresentationController, let sourceView = self.view {
+                    popover.sourceView = sourceView
+                    popover.sourceRect = CGRect(x: sourceView.bounds.midX, y: sourceView.bounds.midY, width: 1, height: 1)
+                    popover.permittedArrowDirections = []
+                }
+
+                self.present(sheet, animated: true, completion: nil)
+//        if !MFMailComposeViewController.canSendMail() {
+//            showExportController(currentItem: book, bookmarks:  self.displayItems)
+//            return
+//        }
+//
+  //      showExportController(currentItem: book, bookmarks:  self.displayItems)
+       // self.showEmailExport(book: book, displayItems: self.displayItems)
         
     }
     

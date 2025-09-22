@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="21507" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="QaE-ix-MD1">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="QaE-ix-MD1">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="21505"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -20,20 +20,40 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splashsplash.png" translatesAutoresizingMaskIntoConstraints="NO" id="fBi-My-Gdk">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bjn-8F-aKl">
+                                <rect key="frame" x="117.66666666666667" y="535" width="157.66666666666663" height="67"/>
+                                <string key="text">With AI  
+SmartNotes</string>
+                                <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
+                                <color key="textColor" red="0.30980392159999998" green="0.0" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bsC-j4-UFh">
+                                <rect key="frame" x="84" y="622" width="225" height="230"/>
+                                <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="225" id="B2P-Oa-5Nu"/>
+                                </constraints>
+                            </view>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="jSh-JW-CZk"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstAttribute="bottom" secondItem="fBi-My-Gdk" secondAttribute="bottom" id="DWU-lP-yGL"/>
+                            <constraint firstAttribute="bottom" secondItem="bsC-j4-UFh" secondAttribute="bottom" id="IuW-fO-S6F"/>
+                            <constraint firstItem="bsC-j4-UFh" firstAttribute="height" secondItem="1cQ-W2-a3J" secondAttribute="height" multiplier="0.27" id="K2f-SM-ltJ"/>
+                            <constraint firstItem="Bjn-8F-aKl" firstAttribute="centerX" secondItem="1cQ-W2-a3J" secondAttribute="centerX" id="LVn-yt-NXZ"/>
+                            <constraint firstItem="bsC-j4-UFh" firstAttribute="centerX" secondItem="1cQ-W2-a3J" secondAttribute="centerX" id="XKC-Me-9Bf"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="top" secondItem="1cQ-W2-a3J" secondAttribute="top" id="YRg-u5-DdR"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="trailing" secondItem="jSh-JW-CZk" secondAttribute="trailing" id="ibY-jd-wde"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="leading" secondItem="jSh-JW-CZk" secondAttribute="leading" id="q4E-yn-aoi"/>
+                            <constraint firstItem="bsC-j4-UFh" firstAttribute="top" secondItem="Bjn-8F-aKl" secondAttribute="bottom" constant="20" id="zZm-hc-otS"/>
                         </constraints>
                     </view>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="hsP-im-UKr" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="52.173913043478265" y="375"/>
+            <point key="canvasLocation" x="51.145038167938928" y="374.64788732394368"/>
         </scene>
     </scenes>
     <resources>

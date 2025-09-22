@@ -9,6 +9,7 @@
 import UIKit
 import DropDown
 import AVFAudio
+import AVFoundation
 class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource {
   
     
@@ -29,6 +30,7 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     var items1 =  [LibraryItem]()
     var library: Library!
     var items =  [LibraryItem]()
+    let queue = OperationQueue()
     lazy var dropDowns: [DropDown] = {
         return [
             self.topMenu
@@ -113,48 +115,16 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     @IBAction func uploadFileBtn(_ sender: Any) {
         self.presentImportFilesAlert()
     }
-    func addAction() {
-        let alertController = UIAlertController(
-            title: nil,
-            message: "You can also add files via AirDrop. Send an audiobook file to your device and select SpeedListner from the list that appears.",
-            preferredStyle: .actionSheet
-        )
+    
+    private func presentImportFilesAlert() {
         
-        alertController.addAction(UIAlertAction(title: "Import files", style: .default) { (_) in
-            self.presentImportFilesAlert()
-        })
+        let documentPicker = UIDocumentPickerViewController(forOpeningContentTypes: [.audio])
+        documentPicker.delegate = self
+        documentPicker.allowsMultipleSelection = true
+        present(documentPicker, animated: true, completion: nil)
         
-        alertController.addAction(UIAlertAction(title: "Create Folder", style: .default) { (_) in
-            self.creatFolder()
-        })
-//        alertController.addAction(UIAlertAction(title: "Upload AudioBook(.aax) files", style: .default) { (_) in
-//            self.cloudFilePicker.browseLocalFiles(in: self) { url in
-//                guard let url = url else {return}
-//                let parameters = [
-//                    [
-//                        "key": "aax_file",
-//                        "src": url,
-//                        "type": "file"
-//                    ]
-//                ]
-//
-//                let uploadDoc = UploadDoc()
-//                uploadDoc.startUpload(parameters: parameters) { result in
-//                    switch result {
-//                    case .success(let success):
-//                        print("Upload successful: \(success)")
-//                        self.loadLibrary()
-//                    case .failure(let error):
-//                        print("Upload failed: \(error.localizedDescription)")
-//                    }
-//                }
-//            }
-//        })
-        
-        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel))
-        
-        self.present(alertController, animated: true, completion: nil)
     }
+
     private func creatFolder(){
         
         let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
@@ -354,36 +324,13 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
 
 extension UploadBookVC:UIDocumentMenuDelegate {
     @IBAction func didPressImportOptions(_ sender: UIBarButtonItem){
-        if sender.tag == 1 {
-            self.showAlert(for: "Please Suscribe to our plan for use this feature")
-           
-        }else{
-            self.addAction()
-//            let sheet = UIAlertController(title: "Import Books", message: nil, preferredStyle: .actionSheet)
+//        if sender.tag == 1 {
+//            self.showAlert(for: "Please Suscribe to our plan for use this feature")
+//           
+//        }else{
+//           // self.addAction()
 //
-//            let cancelButton = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
-//            let localButton = UIAlertAction(title: "From Files", style: .default) { (action) in
-//                let providerList = UIDocumentMenuViewController(documentTypes: ["public.audio"], in: .import)
-//                providerList.delegate = self;
-//
-//                providerList.popoverPresentationController?.sourceView = self.view
-//                providerList.popoverPresentationController?.sourceRect = CGRect(x: Double(self.view.bounds.size.width / 2.0), y: Double(self.view.bounds.size.height-45), width: 1.0, height: 1.0)
-//                self.present(providerList, animated: true, completion: nil)
-//            }
-//
-//            let airdropButton = UIAlertAction(title: "AirDrop", style: .default) { (action) in
-//                self.showAlert("AirDrop", message: "Make sure AirDrop is enabled.\n\nOnce you transfer the file to your device via AirDrop, choose 'SpeedListner' from the app list that will appear", style: .alert)
-//            }
-//
-//            sheet.addAction(localButton)
-//            sheet.addAction(airdropButton)
-//            sheet.addAction(cancelButton)
-//
-//            sheet.popoverPresentationController?.sourceView = self.view
-//            sheet.popoverPresentationController?.sourceRect = CGRect(x: Double(self.view.bounds.size.width / 2.0), y: Double(self.view.bounds.size.height-45), width: 1.0, height: 1.0)
-//
-//            self.present(sheet, animated: true, completion: nil)
-        }
+//        }
         
     }
     
@@ -485,6 +432,7 @@ extension UploadBookVC:TapOnOptions{
     
     
 }
+
 extension UploadBookVC{
 
     func presentCreatePlaylistAlert(_ namePlaceholder: String = "Name", handler: ((_ title: String) -> Void)?) {
@@ -507,38 +455,9 @@ extension UploadBookVC{
 
         self.present(playlistAlert, animated: true, completion: nil)
     }
-    func presentImportFilesAlert() {
-        let supportedTypes = ["public.audio"] // you can add "com.apple.m4a-audio", "public.mp3", etc.
-        
-        let picker = UIDocumentPickerViewController(documentTypes: supportedTypes, in: .import)
-        picker.delegate = self
-        picker.allowsMultipleSelection = true  // optional
-        
-        self.present(picker, animated: true, completion: nil)
-    }
+    
 }
-extension UploadBookVC :UIDocumentPickerDelegate{
-//    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
-//        let userInfo = ["fileURL": url]
-//        NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.libraryOpenURL, object: nil, userInfo: userInfo)
-//    }
-     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-        for url in urls {
-                    let userInfo = ["fileURL": url]
-                    NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.libraryOpenURL, object: nil, userInfo: userInfo)
-                }
-        
-                self.tabBarController?.selectedIndex = 0
-       
-        
-    }
-//    func documentPickerdocumentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
-//        for url in urls {
-//            let userInfo = ["fileURL": url]
-//            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.libraryOpenURL, object: nil, userInfo: userInfo)
-//        }
-//    }
-}
+
 extension UploadBookVC {
     @objc private func bookReady(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
@@ -610,4 +529,108 @@ extension UploadBookVC {
       //  bookCell.playbackState = .stopped
     }
 
+}
+extension UploadBookVC: UIDocumentPickerDelegate {
+    func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
+        processFilesSequentially(at: urls, index: 0)
+    }
+
+    func processFilesSequentially(at urls: [URL], index: Int) {
+        guard index < urls.count else {
+            NewDataMannagerClass.saveContext()
+//            self.loadLibrary()
+            DispatchQueue.main.async {
+                self.tabBarController?.selectedIndex = 0
+            }
+            return
+        }
+        
+        let url = urls[index]
+        processNextFile(at: url) { [weak self] in
+            self?.processFilesSequentially(at: urls, index: index + 1)
+        }
+    }
+
+    func processNextFile(at url: URL, completion: @escaping () -> Void) {
+        if url.startAccessingSecurityScopedResource() {
+            defer { url.stopAccessingSecurityScopedResource() }
+            
+            let destinationFolder = NewDataMannagerClass.getProcessedFolderURL()
+            NewDataMannagerClass.processFile(at: url, destinationFolder: destinationFolder) { [weak self] processedURL in
+                guard let self = self else { return }
+                guard let processedURL = processedURL else {
+                    print("Failed to process file: \(url.lastPathComponent)")
+                    completion()
+                    return
+                }
+
+           
+                guard let items = self.library.items?.array as? [LibraryItem] else {
+                    completion()
+                    return
+                }
+                let existingBooks = items.compactMap { $0 as? Book }
+
+                let asset = AVAsset(url: processedURL)
+                let newDuration = CMTimeGetSeconds(asset.duration)
+                let newTitle = processedURL.deletingPathExtension().lastPathComponent
+
+                if let duplicateBook = existingBooks.first(where: { book in
+                   
+                    let normalizedNewTitle = newTitle
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression) // remove punctuation
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      let normalizedExistingTitle = (book.title ?? "")
+                          .lowercased()
+                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
+                          .trimmingCharacters(in: .whitespacesAndNewlines)
+                      
+                      print("Comparing:", normalizedNewTitle, "vs", normalizedExistingTitle)
+
+                      let isSameTitle = normalizedNewTitle.contains(normalizedExistingTitle) ||
+                                        normalizedExistingTitle.contains(normalizedNewTitle)
+                      
+                      let isSameDuration = abs(book.duration - newDuration) < 2
+                    
+                    print(newTitle,newDuration,book.title?.lowercased(),book.duration,"isSameDuration")
+                      return isSameTitle && isSameDuration
+                }) {
+                    DispatchQueue.main.async {
+                        let alert = UIAlertController(
+                            title: "Duplicate Audiobook",
+                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                            completion() // skip this file
+                        }))
+                        alert.addAction(UIAlertAction(title: "Upload Anyway", style: .default, handler: { _ in
+                            self.insertBook(url: processedURL, original: url, completion: completion)
+                        }))
+                        self.present(alert, animated: true)
+                    }
+                } else {
+                    // No duplicate → insert directly
+                    self.insertBook(url: processedURL, original: url, completion: completion)
+                }
+            }
+        } else {
+            print("Couldn't access the file: \(url.lastPathComponent)")
+            completion()
+        }
+    }
+
+    private func insertBook(url: URL, original: URL, completion: @escaping () -> Void) {
+        let bookUrl = BookURL(original: original, processed: url)
+        self.queue.addOperation {
+            NewDataMannagerClass.insertBooks(from: [bookUrl], into: nil, or: self.library) {
+                DispatchQueue.main.async {
+                    completion()
+                  
+                }
+            }
+        }
+    }
 }

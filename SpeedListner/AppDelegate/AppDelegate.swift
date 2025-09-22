@@ -57,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //clean leftover sleep timer registry
         UserDefaults.standard.set(nil, forKey: "sleep_timer")
         setupMPRemoteCommands()
-       
+        Thread.sleep(forTimeInterval: 3)
 
         return true
     }

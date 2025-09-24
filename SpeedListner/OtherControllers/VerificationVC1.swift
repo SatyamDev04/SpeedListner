@@ -17,8 +17,10 @@ class VerificationVC1: UIViewController,UITextFieldDelegate {
     @IBOutlet weak var txt_View3: UIView!
     @IBOutlet weak var txt_View2: UIView!
     @IBOutlet weak var txt_View1: UIView!
+    
     var EmailPhone:String!
     let loading = indicator()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
      
@@ -132,8 +134,10 @@ class VerificationVC1: UIViewController,UITextFieldDelegate {
               let myIntegerVariable = Int(myStringVariable) ?? 0
               print(myIntegerVariable, "user_id Verification VC")
               vc.a = false
-              vc.userid = myIntegerVariable
+              vc.userid = myStringVariable
+              
               self.navigationController?.pushViewController(vc, animated: true)
+              
             }  else    {
                 let responseMessage =   "Invalid Code Please Try Again"
                 AlertController.alert(title: "", message: responseMessage)

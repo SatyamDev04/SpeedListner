@@ -125,23 +125,31 @@ class LoginVC: UIViewController {
 
       
     }
+    
+    
     @IBAction func btnSignUp_Action(_ sender: Any) {
         print("SignUp Button Action")
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "SignUpVC") as! SignUpVC
         self.navigationController?.pushViewController(vc, animated: true)
         
     }
+    
+    
     @IBAction func btnForgotPassword_Action(_ sender: Any) {
         print("forgot Password Button Action")
         
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "RecoverPasswordVC") as! RecoverPasswordVC
         self.navigationController?.pushViewController(vc, animated: true)
     }
+    
+    
     func validateEmail(YourEMailAddress: String) -> Bool {
         let REGEX: String
         REGEX = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,3}"
         return NSPredicate(format: "SELF MATCHES %@", REGEX).evaluate(with: YourEMailAddress)
     }
+    
+    
     func validation() -> Bool {
         
         if txt_EmailPhone.text?.count == 0 {

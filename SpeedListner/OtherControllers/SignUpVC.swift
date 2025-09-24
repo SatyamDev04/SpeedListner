@@ -40,11 +40,13 @@ class SignUpVC: UIViewController {
         
     }
     
+    
     func validateEmail(YourEMailAddress: String) -> Bool {
         let REGEX: String
         REGEX = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,3}"
         return NSPredicate(format: "SELF MATCHES %@", REGEX).evaluate(with: YourEMailAddress)
     }
+    
     func validation() -> Bool {
         
         if txt_Email.text?.count == 0 {
@@ -67,11 +69,16 @@ class SignUpVC: UIViewController {
     
         return true
     }
+    
+    
     @IBAction func btn_AgreeAction(_ sender: UIButton) {
         flag = !flag
         setButtonImage()
         
     }
+    
+    
+    
     func setButtonImage(){
             let imgName = flag ? "ic_outline-check-box" : "ic_outline-check-box-1"
             let image1 = UIImage(named: "\(imgName).png")!
@@ -126,9 +133,24 @@ class SignUpVC: UIViewController {
                          DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
                              let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC") as! VerificationVC
                              vc.emailid = txt_Email.text ?? ""
-                             let id = dictData!["user_id"] as? Int ?? 0
-                             vc.myIntegerVariable = id
-                             UserDetail.shared.setUserId(String(id))
+                             
+                             var myIntegerVariable = ""
+                             if let myInt = dictData!["user_id"] as? Int {
+                                 myIntegerVariable = "\(myInt)"
+                             }else if let myString = dictData!["user_id"] as? String {
+                                 myIntegerVariable = myString
+                             }
+                             if let token = dictData!["token"] as? String {
+                                 vc.token = token
+                             }
+                             if let otp = dictData!["otp"] as? String {
+                                 vc.otp = otp
+                             }else if let otp = dictData!["otp"] as? Int {
+                                 vc.otp = "\(otp)"
+                             }
+                             
+                             vc.userId = myIntegerVariable
+                            
                              
                              self.navigationController?.pushViewController(vc, animated: true) }
                   

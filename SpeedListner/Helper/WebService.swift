@@ -1137,26 +1137,31 @@ class WebService {
                 if let utf8Text = String(data: data, encoding: .utf8) {
                     print("Data: \(utf8Text)")
                 }
-
+             
                 do {
                     let json = try JSON(data: data)
                     print("JSON:", json)
-                    let statusCode = response.response?.statusCode ?? 0
+                    let code = response.response?.statusCode ?? 0
+             
                     if let dict = json.dictionaryObject,
-                       let code = dict["code"] as? Int,
-                       code == 403 || statusCode == 401  {
+                       let apiCode = dict["code"] as? Int,
+                       apiCode == 403 || code == 401 {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
                         return
-                        
                     }
-                    completionHandler(json,statusCode)
-                 
+             
+                    DispatchQueue.main.async {
+                        completionHandler(json, code)
+                    }
                 } catch {
                     self.showAlert(title: "", message: "Sever Error")
                     print("JSON Parsing Error:", error.localizedDescription)
-                //    completionHandler(JSON([:]), statusCode)
+                    let code = response.response?.statusCode ?? 0
+                    DispatchQueue.main.async {
+                       // completionHandler(JSON([:]), code)
+                    }
                 }
 
             case .failure(let error):

@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class RecoverPasswordVC: UIViewController {
 
@@ -72,39 +73,32 @@ class RecoverPasswordVC: UIViewController {
         guard validation() else { return }
         
         let jsonDict : [String:Any] = ["email" : self.txt_EmailPhone.text ?? ""]
-               print(jsonDict,"jsonDict")
+        print(jsonDict,"jsonDict")
 
-               let loginURL = baseURL.baseURL + appEndPoints.send_forget_password
-               print(loginURL, "loginURL")
-              self.loading.showActivityIndicator(uiView: self.view)
+        let loginURL = baseURL.baseURL + appEndPoints.send_forget_password
+        print(loginURL, "loginURL")
+        self.loading.showActivityIndicator(uiView: self.view)
         
-               WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { (json, statusCode) in
-                   self.loading.hideActivityIndicator(uiView: self.view)
-                   let dict = "\(json)"
-                   var dictData : [String:Any]?
-                   if let data = dict.data(using: .utf8) {
-                       do {
-                           dictData = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-
-
-                       } catch {
-                           print(error.localizedDescription)
-                       }
-                   }
-                 if dictData!["msg_type"] as? String == "success" {
-                     
-                     let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC1") as! VerificationVC1
-                     
-                     vc.EmailPhone = self.txt_EmailPhone.text ?? ""
-                   self.navigationController?.pushViewController(vc, animated: true)
-                  
-                 } else    {
-                       let responseMessage = dictData!["msg"] as! String
-                       AlertController.alert(title: "", message: responseMessage)
-                   }
-               })
-   
-
+        WebService.shared.servicePostWithFoamDataParameter(loginURL, jsonDict, withCompletion:  { [weak self] (json, statusCode) in
+            guard let self = self else { return }
+            self.loading.hideActivityIndicator(uiView: self.view)
+            
+            // Prefer server's "success" or "msg_type" flags without force unwraps
+            let isSuccess = json["success"].boolValue || (json["msg_type"].string == "success")
+            if isSuccess {
+                guard let vc = self.storyboard?.instantiateViewController(withIdentifier: "VerificationVC1") as? VerificationVC1 else {
+                    AlertController.alert(title: "", message: "Unable to open verification screen.")
+                    return
+                }
+                vc.EmailPhone = self.txt_EmailPhone.text ?? ""
+                self.navigationController?.pushViewController(vc, animated: true)
+            } else {
+                let responseMessage = json["msg"].string
+                    ?? json["message"].string
+                    ?? "Something went wrong. Please try again."
+                AlertController.alert(title: "", message: responseMessage)
+            }
+        })
     }
     
 }
@@ -165,5 +159,4 @@ extension RecoverPasswordVC {
         
     }
 }
-
 

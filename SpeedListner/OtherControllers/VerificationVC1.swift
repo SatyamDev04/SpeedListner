@@ -21,17 +21,7 @@ class VerificationVC1: UIViewController,UITextFieldDelegate {
     let loading = indicator()
     override func viewDidLoad() {
         super.viewDidLoad()
-     /*
-        if traitCollection.userInterfaceStyle == .dark {
-            // Dark mode is active
-            darkModeEnabled()
-            print("Dark Mode is active")
-        } else {
-            // Light mode is active
-            lightModeEnabled()
-            print("Light Mode is active")
-        }
-        */
+     
         txt1.delegate = self
         txt2.delegate = self
         txt3.delegate = self
@@ -135,39 +125,24 @@ class VerificationVC1: UIViewController,UITextFieldDelegate {
                 }
             }
           if dictData!["msg_type"] as? String == "success"{
-              
-              let myStringVariable = (dictData!["user_id"] as? String)!
-              
-              let myIntegerVariable = Int(myStringVariable) ?? 0
-              
-             //UserDetail.shared.setUserId(String(myIntegerVariable))
-            //  let userid1 = UserDetail.shared.getUserId()
-            print(myIntegerVariable, "user_id Verification VC")
                 
               let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
+              
+              let myStringVariable = (dictData!["user_id"] as? String)!
+              let myIntegerVariable = Int(myStringVariable) ?? 0
+              print(myIntegerVariable, "user_id Verification VC")
               vc.a = false
               vc.userid = myIntegerVariable
               self.navigationController?.pushViewController(vc, animated: true)
-              
-               // completionHandler("\(String(describing: dictData!["message"] as? String))", "")
             }  else    {
-                let responseMessage =   "Invalid Code Please Try Again"//dictData!["msg"] as! String
+                let responseMessage =   "Invalid Code Please Try Again"
                 AlertController.alert(title: "", message: responseMessage)
             }
-            //            hideHud()
+           
         })
-        
-//            let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
-//            vc.a = true
-//            self.navigationController?.pushViewController(vc, animated: true)
-//
         }
         
-        
-        
-//        let vc = self.storyboard?.instantiateViewController(withIdentifier: "CreatePasswordVC") as! CreatePasswordVC
-//        self.navigationController?.pushViewController(vc, animated: true)
-        
+       
     }
     
     @IBAction func btnResendOtp_Action(_ sender: Any) {
@@ -201,7 +176,6 @@ class VerificationVC1: UIViewController,UITextFieldDelegate {
                        let responseMessage = dictData!["msg"] as! String
                        AlertController.alert(title: "", message: responseMessage)
                    }
-                   //            hideHud()
                })
         
         
@@ -217,19 +191,17 @@ extension VerificationVC1: UIScrollViewDelegate {
         if #available(iOS 13, *) {
             let verticalIndicatorView = (scrollView.subviews[(scrollView.subviews.count - 1)].subviews[0])
             let horizontalIndicatorView = (scrollView.subviews[(scrollView.subviews.count - 2)].subviews[0])
-            
-            //let colors = [UIColor(named: "#E54F4F")!.cgColor, UIColor(named: "##E61C1C")!.cgColor, UIColor(named: "#8E0202")!.cgColor]
+          
             
             verticalIndicatorView.backgroundColor = UIColor.clear
             verticalIndicatorView.backgroundColor = UIColor(red: 79/255, green: 0/255, blue: 100/255, alpha: 1)
-            //verticalIndicatorView.setGradient(colors: colors, angle: 90.0)
             
             horizontalIndicatorView.backgroundColor = UIColor.clear
             horizontalIndicatorView.backgroundColor = UIColor(red: 79/255, green: 0/255, blue: 100/255, alpha: 1)
             
         } else {
             
-           // let colors = [UIColor(named: "#E54F4F")!.cgColor, UIColor(named: "##E61C1C")!.cgColor, UIColor(named: "#8E0202")!.cgColor]
+          
             
             if let verticalIndicatorView: UIImageView = (scrollView.subviews[(scrollView.subviews.count - 1)] as? UIImageView) {
                 verticalIndicatorView.backgroundColor = UIColor.clear
@@ -243,35 +215,6 @@ extension VerificationVC1: UIScrollViewDelegate {
         }
    }
 }
-/*
-extension VerificationVC1 {
-    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
-           super.traitCollectionDidChange(previousTraitCollection)
-
-           switch traitCollection.userInterfaceStyle {
-               case .dark: darkModeEnabled()   // Switch to dark mode colors, etc.
-               case .light: fallthrough
-               case .unspecified: fallthrough
-               default: lightModeEnabled()   // Switch to light mode colors, etc.
-           }
-       }
-    private func lightModeEnabled() {
-
-        txt1.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor(red: 79/255, green: 0, blue: 100/255, alpha: 1)])
-        txt2.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor(red: 79/255, green: 0, blue: 100/255, alpha: 1)])
-        txt3.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor(red: 79/255, green: 0, blue: 100/255, alpha: 1)])
-        txt4.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor(red: 79/255, green: 0, blue: 100/255, alpha: 1)])
-       
-    }
-    private func darkModeEnabled() {
-        txt1.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor.white])
-        txt2.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor.white])
-        txt3.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor.white])
-        txt4.attributedPlaceholder = NSAttributedString(string:"Enter Your Email/Phone", attributes: [NSAttributedStringKey.foregroundColor: UIColor.white])
-    }
-}
-
-*/
 
 
 

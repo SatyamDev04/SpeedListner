@@ -10,7 +10,7 @@ import CoreData
 import AVFoundation
 import UserNotifications
 import MediaPlayer
-
+import IQKeyboardManager
 var pUrl:URL?
 
 @main
@@ -26,7 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
-       
+        IQKeyboardManager.shared().isEnabled = false
         let defaults:UserDefaults = UserDefaults.standard
         UNUserNotificationCenter.current().delegate = self
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
@@ -215,8 +215,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                     print("Failed to save bookmark")
                 }
             }
-          
-     
             return .success
         }
     }

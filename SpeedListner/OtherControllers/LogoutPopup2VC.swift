@@ -24,7 +24,7 @@ class LogoutPopup2VC: UIViewController {
         print(UserDetail.shared.getUserId(),"onLogout",UserDetail.shared.getPreviousUserId())
         UserDetail.shared.setUserId("")
         UserDefaults.standard.set(0, forKey: "subs")
-        self.navigationController?.pushViewController(vc, animated: true)
+        self.navigationController?.setViewControllers([vc], animated: true)
         
     }
     @IBAction func btnCross_Action(_ sender: Any) {

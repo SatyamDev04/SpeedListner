@@ -93,18 +93,19 @@ class LoginVC: UIViewController {
 
                      if let resultData = dictData!["data"] as? [String:Any]{
                          print( resultData,"resultData")
-                         let myStringVariable = (resultData["user_id"] as? String)
+                         var myStringVariable = ""
+                         if let id = (resultData["user_id"] as? String){
+                             myStringVariable = id
+                         }else if let id = (resultData["user_id"] as? Int){
+                             myStringVariable = String(id)
+                         }
                          let token = (resultData["token"] as? String) ?? ""
                          TokenManager.shared.saveToken(token)
-                     let myIntegerVariable = Int(myStringVariable!) ?? 0
+                        print(myStringVariable,"userid in LoginVC"   )
+                        UserDetail.shared.setUserId(myStringVariable)
+                   
 
-                     let userid  = myIntegerVariable
-                        print(userid,"userid in LoginVC"   )
-                        UserDetail.shared.setUserId(String(myIntegerVariable))
-                     let userid1 = UserDetail.shared.getUserId()
-                     print(userid1, "user_id LogIN_VC")
-
-                     self.showToast("Sign up successfully.")
+                     self.showToast("login successfully.")
 
                      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [self] in
                          let vc = self.storyboard?.instantiateViewController(withIdentifier: "TabBarVC") as! TabBarVC

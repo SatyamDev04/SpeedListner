@@ -50,6 +50,7 @@ class LogoutManger:NSObject{
     }
 }
 
+
 class WebService {
     
     static let shared = WebService()
@@ -81,6 +82,7 @@ class WebService {
                 self.showAlert(title: "", message: "Unauthorized")
                 TokenManager.shared.removeToken()
                 LogoutManger.shared.logout()
+                return
             }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -94,6 +96,7 @@ class WebService {
                         if code == 403 {
                             TokenManager.shared.removeToken()
                             LogoutManger.shared.logout()
+                            return
                         }
                     }
                    // success(json, statusCode!)
@@ -144,6 +147,7 @@ class WebService {
                 self.showAlert(title: "", message: "Unauthorized")
                 TokenManager.shared.removeToken()
                 LogoutManger.shared.logout()
+                return
             }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -157,6 +161,7 @@ class WebService {
                         if code == 403 {
                             TokenManager.shared.removeToken()
                             LogoutManger.shared.logout()
+                            return
                         }
                     }
                    // success(json, statusCode!)
@@ -205,6 +210,7 @@ class WebService {
                 self.showAlert(title: "", message: "Unauthorized")
                 TokenManager.shared.removeToken()
                 LogoutManger.shared.logout()
+                return
             }
             if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
                 print("Data: \(utf8Text)") // original server data as UTF8 string
@@ -218,6 +224,7 @@ class WebService {
                         if code == 403 {
                             TokenManager.shared.removeToken()
                             LogoutManger.shared.logout()
+                            return
                         }
                     }
                    // success(json, statusCode!)
@@ -283,6 +290,7 @@ class WebService {
                     self.showAlert(title: "", message: "Unauthorized")
                     TokenManager.shared.removeToken()
                     LogoutManger.shared.logout()
+                    return
                 }
 //        AF.request(reuestUrl,
 //        method: .get,
@@ -301,6 +309,7 @@ class WebService {
                         if code == 403 {
                             TokenManager.shared.removeToken()
                             LogoutManger.shared.logout()
+                            return
                         }
                     }
                    // success(json, statusCode!)
@@ -388,6 +397,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -402,6 +412,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                         if((responseData.result) != nil) {
@@ -474,6 +485,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -488,6 +500,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -563,6 +576,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                     print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -577,6 +591,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -648,6 +663,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -662,6 +678,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -720,6 +737,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -734,6 +752,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -814,6 +833,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -828,6 +848,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -887,6 +908,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                     }
                 print(responseData)
                 if let data = responseData.data, let utf8Text = String(data: data, encoding: .utf8) {
@@ -901,12 +923,13 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
                         if((responseData.result) != nil) {
                             let swiftyJsonData = responseData.result as? [String : Any]
-                            completionHandler(json , statusCode!)
+                            completionHandler(json , statusCode ?? 0)
                         } else {
                              //hideHud()
                             print(responseData.result)
@@ -958,6 +981,7 @@ class WebService {
                       self.showAlert(title: "", message: "Unauthorized")
                       TokenManager.shared.removeToken()
                       LogoutManger.shared.logout()
+                        return
                       
                     }
                 print(responseData)
@@ -973,6 +997,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -1033,6 +1058,7 @@ class WebService {
                       self.showAlert(title: "", message: "Unauthorized")
                       TokenManager.shared.removeToken()
                       LogoutManger.shared.logout()
+                        return
                       
                     }
                 print(responseData)
@@ -1048,6 +1074,7 @@ class WebService {
                             if code == 403 {
                                 TokenManager.shared.removeToken()
                                 LogoutManger.shared.logout()
+                                return
                             }
                         }
                        // success(json, statusCode!)
@@ -1103,7 +1130,7 @@ class WebService {
               self.showAlert(title: "", message: "Unauthorized")
               TokenManager.shared.removeToken()
               LogoutManger.shared.logout()
-              
+                return
             }
             switch response.result {
             case .success(let data):
@@ -1121,6 +1148,7 @@ class WebService {
                         self.showAlert(title: "", message: "Unauthorized")
                         TokenManager.shared.removeToken()
                         LogoutManger.shared.logout()
+                        return
                         
                     }
                     completionHandler(json,statusCode)

@@ -75,8 +75,8 @@ class TranscriptionSummaryVC: UIViewController {
         scrollView.addSubview(contentView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
         
-        // Add all labels to contentView
-        [timeLabel, summaryTitleLabel, summaryLabel, transcriptionTitleLabel, transcriptionLabel].forEach {
+        // Add all labels to contentView in new order
+        [timeLabel, transcriptionTitleLabel, transcriptionLabel, summaryTitleLabel, summaryLabel].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             contentView.addSubview($0)
         }
@@ -100,26 +100,26 @@ class TranscriptionSummaryVC: UIViewController {
             timeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
             timeLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             
-            // Summary Title
-            summaryTitleLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 20),
-            summaryTitleLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
-            summaryTitleLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
-            
-            // Summary Text
-            summaryLabel.topAnchor.constraint(equalTo: summaryTitleLabel.bottomAnchor, constant: 8),
-            summaryLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
-            summaryLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
-            
-            // Transcription Title
-            transcriptionTitleLabel.topAnchor.constraint(equalTo: summaryLabel.bottomAnchor, constant: 20),
+            // Transcription Title (below Time Label)
+            transcriptionTitleLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 20),
             transcriptionTitleLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
             transcriptionTitleLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
             
-            // Transcription Text
+            // Transcription Text (below Transcription Title)
             transcriptionLabel.topAnchor.constraint(equalTo: transcriptionTitleLabel.bottomAnchor, constant: 8),
             transcriptionLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
             transcriptionLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
-            transcriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
+            
+            // Summary Title (below Transcription Text)
+            summaryTitleLabel.topAnchor.constraint(equalTo: transcriptionLabel.bottomAnchor, constant: 20),
+            summaryTitleLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
+            summaryTitleLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
+            
+            // Summary Text (below Summary Title)
+            summaryLabel.topAnchor.constraint(equalTo: summaryTitleLabel.bottomAnchor, constant: 8),
+            summaryLabel.leadingAnchor.constraint(equalTo: timeLabel.leadingAnchor),
+            summaryLabel.trailingAnchor.constraint(equalTo: timeLabel.trailingAnchor),
+            summaryLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -30)
         ])
     }
     

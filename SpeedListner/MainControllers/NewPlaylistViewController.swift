@@ -644,9 +644,9 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
     
     private func creatFolderAndInsertBooks(item:LibraryItem){
         
-        let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Folder", message: "Enter Name Of  New Folder", preferredStyle: .alert)
         alert.addTextField { (textField) in
-            textField.placeholder = "Playlist Title"
+            textField.placeholder = "Folder Name"
         }
         
         let createAction = UIAlertAction(title: "Create", style: .default) { _ in

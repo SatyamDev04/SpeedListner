@@ -69,6 +69,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             self.topMenu
         ]
     }()
+    
     let queue = OperationQueue()
     var library = NewDataMannagerClass.getLibrary()
     var items: [LibraryItem] {

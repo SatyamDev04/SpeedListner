@@ -924,16 +924,26 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     }
     
     func showExportController(currentItem: Book, bookmarks: [BookmarkDisplayItem]) {
-        let provider = BookmarksActivityItemProvider(currentItem: currentItem, bookmarks: bookmarks)
-        
-        let shareController = UIActivityViewController(activityItems: [provider], applicationActivities: nil)
-        
-        if let popoverPresentationController = shareController.popoverPresentationController {
-            popoverPresentationController.barButtonItem = navigationController?.topViewController?.navigationItem.rightBarButtonItem!
+            let provider = BookmarksActivityItemProvider(currentItem: currentItem, bookmarks: bookmarks)
+            
+            let shareController = UIActivityViewController(activityItems: [provider], applicationActivities: nil)
+            
+            if let popoverPresentationController = shareController.popoverPresentationController {
+                if let barButton = navigationController?.topViewController?.navigationItem.rightBarButtonItem {
+                    popoverPresentationController.barButtonItem = barButton
+                } else if let presentingVC = self.presentingViewController as? UIViewController, let senderButton = presentingVC.view.subviews.compactMap({ $0 as? UIButton }).first {
+                    popoverPresentationController.sourceView = senderButton
+                    popoverPresentationController.sourceRect = senderButton.bounds
+                } else {
+                    popoverPresentationController.sourceView = self.view
+                    popoverPresentationController.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 1, height: 1)
+                    popoverPresentationController.permittedArrowDirections = []
+                }
+            }
+            
+            self.present(shareController, animated: true, completion: nil)
         }
-        
-        self.present(shareController, animated: true, completion: nil)
-    }
+    
     
     func showDeleteBookmarkAlert(completion: @escaping (Bool) -> Void) {
         let alert = UIAlertController(title: nil, message: "Delete Bookmark?", preferredStyle: .alert)

@@ -1,13 +1,6 @@
-//
-//  BookmarksActivityItemProvider.swift
-//  SpeedListner
-//
-//  Created by YATIN  KALRA on 03/07/25.
-//
-
 import UIKit
 import MessageUI
-
+ 
 final class BookmarksActivityItemProvider: UIActivityItemProvider {
     
     let currentItem: Book
@@ -59,61 +52,72 @@ final class BookmarksActivityItemProvider: UIActivityItemProvider {
     }
     func parseBookmarksData(for displayItems: [BookmarkDisplayItem]) -> Data? {
         var fileContents = ""
-
+ 
         // Header
         if let bookTitle = currentItem.title {
             fileContents += "Bookmarks For - \(bookTitle)\n\n"
         }
-
+ 
         let formattedBookDuration = formatTime(Int(currentItem.duration)) + " (1x)"
-
+        var allTranscriptions: [String] = []
+        var allSummaries: [String] = []
+        
         for item in displayItems {
             switch item {
             case .bookmark(let bookmark):
                 fileContents += "Bookmark: \(bookmark.time) (1x)\n"
                 fileContents += "Date: \(bookmark.date)\n"
                 fileContents += "Book Length: \(formattedBookDuration)\n"
-
                 if bookmark.isStar == true {
                     fileContents += "Starred?: ******************************\n"
                 } else {
                     fileContents += "Starred?:\n"
                 }
-
                 fileContents += "Note: \(bookmark.bookmarksTxt)\n\n"
-
-
-
+                // Collect transcription/summary
+                if let transcription = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))"),
+                   !transcription.isEmpty {
+                    allTranscriptions.append(transcription)
+                }
+                if let summary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))"),
+                   !summary.isEmpty {
+                    allSummaries.append(summary)
+                }
+                fileContents += "-----------\n"
             case .segment(let segment):
                 let formattedStartTime = formatTime(Int(segment.startTime))
                 fileContents += "Bookmark: \(formattedStartTime) (1x)\n"
-                fileContents += "Date: \(Date().toString("MM/dd/yyyy"))\n" // fallback or use segment date if available
+                fileContents += "Date: \(Date().toString("MM/dd/yyyy"))\n"
                 fileContents += "Book Length: \(formattedBookDuration)\n"
-
                 if segment.isStar == true {
                     fileContents += "Starred?: ******************************\n"
                 } else {
                     fileContents += "Starred?:\n"
                 }
-
-                fileContents += "Note: \(segment.bookmarksTxt ?? "")\n\n"
-                
-                if let transcription = segment.transcription, !transcription.isEmpty {
-                    fileContents += "Exact Transcription:\n"
-                    fileContents += transcription + "\n\n"
+                fileContents += "Note: \(segment.bookmarksTxt ?? "")\n"
+                fileContents += "-----------\n"
+                if let transcription = BookmarkCacheManager.getTranscription(for: segment.identifiers),
+                   !transcription.isEmpty {
+                    allTranscriptions.append(transcription)
                 }
-                
-                if let summary = segment.summary, !summary.isEmpty {
-                    fileContents += "Summary:\n"
-                    fileContents += summary + "\n\n"
+                if let summary = BookmarkCacheManager.getSummary(for: segment.identifiers),
+                   !summary.isEmpty {
+                    allSummaries.append(summary)
                 }
-
-                fileContents += "------------------\n"
             }
-
-            
         }
-
+ 
+        // Append Exact Transcriptions section
+        fileContents += "\nExact Transcriptions:\n\n"
+        for (i, transcription) in allTranscriptions.enumerated() {
+            fileContents += "\(i + 1) - \(transcription)\n\n"
+        }
+        fileContents += "--------------------------\n"
+        // Append Summaries section
+        fileContents += "Summaries:\n\n"
+        for (i, summary) in allSummaries.enumerated() {
+            fileContents += "\(i + 1) - \(summary)\n\n"
+        }
         return fileContents.data(using: .utf8)
     }
     
@@ -123,9 +127,9 @@ final class BookmarksActivityItemProvider: UIActivityItemProvider {
         return URL(fileURLWithPath: "placeholder.txt")
     }
 }
-
-
-
+ 
+ 
+ 
 extension BookMarkVC: MFMailComposeViewControllerDelegate {
     
     func showEmailExport(book: Book, displayItems: [BookmarkDisplayItem]) {
@@ -160,88 +164,71 @@ extension BookMarkVC: MFMailComposeViewControllerDelegate {
     }
     func parseBookmarksData(for displayItems: [BookmarkDisplayItem]) -> Data? {
         var fileContents = ""
-        
+ 
         // Header
         if let bookTitle = currentItem.title {
             fileContents += "Bookmarks For - \(bookTitle)\n\n"
         }
-        
+ 
         let formattedBookDuration = formatTime(Int(currentItem.duration)) + " (1x)"
-        var segTranscriptions: [String] = []
-        var segSummaries: [String] = []
-        var transcriptions: [String] = []
-        var summaries: [String] = []
+        var allTranscriptions: [String] = []
+        var allSummaries: [String] = []
+        
         for item in displayItems {
             switch item {
             case .bookmark(let bookmark):
                 fileContents += "Bookmark: \(bookmark.time) (1x)\n"
                 fileContents += "Date: \(bookmark.date)\n"
                 fileContents += "Book Length: \(formattedBookDuration)\n"
-                
                 if bookmark.isStar == true {
                     fileContents += "Starred?: ******************************\n"
                 } else {
                     fileContents += "Starred?:\n"
                 }
-                
                 fileContents += "Note: \(bookmark.bookmarksTxt)\n\n"
+                // Collect transcription/summary
                 if let transcription = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))"),
                    !transcription.isEmpty {
-                    transcriptions.append(transcription)
+                    allTranscriptions.append(transcription)
                 }
                 if let summary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))"),
                    !summary.isEmpty {
-                    summaries.append(summary)
+                    allSummaries.append(summary)
                 }
-                fileContents += "Exact Transcriptions:\n\n"
-                for (i, transcription) in transcriptions.enumerated() {
-                    fileContents += "\(i + 1) - \(transcription)\n"
-                }
-                fileContents += "\n"
-                fileContents += "Summaries:\n\n"
-                for (i, summary) in summaries.enumerated() {
-                    fileContents += "\(i + 1) - \(summary)\n"
-                }
-                
-                
+                fileContents += "-----------\n"
             case .segment(let segment):
                 let formattedStartTime = formatTime(Int(segment.startTime))
                 fileContents += "Bookmark: \(formattedStartTime) (1x)\n"
-                fileContents += "Date: \(Date().toString("MM/dd/yyyy"))\n" // fallback or use segment date if available
+                fileContents += "Date: \(Date().toString("MM/dd/yyyy"))\n"
                 fileContents += "Book Length: \(formattedBookDuration)\n"
-                
                 if segment.isStar == true {
                     fileContents += "Starred?: ******************************\n"
                 } else {
                     fileContents += "Starred?:\n"
                 }
-                
-                fileContents += "Note: \(segment.bookmarksTxt ?? "")\n\n"
-                
+                fileContents += "Note: \(segment.bookmarksTxt ?? "")\n"
+                fileContents += "-----------\n"
                 if let transcription = BookmarkCacheManager.getTranscription(for: segment.identifiers),
                    !transcription.isEmpty {
-                    segTranscriptions.append(transcription)
+                    allTranscriptions.append(transcription)
                 }
                 if let summary = BookmarkCacheManager.getSummary(for: segment.identifiers),
                    !summary.isEmpty {
-                    segSummaries.append(summary)
+                    allSummaries.append(summary)
                 }
-                
-                fileContents += "Exact Transcriptions:\n\n"
-                for (i, transcription) in segTranscriptions.enumerated() {
-                    fileContents += "\(i + 1) - \(transcription)\n"
-                }
-                
-                fileContents += "\n"
-                fileContents += "Summaries:\n\n"
-                
-                for (i, summary) in segSummaries.enumerated() {
-                    fileContents += "\(i + 1) - \(summary)\n"
-                }
-                
-               
             }
-            fileContents += "\n------------------\n\n"
+        }
+ 
+        // Append Exact Transcriptions section
+        fileContents += "\nExact Transcriptions:\n\n"
+        for (i, transcription) in allTranscriptions.enumerated() {
+            fileContents += "\(i + 1) - \(transcription)\n\n"
+        }
+        fileContents += "--------------------------\n"
+        // Append Summaries section
+        fileContents += "Summaries:\n\n"
+        for (i, summary) in allSummaries.enumerated() {
+            fileContents += "\(i + 1) - \(summary)\n\n"
         }
         return fileContents.data(using: .utf8)
     }

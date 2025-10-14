@@ -512,9 +512,9 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     
     private func creatFolder(){
         
-        let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New folder", message: "Enter Name Of New Folder", preferredStyle: .alert)
         alert.addTextField { (textField) in
-            textField.placeholder = "Playlist Title"
+            textField.placeholder = "Folder Name"
         }
         
         let createAction = UIAlertAction(title: "Create", style: .default) { _ in
@@ -537,9 +537,9 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     
     private func creatFolderAndInsertBooks(item:LibraryItem){
         
-        let alert = UIAlertController(title: "New Playlist", message: "Enter a title for the playlist", preferredStyle: .alert)
+        let alert = UIAlertController(title: "New Folder", message: "Enter Name Of New Folder", preferredStyle: .alert)
         alert.addTextField { (textField) in
-            textField.placeholder = "Playlist Title"
+            textField.placeholder = "Folder Name"
         }
         
         let createAction = UIAlertAction(title: "Create", style: .default) { _ in
@@ -955,8 +955,8 @@ extension ListBooksViewController: UITableViewDataSource {
     }
 
     private func createNewPlaylist(with selectedItems: [LibraryItem]) {
-        let alert = UIAlertController(title: "New Playlist", message: "Enter a title", preferredStyle: .alert)
-        alert.addTextField { $0.placeholder = "Playlist Title" }
+        let alert = UIAlertController(title: "New Folder", message: "Enter Name Of New Folder", preferredStyle: .alert)
+        alert.addTextField { $0.placeholder = "Folder Name" }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Create", style: .default) { _ in
             if let title = alert.textFields?.first?.text, !title.isEmpty {
@@ -1126,7 +1126,7 @@ extension ListBooksViewController: UITableViewDelegate {
                             return
                         }
                         
-                        let alert = UIAlertController(title: "Rename playlist", message: nil, preferredStyle: .alert)
+                        let alert = UIAlertController(title: "Rename Folder", message: nil, preferredStyle: .alert)
                         
                         alert.addTextField(configurationHandler: { (textfield) in
                             textfield.placeholder = playlist.title

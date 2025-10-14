@@ -359,7 +359,18 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.selectionStyle = .none
             cell.optionBtn.tag = indexPath.row
             cell.detailtxt.text = model.bookmarksTxt
-            cell.bookmarkTimelbl.text = "\(model.time) on \(model.date)"
+            
+            var timestamp: TimeInterval
+            let  ts = model.timeStamp
+                   timestamp = ts
+            let start = max(0, timestamp - 5.0)
+            let end   = timestamp + 10.0
+            
+        cell.bookmarkTimelbl.text = "\(formatTime(from: start)) -> \(formatTime(from: end)) on \(model.date)"
+               
+
+            
+          
             cell.bottomView.isHidden = !(model.bookmarksTxt.count > 0 || model.isStar == true)
             cell.isStarBookMark.isHidden = !(model.isStar ?? false)
             cell.starBG.isHidden = !(model.isStar ?? false)

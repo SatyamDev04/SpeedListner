@@ -220,8 +220,6 @@ class AudioBookmarkExtractor {
 }
 
 
-
-
 struct AITranscriptionResult {
     let transcription: String
     let summary: String
@@ -240,7 +238,6 @@ class TranscriptionAI{
                 return
             }
 
-           
             getSummary(from: transcription) { summary in
                 guard let summary = summary else {
                     completion(nil)

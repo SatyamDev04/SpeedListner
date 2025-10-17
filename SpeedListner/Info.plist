@@ -63,5 +63,11 @@
 			<false/>
 		</dict>
 	</dict>
+	<key>UIAppFonts</key>
+	<array>
+		<string></string>
+	</array>
+	<key>FREESCPT</key>
+	<string>Freestyle Script Regular.ttf</string>
 </dict>
 </plist>

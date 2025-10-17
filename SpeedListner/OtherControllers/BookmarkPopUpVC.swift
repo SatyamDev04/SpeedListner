@@ -62,10 +62,9 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         super.viewWillAppear(animated)
        
         if index == nil {
-            if tapOnText == 0 {
+       
                 scheduleAutoDismiss()
-            }
-            
+         
         }
     }
     
@@ -84,17 +83,19 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         print("[BookmarkPopUpVC] Popup will stay for \(displayDuration) seconds at rate: \(playbackRate)x")
 
         DispatchQueue.main.asyncAfter(deadline: .now() + displayDuration) { [weak self] in
-            guard let self = self else { return }
-            if self.presentingViewController != nil {
-                self.dismiss(animated: true) {
-                    if self.playerstaus {
-                        PlayerManager.shared.play()
-                    } else {
-                        PlayerManager.shared.pause()
+            if self?.tapOnText == 0 {
+                guard let self = self else { return }
+                if self.presentingViewController != nil {
+                    self.dismiss(animated: true) {
+                        if self.playerstaus {
+                            PlayerManager.shared.play()
+                        } else {
+                            PlayerManager.shared.pause()
+                        }
+                        self.view.removeFromSuperview()
+                        self.delegateBookmarkVC?.MethodforPop(string: "")
+                        self.saveWithoutNote()
                     }
-                    self.view.removeFromSuperview()
-                    self.delegateBookmarkVC?.MethodforPop(string: "")
-                    self.saveWithoutNote()
                 }
             }
         }

@@ -284,9 +284,6 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     
-    
-    
-    
     func getAllBooks(from library: Library) -> [Book] {
         var result: [Book] = []
 
@@ -339,6 +336,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
        }
     
     @objc func removeFiles() {}
+    
     func loadLibrary() {
         self.library = NewDataMannagerClass.getLibrary()
         NewDataMannagerClass.notifyPendingFiles()
@@ -475,12 +473,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     private func setChapterLabel() {
+        
         guard let book = self.book, book.hasChapters, let currentChapter = book.currentChapter else {
-            
-            self.chapter.text = ""
-            
-            
-            
+             self.chapter.text = ""
             return
         }
        
@@ -553,7 +548,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
                 preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
 
-                tipView = EasyTipView(text: "Gradually increases playback speed automatically every 1, 2, 3, 4 or 5 minutes.", preferences: preferences)
+                tipView = EasyTipView(text: "Gradually Increases Playback Speed Automatically Every 1, 2, 3, 4, Or 5 Minutes.", preferences: preferences)
                 tipView?.show(forView: sender, withinSuperview: self.view)
                 sender.tag = 1
             }
@@ -797,7 +792,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 showToast("Please add a book to the library if already added then play")
                 return
             }
-        if currentValue <= 10 {
+        if currentValue <= 15 {
             currentValue =  currentValue + 0.1
             var currentValue1 = round(currentValue * 100) / 100.0
             print(currentValue1,"currentValue")

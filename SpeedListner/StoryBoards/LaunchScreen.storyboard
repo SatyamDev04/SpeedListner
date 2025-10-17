@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="QaE-ix-MD1">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" launchScreen="YES" useTraitCollections="YES" colorMatched="YES" initialViewController="QaE-ix-MD1">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -20,34 +20,29 @@
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="splashsplash.png" translatesAutoresizingMaskIntoConstraints="NO" id="fBi-My-Gdk">
                                 <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" textAlignment="center" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Bjn-8F-aKl">
-                                <rect key="frame" x="117.66666666666667" y="535" width="157.66666666666663" height="67"/>
-                                <string key="text">With AI  
-SmartNotes</string>
-                                <fontDescription key="fontDescription" type="boldSystem" pointSize="28"/>
-                                <color key="textColor" red="0.30980392159999998" green="0.0" blue="0.3921568627" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="bsC-j4-UFh">
-                                <rect key="frame" x="84" y="622" width="225" height="230"/>
+                                <rect key="frame" x="84" y="681.66666666666663" width="225" height="170.33333333333337"/>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="225" id="B2P-Oa-5Nu"/>
                                 </constraints>
                             </view>
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="with AI smartnotes" translatesAutoresizingMaskIntoConstraints="NO" id="YW1-CN-LuJ">
+                                <rect key="frame" x="128.66666666666669" y="544.33333333333337" width="135.66666666666669" height="77.333333333333371"/>
+                            </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="jSh-JW-CZk"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="bsC-j4-UFh" firstAttribute="top" secondItem="YW1-CN-LuJ" secondAttribute="bottom" constant="60" id="6eI-2p-ym9"/>
                             <constraint firstAttribute="bottom" secondItem="fBi-My-Gdk" secondAttribute="bottom" id="DWU-lP-yGL"/>
                             <constraint firstAttribute="bottom" secondItem="bsC-j4-UFh" secondAttribute="bottom" id="IuW-fO-S6F"/>
-                            <constraint firstItem="bsC-j4-UFh" firstAttribute="height" secondItem="1cQ-W2-a3J" secondAttribute="height" multiplier="0.27" id="K2f-SM-ltJ"/>
-                            <constraint firstItem="Bjn-8F-aKl" firstAttribute="centerX" secondItem="1cQ-W2-a3J" secondAttribute="centerX" id="LVn-yt-NXZ"/>
+                            <constraint firstItem="bsC-j4-UFh" firstAttribute="height" secondItem="1cQ-W2-a3J" secondAttribute="height" multiplier="0.2" id="K2f-SM-ltJ"/>
                             <constraint firstItem="bsC-j4-UFh" firstAttribute="centerX" secondItem="1cQ-W2-a3J" secondAttribute="centerX" id="XKC-Me-9Bf"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="top" secondItem="1cQ-W2-a3J" secondAttribute="top" id="YRg-u5-DdR"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="trailing" secondItem="jSh-JW-CZk" secondAttribute="trailing" id="ibY-jd-wde"/>
+                            <constraint firstItem="YW1-CN-LuJ" firstAttribute="centerX" secondItem="1cQ-W2-a3J" secondAttribute="centerX" id="lbf-l0-fPk"/>
                             <constraint firstItem="fBi-My-Gdk" firstAttribute="leading" secondItem="jSh-JW-CZk" secondAttribute="leading" id="q4E-yn-aoi"/>
-                            <constraint firstItem="bsC-j4-UFh" firstAttribute="top" secondItem="Bjn-8F-aKl" secondAttribute="bottom" constant="20" id="zZm-hc-otS"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -58,6 +53,7 @@ SmartNotes</string>
     </scenes>
     <resources>
         <image name="splashsplash.png" width="375" height="812"/>
+        <image name="with AI smartnotes" width="135.66667175292969" height="77.333335876464844"/>
         <systemColor name="systemBackgroundColor">
             <color white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
         </systemColor>

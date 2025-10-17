@@ -144,7 +144,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                        print("Valid bookmarks count: \(validBookmarks.count)")
                        
                        self.arrBookmarksNotes = validBookmarks
-                       updateBookmarkSummary()
+                      
                        
                        // DEBUG: Check if we have bookmarks to display
                        if validBookmarks.isEmpty {
@@ -152,7 +152,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                        } else {
                            mergeAdjecntBookmarks()
                        }
+                       updateBookmarkSummary()
                    }
+                  
                } catch {
                    print("Error decoding bookmarks: \(error)")
                }
@@ -172,7 +174,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     
     private func updateBookmarkSummary() {
-        let totalBookmarks = arrBookmarksNotes.count
+        let totalBookmarks = displayItems.count
         let starCount = arrBookmarksNotes.filter { $0.isStar == true }.count
         let notesCount = arrBookmarksNotes.filter { !$0.bookmarksTxt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }.count
 
@@ -241,6 +243,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         print("Total display items: \(displayItems.count)")
         displayItems = buildDisplayItems(bookmarks: self.arrBookmarksNotes, segments: self.arrMergedBookmarksNotes)
         DispatchQueue.main.async {
+            self.updateBookmarkSummary()
             self.tblV.reloadData()
             print("Table view reloaded")
         }
@@ -366,7 +369,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             let start = max(0, timestamp - 5.0)
             let end   = timestamp + 10.0
             
-        cell.bookmarkTimelbl.text = "\(formatTime(from: start)) -> \(formatTime(from: end)) on \(model.date)"
+        cell.bookmarkTimelbl.text = "\(formatTime(from: start)) ➔ \(formatTime(from: end)) on \(model.date)"
                
 
             

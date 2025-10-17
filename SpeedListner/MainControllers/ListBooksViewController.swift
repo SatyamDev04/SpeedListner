@@ -23,6 +23,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet weak var tblDrop: UITableView!
     @IBOutlet weak var btnBookshowStatus: UIButton!
     @IBOutlet weak var searchTxt: UITextField!
+    @IBOutlet weak var crossBtnSearch: UIButton!
     @IBOutlet weak var sortByTxt: UILabel!
     @IBOutlet weak var searchTblV: UITableView!
     @IBOutlet weak var searchTblVH: NSLayoutConstraint!
@@ -138,14 +139,47 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         
         
     }
-    
-    
-    @objc func loadformAppDelegate(){
+    // MARK: - Duplicate check helper (reusable)
+    private func checkDuplicateFor(processedURL: URL, completion: @escaping (Book?) -> Void) {
         
+        let asset = AVAsset(url: processedURL)
+        let incomingTitle = AVMetadataItem.metadataItems(from: asset.metadata, withKey: AVMetadataKey.commonKeyTitle, keySpace: AVMetadataKeySpace.common).first?.value?.copy(with: nil) as? String ??  processedURL.deletingPathExtension().lastPathComponent
+        
+        let incomingDuration = CMTimeGetSeconds(asset.duration)
+
+         let library = NewDataMannagerClass.getLibrary()
+        
+        let items = library.items?.array as? [LibraryItem] ?? []
+
+        let existingBooks = items.compactMap { $0 as? Book }
+
+       
+        func normalize(_ s: String) -> String {
+            return s
+                .lowercased()
+                .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        let normalizedIncoming = normalize(incomingTitle)
+
+        if let duplicate = existingBooks.first(where: { book in
+            let normalizedExisting = normalize(book.title ?? "")
+            let sameTitle = normalizedIncoming.contains(normalizedExisting) || normalizedExisting.contains(normalizedIncoming)
+            let sameDuration = abs(book.duration - incomingDuration) < 2
+            return sameTitle && sameDuration
+        }) {
+            completion(duplicate)
+        } else {
+            completion(nil)
+        }
+    }
+
+    @objc func loadformAppDelegate(){
         self.loading.showActivityLoading(uiView: self.view)
         Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { t in
             print("timer runnnig")
-            
+
             self.library = NewDataMannagerClass.getLibrary()
             NewDataMannagerClass.notifyPendingFiles()
             if self.items.count != (self.library.items?.array as? [LibraryItem] ?? []).count{
@@ -153,33 +187,101 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
             }
             self.items = self.library.items?.array as? [LibraryItem] ?? []
             self.t_items = self.items
-            
+
             self.tableView.reloadData()
-          //  self.emptyListContainerView.isHidden = !self.items.isEmpty
+            //  self.emptyListContainerView.isHidden = !self.items.isEmpty
             self.refreshControl.endRefreshing()
             self.loading.hideActivityLoading(uiView: self.view)
+
             
         }
     }
-    
+
     @objc func openURL(_ notification: Notification) {
-        
+
         guard let userInfo = notification.userInfo,
               let fileURL = userInfo["fileURL"] as? URL else {
             return
         }
+
         let destinationFolder = NewDataMannagerClass.getProcessedFolderURL()
-        
+
         NewDataMannagerClass.processFile(at: fileURL, destinationFolder: destinationFolder) { (processedURL) in
             guard let processedURL = processedURL else {
                 self.loadformAppDelegate()
                 return
             }
-            
-            let bookUrl = BookURL(original: fileURL, processed: processedURL)
-            self.loadFile(urls: [bookUrl])
+
+            self.checkDuplicateFor(processedURL: processedURL) { duplicateBook in
+                DispatchQueue.main.async {
+                    if let dup = duplicateBook {
+                       
+                        let alert = UIAlertController(
+                            title: "Duplicate Audiobook",
+                            message: "There is already an audiobook named '\(dup.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            preferredStyle: .alert
+                        )
+                        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                        
+                            self.loadformAppDelegate()
+                        }))
+                        alert.addAction(UIAlertAction(title: "Upload Anyway", style: .default, handler: { _ in
+                            // Proceed exactly as before
+                            let bookUrl = BookURL(original: fileURL, processed: processedURL)
+                            self.loadFile(urls: [bookUrl])
+                        }))
+                         self.present(alert, animated: true, completion: nil)
+                     
+                    } else {
+                       
+                        let bookUrl = BookURL(original: fileURL, processed: processedURL)
+                        self.loadFile(urls: [bookUrl])
+                    }
+                }
+            }
         }
     }
+    
+//    @objc func loadformAppDelegate(){
+//        
+//        self.loading.showActivityLoading(uiView: self.view)
+//        Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { t in
+//            print("timer runnnig")
+//            
+//            self.library = NewDataMannagerClass.getLibrary()
+//            NewDataMannagerClass.notifyPendingFiles()
+//            if self.items.count != (self.library.items?.array as? [LibraryItem] ?? []).count{
+//                t.invalidate()
+//            }
+//            self.items = self.library.items?.array as? [LibraryItem] ?? []
+//            self.t_items = self.items
+//            
+//            self.tableView.reloadData()
+//          //  self.emptyListContainerView.isHidden = !self.items.isEmpty
+//            self.refreshControl.endRefreshing()
+//            self.loading.hideActivityLoading(uiView: self.view)
+//            
+//        }
+//    }
+//    
+//    @objc func openURL(_ notification: Notification) {
+//        
+//        guard let userInfo = notification.userInfo,
+//              let fileURL = userInfo["fileURL"] as? URL else {
+//            return
+//        }
+//        let destinationFolder = NewDataMannagerClass.getProcessedFolderURL()
+//        
+//        NewDataMannagerClass.processFile(at: fileURL, destinationFolder: destinationFolder) { (processedURL) in
+//            guard let processedURL = processedURL else {
+//                self.loadformAppDelegate()
+//                return
+//            }
+//            
+//            let bookUrl = BookURL(original: fileURL, processed: processedURL)
+//            self.loadFile(urls: [bookUrl])
+//        }
+//    }
     
     
     func loadFile(urls: [BookURL]) {
@@ -635,6 +737,7 @@ extension ListBooksViewController {
        }
     
     private func setupPullToRefresh() {
+        crossBtnSearch.layer.cornerRadius = 20
         searchTblV.delegate = self
         searchTblV.dataSource = self
         searchTblV.layer.cornerRadius = 10
@@ -895,11 +998,13 @@ extension ListBooksViewController: UITableViewDataSource {
             selectedItems.forEach { item in
                 if let book = item as? Book {
                     handleDelete(book: book, alert: false)
+                    clearAllSelections()
                 } else if let playlist = item as? Playlist {
                     handleDelete(playlist: playlist, alert: false)
+                    clearAllSelections()
                 }
             }
-
+            
         case .move:
             let sheet = UIAlertController(title: "\(selectedItems.count) items", message: nil, preferredStyle: .alert)
             sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
@@ -919,6 +1024,7 @@ extension ListBooksViewController: UITableViewDataSource {
                     playlistTableVC.allowMoveToParent = false
                     playlistTableVC.allowMoveToRoot = false
                     let navController = UINavigationController(rootViewController: playlistTableVC)
+                self.clearAllSelections()
                 self.present(navController, animated: true, completion: nil)
 //                }
 //                let playlistTableVC = PlaylistTableViewController()
@@ -1912,6 +2018,12 @@ extension ListBooksViewController: UIDocumentPickerDelegate {
                 }
             }
         }
+    }
+    // MARK: - Multi-select state reset
+    func clearAllSelections() {
+        isSelectionModeEnabled.toggle()
+        self.selectedTxt.removeAll()
+        self.tableView.reloadData()
     }
 }
 

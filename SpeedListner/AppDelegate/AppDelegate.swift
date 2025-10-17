@@ -41,7 +41,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             
             defaults.set(true, forKey: UserDefaultsConstants.completedFirstLaunch)
         }
-        
+    
         UIApplication.shared.statusBarStyle = .lightContent
         
         UIApplication.shared.beginReceivingRemoteControlEvents()
@@ -57,7 +57,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         //clean leftover sleep timer registry
         UserDefaults.standard.set(nil, forKey: "sleep_timer")
         setupMPRemoteCommands()
-        Thread.sleep(forTimeInterval: 3)
+        Thread.sleep(forTimeInterval: 2.5)
 
         return true
     }
@@ -71,6 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     private func handleIncomingAudioFile(at url: URL) {
       
     }
+    
     func applicationDidBecomeActive(_ application: UIApplication) {
             // Call the completion handler if it exists
         guard let navigationVC = UIApplication.shared.keyWindow?.rootViewController!,
@@ -95,6 +96,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
               withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void)  {
            completionHandler(.alert)
        }
+    
     @objc func handleAudioInterruptions(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
             let typeValue = userInfo[AVAudioSessionInterruptionTypeKey] as? UInt,

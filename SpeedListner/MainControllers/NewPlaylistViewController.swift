@@ -16,7 +16,7 @@ class NewPlaylistViewController: UIViewController {
     @IBOutlet weak var footerImageView: UIImageView!
     @IBOutlet weak var footerTitleLabel: UILabel!
     @IBOutlet weak var footerPlayButton: UIButton!
-    @IBOutlet private weak var playListTitle: UILabel!
+    @IBOutlet weak var playListTitle: UILabel!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var collecV: UICollectionView!
     @IBOutlet weak var btnBookshowStatus: UIButton!
@@ -49,6 +49,7 @@ class NewPlaylistViewController: UIViewController {
     var matchedPlaylists: [Playlist] = []
     var isSearching = false
     private var keyboardHideWorkItem: DispatchWorkItem?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -83,6 +84,7 @@ class NewPlaylistViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
         self.checked = UserDefaults.standard.object(forKey: "checked") as? Bool ?? false
         if PlayerManager.shared.isPlaying {
             if comeFrom != ""{
@@ -114,7 +116,6 @@ class NewPlaylistViewController: UIViewController {
            }
         
            addChild(bottomSheet)
-           
            bottomSheet.view.translatesAutoresizingMaskIntoConstraints = false
            view.addSubview(bottomSheet.view)
            bottomSheet.didMove(toParent: self)
@@ -136,9 +137,9 @@ class NewPlaylistViewController: UIViewController {
         case .delete:
             selectedItems.forEach { item in
                 if let book = item as? Book {
-                    //handleDelete(book: book, alert: false)
+                    handleDelete(book: book, alert: false)
                 } else if let playlist = item as? Playlist {
-                   // handleDelete(playlist: playlist, alert: false)
+                   handleDelete(playlist: playlist, alert: false)
                 }
             }
 
@@ -200,6 +201,7 @@ class NewPlaylistViewController: UIViewController {
         toggleBottomSheet()
         tableView.reloadData()
     }
+    
     private func lightModeEnabled() {
         searchTxt.attributedPlaceholder = NSAttributedString(string:"Search Your Books", attributes: [NSAttributedString.Key.foregroundColor: UIColor(red: 40/255, green: 0, blue: 71/255, alpha: 1)])
         
@@ -402,9 +404,68 @@ class NewPlaylistViewController: UIViewController {
             }
         }
     }
+    
+    /// Handles deleting a book from the current playlist or library. If 'alert' is true, show confirmation; otherwise, delete immediately.
+    
+    private func handleDelete(book: Book, alert: Bool) {
+        let performDeletion = {
+            // Remove book from current playlist and add to library if needed
+            self.playlist?.removeFromBooks(book)
+            // Optionally, remove from the library as well if desired
+            // self.library.removeFromItems(book) // Uncomment if needed
+            NewDataMannagerClass.delete(book: book, from: self.library, or: self.playlist, deleteFile: true)
+            NewDataMannagerClass.saveContext()
+            self.fetchPlaylistItems()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
+        }
+
+        if alert {
+            let alertVC = UIAlertController(title: "Delete Book?", message: "Are you sure you want to delete '" + (book.title ?? "Untitled Book") + "' and all its notes?", preferredStyle: .alert)
+            alertVC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            alertVC.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+                performDeletion()
+            })
+            self.present(alertVC, animated: true)
+        } else {
+            performDeletion()
+        }
+    }
+
+    //// Handles deleting a playlist from its parent or library. If 'alert' is true, show confirmation; otherwise, delete immediately.
+    
+    private func handleDelete(playlist: Playlist, alert: Bool) {
+        let performDeletion = {
+            // Remove playlist from current playlist or library
+            self.playlist?.removeFromChildren(playlist)
+            // Optionally, remove from the library as well if desired
+            // self.library.removeFromItems(playlist) // Uncomment if needed
+            NewDataMannagerClass.delete(playlist: playlist, from: self.library, or: self.playlist, deleteBooks: false)
+            NewDataMannagerClass.saveContext()
+            self.fetchPlaylistItems()
+            DispatchQueue.main.async {
+                self.tableView.reloadData()
+            }
+            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
+        }
+        
+        if alert {
+            let alertVC = UIAlertController(title: "Delete Folder?", message: "This will delete '" + (playlist.title ?? "Untitled Folder") + "' and all its contents.", preferredStyle: .alert)
+            alertVC.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+            alertVC.addAction(UIAlertAction(title: "Delete", style: .destructive) { _ in
+                performDeletion()
+            })
+            self.present(alertVC, animated: true)
+        } else {
+            performDeletion()
+        }
+    }
 }
 
 extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate {
+    
     // MARK: - Table View Data Source
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -1384,3 +1445,4 @@ extension NewPlaylistViewController {
     
     
 }
+

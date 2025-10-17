@@ -120,6 +120,9 @@
 		DD6795762E606BFA003DEA49 /* SpeedStatsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD6795752E606BFA003DEA49 /* SpeedStatsViewController.swift */; };
 		DD700FDA2DCA4D3500AF7309 /* MergeBookMarkCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */; };
 		DD700FDB2DCA4D3500AF7309 /* MergeBookMarkCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */; };
+		DD88850C2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DD88850B2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf */; };
+		DD88850D2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DD88850B2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf */; };
+		DD88850E2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DD88850B2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf */; };
 		DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */; };
 		DD8E537D2E1686F500DF31C2 /* TranscriptionSummaryVC.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */; };
 		DD8E537F2E16B5B900DF31C2 /* AudioMonitorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */; };
@@ -291,6 +294,7 @@
 		DD6795752E606BFA003DEA49 /* SpeedStatsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedStatsViewController.swift; sourceTree = "<group>"; };
 		DD700FD82DCA4D3500AF7309 /* MergeBookMarkCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MergeBookMarkCell.swift; sourceTree = "<group>"; };
 		DD700FD92DCA4D3500AF7309 /* MergeBookMarkCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MergeBookMarkCell.xib; sourceTree = "<group>"; };
+		DD88850B2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Freestyle Script Regular.ttf"; sourceTree = "<group>"; };
 		DD8E53782E165AC000DF31C2 /* BookmarksActivityItemProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarksActivityItemProvider.swift; sourceTree = "<group>"; };
 		DD8E537C2E1686F500DF31C2 /* TranscriptionSummaryVC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TranscriptionSummaryVC.swift; sourceTree = "<group>"; };
 		DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioMonitorManager.swift; sourceTree = "<group>"; };
@@ -437,6 +441,7 @@
 			isa = PBXGroup;
 			children = (
 				DD0EEDA12C8F2457004F2863 /* SpeedListnerUITests.swift */,
+				DD88850B2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf */,
 				DD0EEDA32C8F2457004F2863 /* SpeedListnerUITestsLaunchTests.swift */,
 			);
 			path = SpeedListnerUITests;
@@ -764,6 +769,7 @@
 				DD0EEFE82C8F3197004F2863 /* BookMarkExpandCell.xib in Resources */,
 				DD0EEFE92C8F3197004F2863 /* CellData.xib in Resources */,
 				DD0EEFCF2C8F2FEC004F2863 /* A-splash@3x.png in Resources */,
+				DD88850C2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */,
 				DD0EEFCD2C8F2FEC004F2863 /* Assets.xcassets in Resources */,
 				DD0EEFEE2C8F3197004F2863 /* tableSortCell.xib in Resources */,
 				DD0EEFEC2C8F3197004F2863 /* ChapterCell.xib in Resources */,
@@ -776,6 +782,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD88850D2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -783,6 +790,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD88850E2E9FA5A400CE0D56 /* Freestyle Script Regular.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

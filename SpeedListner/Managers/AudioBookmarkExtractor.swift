@@ -7,7 +7,6 @@
 
 import AVFoundation
 
-
 enum BookmarkDisplayItem {
     case bookmark(BookmarksModel)
     case segment(BookmarkSegment)

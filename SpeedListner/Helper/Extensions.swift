@@ -162,3 +162,22 @@ extension UITextView: NSTextStorageDelegate {
     }
 
 }
+extension UILabel {
+    @IBInspectable var fontName: String {
+        get { return self.font.fontName }
+        set {
+            if let customFont = UIFont(name: newValue, size: self.font.pointSize) {
+                self.font = customFont
+            } else {
+                print("⚠️ Font '\(newValue)' not found. Make sure it's added in project & Info.plist")
+            }
+        }
+    }
+
+    @IBInspectable var fontSize: CGFloat {
+        get { return self.font.pointSize }
+        set {
+            self.font = self.font.withSize(newValue)
+        }
+    }
+}

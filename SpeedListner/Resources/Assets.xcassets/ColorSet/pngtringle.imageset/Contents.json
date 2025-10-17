@@ -1,17 +1,50 @@
 {
   "images" : [
     {
-      "filename" : "—Pngtree—triangle line black icon_3746346.png",
+      "filename" : "Polygon 4.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "—Pngtree—triangle line black icon_3746346 1.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Polygon 3.png",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "Polygon 5.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "—Pngtree—triangle line black icon_3746346 2.png",
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Polygon 7.png",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "Polygon 6.png",
+      "idiom" : "universal",
+      "scale" : "3x"
+    },
+    {
+      "appearances" : [
+        {
+          "appearance" : "luminosity",
+          "value" : "dark"
+        }
+      ],
+      "filename" : "Polygon 8.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

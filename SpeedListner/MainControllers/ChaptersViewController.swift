@@ -32,6 +32,23 @@ class ChaptersViewController: UITableViewController {
                 return
             }
         self.tableView.tableFooterView = UIView()
+        
+        let headerView = UIView(frame: CGRect(x: 0, y: 0, width: tableView.frame.width, height: 60))
+        let arrowImageView = UIImageView()
+        if let chevronImage = UIImage(systemName: "chevron.compact.down") {
+            arrowImageView.image = chevronImage
+            arrowImageView.tintColor = .systemGray
+        }
+        arrowImageView.translatesAutoresizingMaskIntoConstraints = false
+        headerView.addSubview(arrowImageView)
+        NSLayoutConstraint.activate([
+            arrowImageView.centerXAnchor.constraint(equalTo: headerView.centerXAnchor),
+            arrowImageView.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
+            arrowImageView.heightAnchor.constraint(equalToConstant: 36),
+            arrowImageView.widthAnchor.constraint(equalToConstant: 36)
+        ])
+        self.tableView.tableHeaderView = headerView
+        
         self.tableView.reloadData()
     let asset = AVAsset(url: PlayerManager.shared.currentBook?.fileURL ?? URL(fileURLWithPath: ""))
     for locale in asset.availableChapterLocales {
@@ -41,11 +58,10 @@ class ChaptersViewController: UITableViewController {
         let titleFromMeta = AVMetadataItem.metadataItems(from: asset.metadata, withKey: AVMetadataKey.commonKeyTitle, keySpace: AVMetadataKeySpace.common).first?.value?.copy(with: nil) as? String
           print(chapterMetadata.items,"hgjkl;'lk")
 
-
-
           
         }
-    }
+     }
+  
     }
 
     @IBAction func done(_ sender: UIBarButtonItem?) {
@@ -64,13 +80,18 @@ class ChaptersViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChapterCell", for: indexPath)
+        print("cellForRowAt indexPath: \(indexPath)")
         let chapter = self.chapters[indexPath.row]
-        if ((chapter.title?.contains("Chapter")) != nil){
-    cell.textLabel?.text = chapter.title
+     //   let chapter = self.chapters[indexPath.row]
+//        if ((chapter.title?.contains("Chapter")) != nil){
+        if indexPath.row == 0{
+            
+        
+    cell.textLabel?.text = "Intro"
     
     }else{
     
-        cell.textLabel?.text =  "Chapter \(indexPath.row + 1)" + (chapter.title ?? "")
+        cell.textLabel?.text =  "Chapter \(indexPath.row)" /*+ (chapter.title ?? "")*/
     
     }
         let roundedX2 = Double(round(PlayerManager.shared.speed * 10) / 10)
@@ -88,6 +109,7 @@ class ChaptersViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("didSelectRowAt indexPath: \(indexPath)")
         self.didSelectChapter?(self.chapters[indexPath.row])
 
         self.done(nil)
@@ -99,4 +121,6 @@ class ChaptersViewController: UITableViewController {
 
 
 // Example usage
+
+
 

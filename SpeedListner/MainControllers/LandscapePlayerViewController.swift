@@ -8,229 +8,312 @@
 
 import UIKit
 import AVFoundation
+import AVKit
 
-final class LandscapePlayerViewController: UIViewController {
-
-    // MARK: - UI references
-    private let coverImageView = UIImageView()
-    private let rewindButton = UIButton(type: .system)
-    private let playButton = UIButton(type: .system)
-    private let forwardButton = UIButton(type: .system)
-    private let minusButton = UIButton(type: .system)
-    private let plusButton = UIButton(type: .system)
-    private let speedLabel = UILabel()
-    private let escalationSwitch = UISwitch()
-    private let bookmarkButton = UIButton(type: .system)
-
+final class LandscapePlayerViewController: UIViewController, DelegateforListeningSpeedVC, DelegateforBookmarkPopUpVC {
+   
+   
+  
+    @IBOutlet weak var playButton: UIButton!
+    @IBOutlet weak var forwardButton: UIButton!
+    @IBOutlet weak var remainingButton: UIButton!
+    @IBOutlet weak var remainingTime:UILabel!
+    @IBOutlet weak var remaininglbl: UILabel!
+    @IBOutlet weak var speedlbl: UILabel!
+    @IBOutlet weak var coverImageView: UIImageView!
+    @IBOutlet weak var speedEscalationButton: UIButton!
+    private let playImage = UIImage(systemName:"play.fill")
+    private let pauseImage = UIImage(systemName:"pause.fill")
+    var library = NewDataMannagerClass.getLibrary()
+    private var routePickerView: AVRoutePickerView!
+    private var coverImage = UIImage()
+    var currentValue: Float = 0.1
     // Keep a small state reference
     private var isPlaying: Bool {
         // adapt if your PlayerManager uses different property
         return (PlayerManager.shared.audioPlayer?.isPlaying ?? false)
     }
+    var items: [LibraryItem] {
+        guard self.library != nil else {
+            return []
+        }
+        
+        return self.library.items?.array as? [LibraryItem] ?? []
+    }
+    var book: Book? {
+        didSet {
+            guard let book = self.book else {
+                return
+            }
+            
+            self.coverImage =  book.artwork
+            
+        }
+    }
 
+    private var BookcurrentTimeInContext: TimeInterval {
+        guard let book = self.book else {
+            return 0.0
+        }
+        
+        return book.currentTime
+    }
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
-        syncWithPlayer()
-        subscribeToPlayerNotifications()
+      
+        self.remainingButton.addTarget(self, action: #selector(remaingBtnTap(_:)), for: .touchUpInside)
+        self.speedEscalationButton.addTarget(self, action: #selector(speedEscBtnTap(_:)), for: .touchUpInside)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.bookReady(_:)), name: Notification.Name.AudiobookPlayer.bookReady, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.bookChange(_:)), name: Notification.Name.AudiobookPlayer.bookChange, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPlay), name: Notification.Name.AudiobookPlayer.bookPlayed, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPause), name: Notification.Name.AudiobookPlayer.bookPaused, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onBookEnd), name: Notification.Name.AudiobookPlayer.bookEnd, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.updateTimer), name: Notification.Name.AudiobookPlayer.escTime, object: nil)
+        self.loadLibrary()
+        setupAudioSession()
+        setupRoutePickerView()
     }
 
     deinit {
         NotificationCenter.default.removeObserver(self)
     }
+    
+    override func viewWillAppear(_ animated: Bool){
+        guard let c = currentBok else{return}
+        book = c
+        self.currentValue = PlayerManager.shared.speed
+    
+        let speedEscTime = UserDefaults.standard.object(forKey: "speedEscTime") as? Int ?? 1
+     
+        if PlayerManager.shared.remaingCheck == true {
+            self.remainingButton.tag = 1
+            remainingButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            remaininglbl.text = "Remaining"
+        }else{
+            self.remainingButton.tag = 0
+            
+            remainingButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            remaininglbl.text = "Completed"
+        }
+        
+        let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+        if PlayerManager.shared.speedEsalbutton == true {
+            self.speedEscalationButton.tag = 1
+            
+            if d {
+                speedEscalationButton.setImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            }else{
+                speedEscalationButton.setBackgroundImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            }
+            
+        }else{
+            self.speedEscalationButton.tag = 0
+            if d {
+                speedEscalationButton.setImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            }else{
+                speedEscalationButton.setBackgroundImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            }
+            
+        }
+        
+        self.coverImageView.image = self.coverImage
+        
+        PlayerManager.shared.chapterArray = self.book?.chapters?.array as? [Chapter]
+     
+        self.setProgress()
+        self.loadLibrary()
+    }
+    
+    @objc func updateTimer() {
+        
+        PlayerManager.shared.currentSpeed = PlayerManager.shared.speed
+        self.currentValue = PlayerManager.shared.speed
+        print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount")
+        let speedEscTime = UserDefaults.standard.object(forKey: "speedEscTime") as? Int ?? 1
+        let t = speedEscTime*60
+        
+        if PlayerManager.shared.speedEsalbutton == true {
+            if  PlayerManager.shared.currentSpeed < 10.1 {
+                //print(Int(self.currentTimeInContext),t)
+                print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount",t)
+                if Int(PlayerManager.shared.incresedSpeed) % t == 0 {
+                    
+                    PlayerManager.shared.currentSpeed += 0.1
+                    
+                    let roundedX = Double(round(PlayerManager.shared.currentSpeed * 10) / 10)
+                    
+                    PlayerManager.shared.speed = Float(roundedX)
+                }
+                
+            }
+            
+            
+        }else{
+            
+        }
+       
+       
+    }
+    private func setProgress() {
+        if PlayerManager.shared.isPlaying{
+            let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+            if d {
+                self.playButton.setImage(nil, for: .normal)
+                self.playButton.setBackgroundImage(self.pauseImage, for: .normal)
+            }else{
+                self.playButton.setBackgroundImage(nil, for: .normal)
+                self.playButton.setImage(self.pauseImage, for: .normal)
+            }
+        }else{
+            let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+            if d {
+                self.playButton.setImage(nil, for: .normal)
+                self.playButton.setBackgroundImage(UIImage(named: "playbtn"), for:.normal)
+            }else{
+                self.playButton.setBackgroundImage(nil, for: .normal)
+                self.playButton.setImage(self.playImage, for: .normal)
+            }
+        }
+        guard let book = self.book else {
+            
+          
+            
+            return
+        }
+             
+            self.updateTimer2()
+      
+    }
+    func updateTimer2() {
+        
+        let originalValue: Double = Double(PlayerManager.shared.speed)
+        let roundedValue = String(format: "%.1f", originalValue)
+        print(roundedValue) // This will print "12.3"
+        
+        self.speedlbl.text =  "\(roundedValue)x"
+        let c = Double(self.book?.duration ?? 0)
+      
+        let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
+        let d = c / roundedX
+        let e = c - d
+      
+        let maxDuration = Int(c)
+        let cureenTime = Double(BookcurrentTimeInContext)
+        let roundedX2 = Double(round(PlayerManager.shared.speed * 10) / 10)
+        let d2 = cureenTime / roundedX2
+       
+        if remainingButton.tag == 0 {
+            self.remainingTime.text = "\(self.formatTime(Int(d2)))"
+            
+        }else{
+            
+            let r = d - d2
+            self.remainingTime.text = self.formatTime(Int(r))
+         
+        }
+       
+    }
+    
 
-    // MARK: - UI Setup
-    private func configureUI() {
-        view.backgroundColor = UIColor.systemBackground
-
-        // Container split: left cover, right controls
-        let leftContainer = UIView()
-        let rightContainer = UIView()
-        leftContainer.translatesAutoresizingMaskIntoConstraints = false
-        rightContainer.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(leftContainer)
-        view.addSubview(rightContainer)
-
-        NSLayoutConstraint.activate([
-            leftContainer.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            leftContainer.topAnchor.constraint(equalTo: view.topAnchor),
-            leftContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            leftContainer.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.45),
-
-            rightContainer.leadingAnchor.constraint(equalTo: leftContainer.trailingAnchor),
-            rightContainer.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            rightContainer.topAnchor.constraint(equalTo: view.topAnchor),
-            rightContainer.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-
-        // Cover
-        coverImageView.translatesAutoresizingMaskIntoConstraints = false
-        coverImageView.contentMode = .scaleAspectFill
-        coverImageView.clipsToBounds = true
-        coverImageView.layer.cornerRadius = 8
-        leftContainer.addSubview(coverImageView)
-        NSLayoutConstraint.activate([
-            coverImageView.leadingAnchor.constraint(equalTo: leftContainer.leadingAnchor, constant: 16),
-            coverImageView.trailingAnchor.constraint(equalTo: leftContainer.trailingAnchor, constant: -16),
-            coverImageView.centerYAnchor.constraint(equalTo: leftContainer.centerYAnchor),
-            coverImageView.heightAnchor.constraint(lessThanOrEqualTo: leftContainer.heightAnchor, multiplier: 0.9)
-        ])
-
-        // Right side stack
-        let stack = UIStackView()
-        stack.axis = .vertical
-        stack.alignment = .center
-        stack.distribution = .equalSpacing
-        stack.spacing = 18
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        rightContainer.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.leadingAnchor.constraint(equalTo: rightContainer.leadingAnchor, constant: 8),
-            stack.trailingAnchor.constraint(equalTo: rightContainer.trailingAnchor, constant: -8),
-            stack.centerYAnchor.constraint(equalTo: rightContainer.centerYAnchor)
-        ])
-
-        // Control row (rewind - play - forward)
-        let controlsRow = UIStackView()
-        controlsRow.axis = .horizontal
-        controlsRow.spacing = 24
-        controlsRow.alignment = .center
-        controlsRow.distribution = .equalCentering
-        controlsRow.translatesAutoresizingMaskIntoConstraints = false
-
-        styleCircleButton(rewindButton, systemName: "gobackward.10")
-        styleCircleButton(playButton, systemName: "play.fill")
-        styleCircleButton(forwardButton, systemName: "goforward.10")
-
-        rewindButton.addTarget(self, action: #selector(rewindTapped), for: .touchUpInside)
-        playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
-        forwardButton.addTarget(self, action: #selector(forwardTapped), for: .touchUpInside)
-
-        controlsRow.addArrangedSubview(rewindButton)
-        controlsRow.addArrangedSubview(playButton)
-        controlsRow.addArrangedSubview(forwardButton)
-
-        // Speed row (- , label, +)
-        let speedRow = UIStackView()
-        speedRow.axis = .horizontal
-        speedRow.spacing = 12
-        speedRow.alignment = .center
-
-        styleSmallCircle(minusButton, title: "-")
-        styleSmallCircle(plusButton, title: "+")
-        minusButton.addTarget(self, action: #selector(decreaseSpeed), for: .touchUpInside)
-        plusButton.addTarget(self, action: #selector(increaseSpeed), for: .touchUpInside)
-
-        speedLabel.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
-        speedLabel.textAlignment = .center
-        speedLabel.text = "\(PlayerManager.shared.currentSpeed)x"
-
-        speedRow.addArrangedSubview(minusButton)
-        speedRow.addArrangedSubview(speedLabel)
-        speedRow.addArrangedSubview(plusButton)
-
-        // Escalation + Bookmark row
-        let toggleRow = UIStackView()
-        toggleRow.axis = .horizontal
-        toggleRow.spacing = 16
-        toggleRow.alignment = .center
-
-        escalationSwitch.isOn = PlayerManager.shared.speedEsalbutton
-        escalationSwitch.addTarget(self, action: #selector(escalationToggled), for: .valueChanged)
-
-        bookmarkButton.setImage(UIImage(systemName: "bookmark.fill"), for: .normal)
-        bookmarkButton.tintColor = UIColor.systemPurple
-        bookmarkButton.addTarget(self, action: #selector(bookmarkTapped), for: .touchUpInside)
-
-        let escalationLabel = UILabel()
-        escalationLabel.text = "Speed Escalation"
-        escalationLabel.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-
-        toggleRow.addArrangedSubview(escalationLabel)
-        toggleRow.addArrangedSubview(escalationSwitch)
-        toggleRow.addArrangedSubview(bookmarkButton)
-
-        // Add rows to main stack
-        stack.addArrangedSubview(controlsRow)
-        stack.addArrangedSubview(speedRow)
-        stack.addArrangedSubview(toggleRow)
-
-        // Fill cover image from current book if available (non-blocking)
-        if let cover = (UIApplication.shared.delegate as? AppDelegate)?.window?.rootViewController?.value(forKey: "coverImageView") as? UIImageView {
-            coverImageView.image = cover.image
-        } else {
-            // fallback placeholder
-            coverImageView.image = UIImage(named: "cover-placeholder")
+    var preSpeed:Float = 1.0
+    @objc func speedEscBtnTap(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+        if sender.tag == 0 {
+            sender.tag = 1
+            if d {
+                speedEscalationButton.setImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            }else{
+                speedEscalationButton.setBackgroundImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            }
+            
+            
+            PlayerManager.shared.speedEsalbutton = true
+            PlayerManager.shared.speed += 0.1
+            PlayerManager.shared.speedEscalationStart()
+        }else{
+            sender.tag = 0
+            if d {
+                speedEscalationButton.setImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            }else{
+                speedEscalationButton.setBackgroundImage(nil, for: .normal)
+                speedEscalationButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            }
+          
+            PlayerManager.shared.speedEsalbutton = false
+            PlayerManager.shared.speedEscalationStop()
+           
         }
     }
-
-    private func styleCircleButton(_ btn: UIButton, systemName: String) {
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        if let img = UIImage(systemName: systemName) {
-            btn.setImage(img.withRenderingMode(.alwaysTemplate), for: .normal)
+    @objc func remaingBtnTap(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        
+        let c = Double(self.book?.duration ?? 0)
+        let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
+        let d = c / roundedX
+        let maxDuration = Int(c)
+        
+        let cureenTime = Int(BookcurrentTimeInContext)
+        if sender.tag == 0 {
+            let r = 100 - Int(round((book?.progress ?? 0) * 100))
+           
+            remainingButton.setBackgroundImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
+            let r1 = maxDuration - cureenTime
+            self.remainingTime.text = self.formatTime(r1)
+            
+            remaininglbl.text = "Remaining"
+            
+            PlayerManager.shared.remaingCheck = true
+            sender.tag = 1
+        }else{
+            
+            remainingButton.setBackgroundImage(UIImage(named: "Group-7"), for: .normal)
+            
+            self.remainingTime.text = "\(self.formatTime(cureenTime))"
+            remaininglbl.text = "Completed"
+            let r = Int(round((book?.progress ?? 0) * 100))
+          
+            PlayerManager.shared.remaingCheck = false
+            sender.tag = 0
         }
-        btn.tintColor = .white
-        btn.backgroundColor = UIColor.systemPurple
-        btn.layer.cornerRadius = 10
-        btn.contentEdgeInsets = UIEdgeInsets(top: 12, left: 12, bottom: 12, right: 12)
-        NSLayoutConstraint.activate([
-            btn.widthAnchor.constraint(equalToConstant: 68),
-            btn.heightAnchor.constraint(equalToConstant: 68)
-        ])
+        
+        
     }
-
-    private func styleSmallCircle(_ btn: UIButton, title: String) {
-        btn.translatesAutoresizingMaskIntoConstraints = false
-        btn.setTitle(title, for: .normal)
-        btn.setTitleColor(.white, for: .normal)
-        btn.backgroundColor = UIColor.systemPurple
-        btn.layer.cornerRadius = 20
-        btn.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        NSLayoutConstraint.activate([
-            btn.widthAnchor.constraint(equalToConstant: 48),
-            btn.heightAnchor.constraint(equalToConstant: 40)
-        ])
-    }
-
-    // MARK: - Sync
-    private func syncWithPlayer() {
-        // Fill speed label and switch
-        speedLabel.text = "\(PlayerManager.shared.currentSpeed)x"
-        escalationSwitch.isOn = PlayerManager.shared.speedEsalbutton
-
-        // Play button image
-        let playing = isPlaying
-        let playImageName = playing ? "pause.fill" : "play.fill"
-        playButton.setImage(UIImage(systemName: playImageName), for: .normal)
-    }
-
-    private func subscribeToPlayerNotifications() {
-        // Subscribe to notifications your app already posts when playback changes, speed changes etc.
-        NotificationCenter.default.addObserver(self, selector: #selector(playerStateChanged), name: .AVPlayerItemDidPlayToEndTime, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(playerStateChanged), name: Notification.Name("PlayerRateChanged"), object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(playerStateChanged), name: Notification.Name.AudiobookPlayer.reloadData, object: nil)
-    }
-
-    @objc private func playerStateChanged() {
-        DispatchQueue.main.async {
-            self.syncWithPlayer()
-        }
-    }
-
-    // MARK: - Actions
-    @objc private func rewindTapped() {
-      //  PlayerManager.shared.rewindByAudioSeconds()
-    }
-
-    @objc private func playTapped() {
-        PlayerManager.shared.playPause()
-        syncWithPlayer()
-    }
-
-    @objc private func forwardTapped() {
-    //    PlayerManager.shared.forwardByAudioSeconds()
-    }
+    
+    private func setupAudioSession() {
+           let audioSession = AVAudioSession.sharedInstance()
+           do {
+               try audioSession.setCategory(.playback, mode: .default, options: [])
+               try audioSession.setActive(true)
+           } catch {
+               print("Failed to set up audio session: \(error)")
+           }
+       }
+       
+       
+       // Set up AVRoutePickerView (Hidden)
+       private func setupRoutePickerView() {
+           routePickerView = AVRoutePickerView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+           routePickerView.isHidden = true
+           self.view.addSubview(routePickerView)
+       }
+    
+  
 
     @objc private func increaseSpeed() {
         let s = min(PlayerManager.shared.currentSpeed + 0.1, 10.0)
@@ -239,7 +322,7 @@ final class LandscapePlayerViewController: UIViewController {
         if let setRate = PlayerManager.shared.perform(Selector(("setPlaybackRate:")), with: NSNumber(value: s)) {
             _ = setRate
         }
-        speedLabel.text = String(format: "%.1fx", s)
+     
     }
 
     @objc private func decreaseSpeed() {
@@ -248,15 +331,285 @@ final class LandscapePlayerViewController: UIViewController {
         if let setRate = PlayerManager.shared.perform(Selector(("setPlaybackRate:")), with: NSNumber(value: s)) {
             _ = setRate
         }
-        speedLabel.text = String(format: "%.1fx", s)
+        
     }
 
     @objc private func escalationToggled() {
-        PlayerManager.shared.speedEsalbutton = escalationSwitch.isOn
+        
     }
 
     @objc private func bookmarkTapped() {
         // Post a notification or call known selector to add bookmark
         NotificationCenter.default.post(name: Notification.Name("AddBookmarkFromUI"), object: nil)
+    }
+    private func isLibraryEmpty() -> Bool {
+        return getAllBooks(from: library).isEmpty || self.book == nil
+    }
+    
+    
+    func getAllBooks(from library: Library) -> [Book] {
+        var result: [Book] = []
+
+        guard let items = library.items  else { return result }
+
+        for item in items {
+            if let book = item as? Book {
+                result.append(book)
+            } else if let playlist = item as? Playlist {
+                result.append(contentsOf: getAllBooks(from: playlist))
+            }
+        }
+
+        return result
+    }
+
+    func getAllBooks(from playlist: Playlist) -> [Book] {
+        var result: [Book] = []
+
+        if let books = playlist.books?.array as? [Book] {
+            result.append(contentsOf: books)
+        }
+
+        if let children = playlist.children as? Set<Playlist> {
+            for child in children {
+                result.append(contentsOf: getAllBooks(from: child))
+            }
+        }
+
+        return result
+    }
+    
+    @IBAction func rewindPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        PlayerManager.shared.rewind()
+    }
+    @IBAction func playPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        if !PlayerManager.shared.isPlaying {
+            
+        }
+      
+        
+        PlayerManager.shared.playPause()
+    }
+    @IBAction func forwardPressed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        PlayerManager.shared.forward()
+    }
+    @IBAction func btnDecrease_Action(_ sender: Any) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        
+        if currentValue >= 0 {
+            
+            currentValue =  currentValue - 0.1
+            print(currentValue,"currentValue")
+            if currentValue > 0.0 {
+                let currentValue1 = round(currentValue * 100) / 100.0
+                print(currentValue1,"currentValue")
+                self.setSpeed(currentValue: currentValue1)
+            }
+            
+        } else {
+            let a:Float = 0.1
+            let currentValue1 = round(a * 100) / 100.0
+            print(currentValue1,"currentValue")
+            self.setSpeed(currentValue: currentValue1)
+            print("you cant.")
+        }
+    }
+    
+    @IBAction func btnIncrease_Action(_ sender: Any) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        if currentValue <= 15 {
+            currentValue =  currentValue + 0.1
+            var currentValue1 = round(currentValue * 100) / 100.0
+            print(currentValue1,"currentValue")
+            self.setSpeed(currentValue: currentValue1)
+        } else {
+            print("you cant.")
+        }
+    }
+    func setSpeed(currentValue:Float){
+        var myData:Float = 0.1
+        let currentValue1 = round(currentValue * 100) / 100.0
+        let dataToBeSent = currentValue1
+        myData = dataToBeSent
+        
+        PlayerManager.shared.speed = myData
+        let originalValue: Double = Double(PlayerManager.shared.speed)
+        let roundedValue = String(format: "%.1f", originalValue)
+        print(roundedValue)
+        let maxDuration = Double(self.book?.duration ?? 0)
+        let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
+        let c1 = maxDuration / roundedX
+    
+    self.speedlbl.text =  "\(roundedValue)x"
+     
+        
+        let c = Double(self.book?.duration ?? 0)
+
+        let d = c / roundedX
+        let e = c - d
+     
+       
+        let cureenTime = Double(BookcurrentTimeInContext)
+        let roundedX2 = Double(round(PlayerManager.shared.speed * 10) / 10)
+        let d2 = cureenTime / roundedX2
+      
+        if remainingButton.tag == 0 {
+            self.remainingTime.text = "\(self.formatTime(Int(d2)))"
+             remaininglbl.text = "Completed"
+        }else{
+            
+            let r = d - d2
+            self.remainingTime.text = self.formatTime(Int(r))
+            remaininglbl.text = "Remaning"
+        }
+     
+    }
+    @IBAction func didPressroutePicker(_ sender: UIButton) {
+        for subview in routePickerView.subviews {
+                  if let button = subview as? UIButton {
+                      button.sendActions(for: .touchUpInside)
+                      break
+                  }
+              }
+    
+    }
+    @IBAction func presentSpeed(_ sender: UIButton) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        let vc:ListeningSpeedVC = self.storyboard?.instantiateViewController(withIdentifier: "ListeningSpeedVC") as! ListeningSpeedVC
+        
+        vc.delegateSpeedListeningVC = self
+        
+        let myDouble =  PlayerManager.shared.currentSpeed
+        let doubleStr = String(format: "%.2f", myDouble) // "3.14"
+        print(doubleStr,"doubleStr")
+        vc.currentValue = Float(doubleStr)!
+        self.presentModal(vc, animated: true, completion: nil)
+        
+        
+    }
+    func MethodforPop() {
+        
+    }
+    func MethodforPop(string: String) {
+        
+    }
+    func loadLibrary() {
+        self.library = NewDataMannagerClass.getLibrary()
+        NewDataMannagerClass.notifyPendingFiles()
+        if let curr = currentItem {
+            
+        }else{
+            currentItem = self.items.first
+        }
+        
+    }
+  
+        func sendDataToFirstViewController(myData: Float) {
+            
+            PlayerManager.shared.speed = myData
+            self.currentValue = PlayerManager.shared.speed
+            let originalValue: Double = Double(PlayerManager.shared.speed)
+            let roundedValue = String(format: "%.1f", originalValue)
+            print(roundedValue)
+            let maxDuration = Double(self.book?.duration ?? 0)
+            let roundedX = Double(round(PlayerManager.shared.speed * 10) / 10)
+            let c = maxDuration / roundedX
+           
+            // This will print "12.3"
+            
+            self.speedlbl.text =  "\(roundedValue)x"
+           
+        }
+    
+    @IBAction func btnAddBookmark_Action(_ sender: Any) {
+        guard !isLibraryEmpty() else {
+                showToast("Please add a book to the library if already added then play")
+                return
+            }
+        let vc: BookmarkPopUpVC = self.storyboard?.instantiateViewController(withIdentifier: "BookmarkPopUpVC") as! BookmarkPopUpVC
+        vc.playerstaus = PlayerManager.shared.isPlaying
+        vc.delegateBookmarkVC = self
+        vc.modalPresentationStyle = .overCurrentContext
+        self.present(vc, animated: false)
+        
+    }
+    @objc private func bookReady(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let book = userInfo["book"] as? Book else {
+            return
+        }
+        
+        currentBok = book
+        if book is Book {
+            
+        }else{}
+        // let index = PlayerManager2.shared.currentPlayListIndex ?? 0
+        // items[index].recentPlayTime = Date()
+        self.viewWillAppear(true)
+        // setupMiniPlayer(book: book)
+    }
+    @objc private func bookChange(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let books = userInfo["books"] as? [Book],
+              let currentBook = books.first else {
+            return
+        }
+        currentBok = currentBook
+        
+        PlayerManager.shared.play()
+        self.viewWillAppear(true)
+    }
+    @objc private func onBookPlay() {
+        let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+        if d {
+            self.playButton.setImage(nil, for: .normal)
+            self.playButton.setBackgroundImage(self.pauseImage, for: .normal)
+            
+        }else{
+           self.playButton.setImage(self.pauseImage, for: .normal)
+            self.playButton.setBackgroundImage(nil, for: .normal)
+        }
+    }
+    @objc private func onBookPause() {
+        let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+        if d {
+            self.playButton.setImage(nil, for: .normal)
+            self.playButton.setBackgroundImage(UIImage(named: "playbtn"), for: .normal)
+        }else{
+            self.playButton.setImage(self.playImage, for: .normal)
+            self.playButton.setBackgroundImage(nil, for: .normal)
+        }
+    }
+    @objc private func onBookEnd() {
+        //self.handleNextBookAction()
+        let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
+        if d {
+            self.playButton.setImage(nil, for: .normal)
+            self.playButton.setBackgroundImage(UIImage(named: "playbtn"), for: .normal)
+        }else{
+            self.playButton.setImage(self.playImage, for: .normal)
+            self.playButton.setBackgroundImage(nil, for: .normal)
+        }
     }
 }

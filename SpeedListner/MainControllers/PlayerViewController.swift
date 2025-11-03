@@ -316,7 +316,6 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         return result
     }
     
-    
     private func setupAudioSession() {
            let audioSession = AVAudioSession.sharedInstance()
            do {
@@ -334,6 +333,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
            routePickerView.isHidden = true
            self.view.addSubview(routePickerView)
        }
+    
     
     @objc func removeFiles() {}
     
@@ -1473,7 +1473,7 @@ extension PlayerViewController: AVAudioPlayerDelegate {
         }
     }
     @objc private func onBookEnd() {
-        self.handleNextBookAction()
+         self.handleNextBookAction()
         let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
         if d {
             self.playButton.setImage(nil, for: .normal)

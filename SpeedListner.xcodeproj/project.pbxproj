@@ -10,6 +10,8 @@
 		2EBA2218DFC0A65FB3C307EB /* Pods_SpeedListnerTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDE8249FF0A533EA6A2E32EA /* Pods_SpeedListnerTests.framework */; };
 		3275D2BDF78765C257EA2A39 /* Pods_SpeedListner.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5508C0B5F386F4D181453807 /* Pods_SpeedListner.framework */; };
 		51BF78FCE81270D1D2967A51 /* Pods_SpeedListner_SpeedListnerUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2E916FB65AD7BB94898787D1 /* Pods_SpeedListner_SpeedListnerUITests.framework */; };
+		811C01892EB499410052332A /* LandscapePlayerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811C01882EB499410052332A /* LandscapePlayerViewController.swift */; };
+		811C018B2EB499790052332A /* LandscapePlayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 811C018A2EB499790052332A /* LandscapePlayerManager.swift */; };
 		8135CFD82E82A05E0044E4CC /* VerificationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8135CFD72E82A05E0044E4CC /* VerificationViewModel.swift */; };
 		815CA83A2E0FEC98009DC0C2 /* SearchResultTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815CA8392E0FEC98009DC0C2 /* SearchResultTableViewCell.swift */; };
 		DD030BC32C91A68C0089FDA2 /* AAXFileUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD030BC22C91A68C0089FDA2 /* AAXFileUploader.swift */; };
@@ -179,6 +181,8 @@
 		4A579A439736E10123D1EBD6 /* Pods-SpeedListner-SpeedListnerUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeedListner-SpeedListnerUITests.release.xcconfig"; path = "Target Support Files/Pods-SpeedListner-SpeedListnerUITests/Pods-SpeedListner-SpeedListnerUITests.release.xcconfig"; sourceTree = "<group>"; };
 		5508C0B5F386F4D181453807 /* Pods_SpeedListner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SpeedListner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7E3C6FBA3AFDDE4981D7851B /* Pods-SpeedListner-SpeedListnerUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeedListner-SpeedListnerUITests.debug.xcconfig"; path = "Target Support Files/Pods-SpeedListner-SpeedListnerUITests/Pods-SpeedListner-SpeedListnerUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		811C01882EB499410052332A /* LandscapePlayerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapePlayerViewController.swift; sourceTree = "<group>"; };
+		811C018A2EB499790052332A /* LandscapePlayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapePlayerManager.swift; sourceTree = "<group>"; };
 		8135CFD72E82A05E0044E4CC /* VerificationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerificationViewModel.swift; sourceTree = "<group>"; };
 		815CA8392E0FEC98009DC0C2 /* SearchResultTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchResultTableViewCell.swift; sourceTree = "<group>"; };
 		8984A2D0939E18454169CBCD /* Pods-SpeedListner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeedListner.release.xcconfig"; path = "Target Support Files/Pods-SpeedListner/Pods-SpeedListner.release.xcconfig"; sourceTree = "<group>"; };
@@ -542,6 +546,8 @@
 				DD0EF0172C8F31CE004F2863 /* NewPlaylistViewController.swift */,
 				DDA453872E17E60F000A3196 /* HistoryViewController.swift */,
 				DD0EF0192C8F31CF004F2863 /* PlayerViewController.swift */,
+				811C01882EB499410052332A /* LandscapePlayerViewController.swift */,
+				811C018A2EB499790052332A /* LandscapePlayerManager.swift */,
 				DD0EF01C2C8F31CF004F2863 /* ChaptersViewController.swift */,
 				DD0EF01B2C8F31CF004F2863 /* SpeedViewController.swift */,
 				DD0EF01A2C8F31CF004F2863 /* BookMarkVC.swift */,
@@ -945,6 +951,7 @@
 				DD0EF0222C8F31CF004F2863 /* BookMarkVC.swift in Sources */,
 				DD0EF0202C8F31CF004F2863 /* MoreViewController.swift in Sources */,
 				8135CFD82E82A05E0044E4CC /* VerificationViewModel.swift in Sources */,
+				811C01892EB499410052332A /* LandscapePlayerViewController.swift in Sources */,
 				DD6795742E606BEC003DEA49 /* BarChartView.swift in Sources */,
 				DD0EEFAC2C8F2EC2004F2863 /* NewPlayerManager.swift in Sources */,
 				DD43D7E02DCB72F500B283FE /* BottomSheetAudioPlayerVC.swift in Sources */,
@@ -967,6 +974,7 @@
 				DD0EEE3F2C8F269F004F2863 /* Library+CoreDataClass.swift in Sources */,
 				DD0EF0522C8F320F004F2863 /* LogoutPop1VC.swift in Sources */,
 				DD0EEFC52C8F2F5B004F2863 /* AlertController.swift in Sources */,
+				811C018B2EB499790052332A /* LandscapePlayerManager.swift in Sources */,
 				DDAF7AAF2E2E698500D02458 /* AudioClipUtils.swift in Sources */,
 				DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */,
 				DD0EF0032C8F31BD004F2863 /* UploadFileCell.swift in Sources */,

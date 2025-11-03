@@ -58,7 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UserDefaults.standard.set(nil, forKey: "sleep_timer")
         setupMPRemoteCommands()
         Thread.sleep(forTimeInterval: 2.5)
-
+        LandscapePlayerManager.shared.startObserving()
         return true
     }
 

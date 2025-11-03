@@ -27,6 +27,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @IBOutlet weak var sortByTxt: UILabel!
     @IBOutlet weak var searchTblV: UITableView!
     @IBOutlet weak var searchTblVH: NSLayoutConstraint!
+    
     private var keyboardHideWorkItem: DispatchWorkItem?
     var debounceWorkItem: DispatchWorkItem?
     var checked = false

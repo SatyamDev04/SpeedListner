@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24412" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24405"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
@@ -12,18 +12,18 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
-        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MergeBookMarkCell" rowHeight="106" id="snj-hn-FWT" customClass="MergeBookMarkCell" customModule="SpeedListner" customModuleProvider="target">
-            <rect key="frame" x="0.0" y="0.0" width="367" height="106"/>
+        <tableViewCell contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="MergeBookMarkCell" rowHeight="164" id="snj-hn-FWT" customClass="MergeBookMarkCell" customModule="SpeedListner" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="384" height="164"/>
             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
             <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="snj-hn-FWT" id="5vP-Ch-l5F">
-                <rect key="frame" x="0.0" y="0.0" width="367" height="106"/>
+                <rect key="frame" x="0.0" y="0.0" width="384" height="164"/>
                 <autoresizingMask key="autoresizingMask"/>
                 <subviews>
                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jWk-qf-7cY">
-                        <rect key="frame" x="10" y="5" width="347" height="98"/>
+                        <rect key="frame" x="10" y="5" width="364" height="154"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" spacing="6" translatesAutoresizingMaskIntoConstraints="NO" id="5bm-RD-VYj">
-                                <rect key="frame" x="10" y="16" width="273" height="66"/>
+                                <rect key="frame" x="10" y="16" width="273" height="122"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="2" translatesAutoresizingMaskIntoConstraints="NO" id="tVV-lE-WXi">
                                         <rect key="frame" x="0.0" y="0.0" width="273" height="20"/>
@@ -110,14 +110,14 @@
                                             <constraint firstAttribute="height" constant="40" id="afX-n0-L4h"/>
                                         </constraints>
                                     </stackView>
-                                    <stackView hidden="YES" opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="EdF-Fb-bCb">
-                                        <rect key="frame" x="0.0" y="66" width="273" height="35"/>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="EdF-Fb-bCb">
+                                        <rect key="frame" x="0.0" y="72" width="273" height="50"/>
                                         <subviews>
                                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="RqA-mI-roz">
-                                                <rect key="frame" x="0.0" y="0.0" width="40" height="35"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="40" height="50"/>
                                                 <subviews>
                                                     <button opaque="NO" clearsContextBeforeDrawing="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Y3m-zj-Sxc">
-                                                        <rect key="frame" x="-0.33333333333333215" y="0.0" width="40.666666666666657" height="35"/>
+                                                        <rect key="frame" x="-0.33333333333333215" y="7.6666666666666714" width="40.666666666666657" height="35"/>
                                                         <constraints>
                                                             <constraint firstAttribute="width" secondItem="Y3m-zj-Sxc" secondAttribute="height" multiplier="15:13" id="I97-jb-9EF"/>
                                                             <constraint firstAttribute="height" constant="35" id="wU1-a6-FQA"/>
@@ -136,7 +136,7 @@
                                                 </constraints>
                                             </view>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="natural" lineBreakMode="tailTruncation" numberOfLines="0" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="RXL-Kw-Yrj">
-                                                <rect key="frame" x="50" y="0.0" width="223" height="35"/>
+                                                <rect key="frame" x="50" y="0.0" width="223" height="50"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="12"/>
                                                 <color key="textColor" name="BlackColor"/>
                                                 <nil key="highlightedColor"/>
@@ -146,11 +146,12 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Niy-TV-SMC">
-                                <rect key="frame" x="312" y="29" width="15" height="40"/>
+                                <rect key="frame" x="334" y="62" width="10" height="30"/>
                                 <constraints>
-                                    <constraint firstAttribute="height" constant="40" id="MXp-Es-Kfz"/>
-                                    <constraint firstAttribute="width" constant="15" id="sBS-TU-Ee9"/>
+                                    <constraint firstAttribute="height" constant="30" id="Er9-2t-vgr"/>
+                                    <constraint firstAttribute="width" constant="10" id="HcQ-Es-g1q"/>
                                 </constraints>
+                                <color key="tintColor" name="BlackColor"/>
                                 <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
                                 <state key="normal" backgroundImage="dotts"/>
                                 <connections>
@@ -195,11 +196,11 @@
                 <outlet property="transSumryLable" destination="f9P-8D-2mG" id="Ajg-Ic-cjh"/>
                 <outlet property="transcriptionBtn" destination="bvK-h6-jah" id="X5k-cf-4It"/>
             </connections>
-            <point key="canvasLocation" x="171.75572519083968" y="58.450704225352112"/>
+            <point key="canvasLocation" x="184.73282442748092" y="78.873239436619727"/>
         </tableViewCell>
     </objects>
     <resources>
-        <image name="dotts" width="6" height="20"/>
+        <image name="dotts" width="44.666667938232422" height="135.33332824707031"/>
         <image name="filled_star" width="27.333333969116211" height="25.333333969116211"/>
         <namedColor name="BlackColor">
             <color red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

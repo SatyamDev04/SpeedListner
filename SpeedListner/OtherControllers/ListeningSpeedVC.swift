@@ -51,6 +51,7 @@ class ListeningSpeedVC: UIViewController {
     }()
     @IBOutlet weak var scrollView: UIScrollView!
     var currentValue: Float = 1.0
+    var comeFrom = ""
     override func viewDidLoad() {
         super.viewDidLoad()
         //self.scrollView.delegate = self
@@ -79,13 +80,22 @@ class ListeningSpeedVC: UIViewController {
     }
     
     func setupPyramidUI() {
-        let pyramidValues: [[String]] = [
-            ["15.0x"],
-            ["13.0x", "14.0x"],
-            ["10.0x", "11.0x", "12.0x"],
-            ["6.0x", "7.0x", "8.0x", "9.0x"],
-            ["1.0x", "2.0x", "3.0x", "4.0x", "5.0x"]
-        ]
+        var pyramidValues: [[String]] = []
+        if comeFrom == "landscape"{
+            pyramidValues = [["10.0x"],
+                             ["8.0x", "9.0x"],
+                             ["6.0x", "7.0x", "5.0x"],
+                             ["1.0x", "2.0x", "3.0x", "4.0x",]]
+        }else{
+             pyramidValues = [
+                ["15.0x"],
+                ["13.0x", "14.0x"],
+                ["10.0x", "11.0x", "12.0x"],
+                ["6.0x", "7.0x", "8.0x", "9.0x"],
+                ["1.0x", "2.0x", "3.0x", "4.0x", "5.0x"]
+            ]
+        }
+        
         
         let pyramidStack = UIStackView()
         pyramidStack.axis = .vertical
@@ -93,11 +103,17 @@ class ListeningSpeedVC: UIViewController {
         pyramidStack.spacing = 8
         pyramidStack.translatesAutoresizingMaskIntoConstraints = false
         pyramidStackBg.addSubview(pyramidStack)
-        NSLayoutConstraint.activate([
-            pyramidStack.topAnchor.constraint(equalTo: speedSlider_Set.bottomAnchor, constant: 10),
-            pyramidStack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-        
+        if comeFrom == "landscape"{
+            NSLayoutConstraint.activate([
+                pyramidStack.topAnchor.constraint(equalTo: speedSlider_Set.bottomAnchor, constant: -30),
+                pyramidStack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            ])
+        }else{
+            NSLayoutConstraint.activate([
+                pyramidStack.topAnchor.constraint(equalTo: speedSlider_Set.bottomAnchor, constant: 10),
+                pyramidStack.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            ])
+        }
         for row in pyramidValues {
             let rowStack = UIStackView()
             rowStack.axis = .horizontal

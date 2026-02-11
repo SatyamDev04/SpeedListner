@@ -131,8 +131,8 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                             }
                             
                         case .segment(let segment):
-                            
-                            self.starStatus = segment.isStar ?? false
+                            let isStar =  BookmarkCacheManager.getIsStar(for: segment.identifiers) ?? false
+                            self.starStatus = isStar
                             if self.starStatus == false{
                                 
                                 staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
@@ -153,7 +153,6 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         guard let txt = self.txt else {return}
         self.txt_notes.text = txt
        
-        
     }
     
 //    @objc func timerTap(){
@@ -210,6 +209,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             return false
         }
         return true
+        
     }
     
     func textViewDidBeginEditing(_ textView: UITextView) {
@@ -249,13 +249,14 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                 AudioClipUtils.extract5SecClip(from: book.fileURL, at: t) { [self] url in
                     if let clipURL = url {
                         self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus, audioClipPath: clipURL)
-                        print(clipURL, "aya kya url")
+                        print(clipURL, "aya kya url",starStatus)
                         DispatchQueue.main.async{
                             self.saveBookMarksNotes()
                         }
                     }else{
                         self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus)
                         DispatchQueue.main.async{
+                            print("aya kya url",self.starStatus)
                             self.saveBookMarksNotes()
                         }
                     }
@@ -263,9 +264,10 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                 
                 
             case .segment(let segment):
-                let identifier = segment.identifiers
+                let identifier = segment.identifiers.replacingOccurrences(of: " ", with: "")
                 BookmarkCacheManager.saveNotes(self.txt_notes.text, for: identifier)
                 BookmarkCacheManager.saveIsStar(starStatus, for: identifier)
+                print(segment,identifier,"identifier")
                 self.dismiss(animated: true) {
           
                     self.delegateBookmarkVC?.MethodforPop(string: self.txt_notes.text ?? "")
@@ -288,7 +290,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             
             AudioClipUtils.extract5SecClip(from: book.fileURL, at: t) { [self] url in
                 if let clipURL = url {
-                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
+                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
                     print(clipURL, "aya kya url")
                     DispatchQueue.main.async{
                         self.saveBookMarksNotes()
@@ -303,9 +305,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             
            
         }
-        
-        
-        
+            
     }
     
     @objc func saveWithoutNote(){

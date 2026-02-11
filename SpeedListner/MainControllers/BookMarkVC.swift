@@ -371,9 +371,6 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             
         cell.bookmarkTimelbl.text = "\(formatTime(from: start)) ➔ \(formatTime(from: end)) on \(model.date)"
                
-
-            
-          
             cell.bottomView.isHidden = !(model.bookmarksTxt.count > 0 || model.isStar == true)
             cell.isStarBookMark.isHidden = !(model.isStar ?? false)
             cell.starBG.isHidden = !(model.isStar ?? false)
@@ -403,9 +400,12 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.bookmarkTimelbl.text = "\(formatTime(from: segment.startTime)) ➔ \(formatTime(from: segment.endTime)) on \(segment.date)"
            
             cell.detailtxt.text = segment.bookmarksTxt
-            cell.bottomView.isHidden = !((segment.bookmarksTxt?.count ?? 0) > 0 || segment.isStar == true)
-            cell.isStarBookMark.isHidden = !(segment.isStar ?? false)
-            cell.starBG.isHidden = !(segment.isStar ?? false)
+       
+            let isStar =  BookmarkCacheManager.getIsStar(for: segment.identifiers.replacingOccurrences(of: " ", with: "")) ?? false
+            cell.bottomView.isHidden = !((segment.bookmarksTxt?.count ?? 0) > 0 || isStar == true)
+            print(segment.identifiers,isStar,"isStar")
+            cell.isStarBookMark.isHidden = !isStar
+            cell.starBG.isHidden = !isStar
             cell.transSumryLable.layer.cornerRadius = 12
             cell.transSumryLable.clipsToBounds = true
 
@@ -460,7 +460,36 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
        
     }
-    
+    func deleteDisplayItem(at index: Int) {
+        let item = displayItems[index]
+
+        switch item {
+
+        // ✅ SINGLE BOOKMARK DELETE (SAFE)
+        case .bookmark(let bookmark):
+            arrBookmarksNotes.removeAll {
+                $0.timeStamp == bookmark.timeStamp
+            }
+
+        // ✅ SEGMENT DELETE (DELETE ONLY INCLUDED BOOKMARKS)
+        case .segment(let segment):
+            let start = segment.startTime
+            let end = segment.endTime
+
+            arrBookmarksNotes.removeAll {
+                $0.timeStamp >= start && $0.timeStamp <= end
+            }
+
+            arrMergedBookmarksNotes.removeAll {
+                $0.startTime == segment.startTime &&
+                $0.endTime == segment.endTime
+            }
+        }
+
+        saveBookMarksNotes()
+        prepareDisplayItems()
+        tblV.reloadData()
+    }
     
     @IBAction private func tapMiniPlayerButton() {
         
@@ -821,17 +850,23 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                     vc.didMove(toParent: self)
 
                 case 1:
+                    
                     showDeleteBookmarkAlert { confirmed in
                         if confirmed {
-                            if let originalIndex = self.arrBookmarksNotes.firstIndex(where: { $0.indentifier == bookmarkModel.indentifier }) {
-                                self.arrBookmarksNotes.remove(at: originalIndex)
-                            }
-                           
-                            self.displayItems.remove(at: index)
-                            self.tblV.reloadData()
-                            self.saveBookMarksNotes()
+                            self.deleteDisplayItem(at: index)
                         }
                     }
+//                    showDeleteBookmarkAlert { confirmed in
+//                        if confirmed {
+//                            if let originalIndex = self.arrBookmarksNotes.firstIndex(where: { $0.indentifier == bookmarkModel.indentifier }) {
+//                                self.arrBookmarksNotes.remove(at: originalIndex)
+//                            }
+//                           
+//                            self.displayItems.remove(at: index)
+//                            self.tblV.reloadData()
+//                            self.saveBookMarksNotes()
+//                        }
+//                    }
 
                 default: break
                 }
@@ -854,16 +889,20 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                     vc.didMove(toParent: self)
                     
                 case 1:
+//                    showDeleteBookmarkAlert { confirmed in
+//                        if confirmed {
+//                            if let originalIndex = self.arrMergedBookmarksNotes.firstIndex(where: { $0.identifiers == segment.identifiers }) {
+//                                self.arrMergedBookmarksNotes.remove(at: originalIndex)
+//                            }
+//                            self.displayItems.remove(at: index)
+//                            self.tblV.reloadData()
+//                        }
+//                    }
                     showDeleteBookmarkAlert { confirmed in
                         if confirmed {
-                            if let originalIndex = self.arrMergedBookmarksNotes.firstIndex(where: { $0.identifiers == segment.identifiers }) {
-                                self.arrMergedBookmarksNotes.remove(at: originalIndex)
-                            }
-                            self.displayItems.remove(at: index)
-                            self.tblV.reloadData()
+                            self.deleteDisplayItem(at: index)
                         }
                     }
-
                 default: break
                 }
             }

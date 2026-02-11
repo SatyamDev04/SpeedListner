@@ -41,8 +41,6 @@ class FeedbackVC: UIViewController,UITextViewDelegate,DelegateforFeedbackPopUp {
     }
     
     @IBOutlet weak var scrollView: UIScrollView!
-    
-
     @IBOutlet weak var btnBad: UIButton!
     @IBOutlet weak var btnOkay: UIButton!
     @IBOutlet weak var btnGood: UIButton!

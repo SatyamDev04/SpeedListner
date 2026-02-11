@@ -8,22 +8,24 @@
 import UIKit
 
 class BookDetailCell: UITableViewCell{
-var delegateBookDetails:BookDetailsCellDelegate? = nil
-@IBOutlet weak var btnPlay: UIButton!
-@IBOutlet weak var lbl_AutherName: UILabel!
-@IBOutlet weak var lbl_subFolderCount: UILabel!
-@IBOutlet weak var lbl_BookName: UILabel!
-@IBOutlet weak var lbl_comlition: UILabel!
-@IBOutlet weak var img: UIImageView!
-@IBOutlet var folderIcon_img: UIImageView!
-@IBOutlet weak var btnSelect: UIButton!
-@IBOutlet weak var selectBtnBgView: UIView!
-@IBOutlet weak var stackBgView: UIView!
-var onSelectButtonTapped: (() -> Void)?
+    
+ var delegateBookDetails:BookDetailsCellDelegate? = nil
+    
+ @IBOutlet weak var btnPlay: UIButton!
+ @IBOutlet weak var lbl_AutherName: UILabel!
+ @IBOutlet weak var lbl_subFolderCount: UILabel!
+ @IBOutlet weak var lbl_BookName: UILabel!
+ @IBOutlet weak var lbl_comlition: UILabel!
+ @IBOutlet weak var img: UIImageView!
+ @IBOutlet var folderIcon_img: UIImageView!
+ @IBOutlet weak var btnSelect: UIButton!
+ @IBOutlet weak var selectBtnBgView: UIView!
+ @IBOutlet weak var stackBgView: UIView!
+ var onSelectButtonTapped: (() -> Void)?
 
 
 
-var type: BookCellType = .book {
+ var type: BookCellType = .book {
     didSet {
         self.folderIcon_img.isHidden = true
         switch self.type {
@@ -36,6 +38,7 @@ var type: BookCellType = .book {
     }
     
 }
+    
 var playbackState: PlaybackState = PlaybackState.stopped {
     didSet {
         UIView.animate(withDuration: 0.1, animations: {

@@ -35,9 +35,11 @@ class SettingVC: UIViewController, Afterpay {
     @IBOutlet weak var subscriptionInfoLabel: UILabel!
     @IBOutlet weak var visuallyImpairedLabel: UILabel!
     @IBOutlet weak var darkModeLbl: UILabel!
+    @IBOutlet weak var volumeBoostLbl: UILabel!
     @IBOutlet weak var footerHeightConstraint: NSLayoutConstraint!
     @IBOutlet weak var footerPlayButton: UIButton!
     @IBOutlet weak var CollV:UICollectionView!
+    @IBOutlet weak var seclectOrentation:UISegmentedControl!
     //keep in memory images to toggle play/pause
     let miniPlayImage = UIImage(named: "29")
     let miniPauseButton = UIImage(named: "21")
@@ -85,7 +87,15 @@ class SettingVC: UIViewController, Afterpay {
             lightModeEnabled()
             print("Light Mode is active")
         }
+        seclectOrentation.selectedSegmentIndex = {
+               switch AppOrientationManager.shared.current {
+               case .normal: return 0
+               case .lockVertical: return 1
+               case .lockHorizontal: return 2
+               }
+           }()
 
+        seclectOrentation.addTarget(self, action: #selector(orientationChanged), for: .valueChanged)
 
     }
     override func viewWillAppear(_ animated: Bool) {
@@ -115,6 +125,8 @@ class SettingVC: UIViewController, Afterpay {
 //          
 //            darkModeLbl.text = "Dark Mode -  OFF"
 //        }
+        
+        updateVolumeBoostUI()
         if PlayerManager.shared.isPlaying {
             self.footerView.isHidden = false
         }
@@ -124,6 +136,18 @@ class SettingVC: UIViewController, Afterpay {
        
     }
     
+    @objc private func orientationChanged() {
+        switch seclectOrentation.selectedSegmentIndex {
+        case 0:
+            AppOrientationManager.shared.current = .normal
+        case 1:
+            AppOrientationManager.shared.current = .lockVertical
+        case 2:
+            AppOrientationManager.shared.current = .lockHorizontal
+        default:
+            break
+        }
+    }
     
     @IBAction private func playPausePlayerButton(_ sender:UIButton) {
       
@@ -230,6 +254,31 @@ class SettingVC: UIViewController, Afterpay {
         self.navigationController?.pushViewController(vc, animated: true)
         
     }
+    
+    @IBAction func btnVolumeBoost_Action(_ sender: UIButton) {
+        
+        let isEnabled = UserDefaults.standard.bool(forKey: "volumeBoostEnabled")
+        let newState = !isEnabled
+        
+        PlayerManager.shared.toggleVolumeBoost(newState)
+        
+        volumeBoostLbl.text = newState
+            ? "Volume Boost - ON"
+            : "Volume Boost - OFF"
+        
+       
+    }
+    func updateVolumeBoostUI() {
+        
+        let isEnabled = UserDefaults.standard.bool(forKey: "volumeBoostEnabled")
+        
+        volumeBoostLbl.text = isEnabled
+            ? "Volume Boost - ON"
+            : "Volume Boost - OFF"
+        
+       
+    }
+    
     @IBAction func btnDesable_Action(_ sender: Any) {
         self.clickBool = true
         if let d = UserDefaults.standard.object(forKey: "desable") as? Bool{

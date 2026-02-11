@@ -1,7 +1,6 @@
 //
 //  AppDelegate.swift
 //  SpeedListner
-//
 //  Created by YATIN  KALRA on 09/09/24.
 //
 
@@ -11,7 +10,7 @@ import AVFoundation
 import UserNotifications
 import MediaPlayer
 import IQKeyboardManager
-var pUrl:URL?
+ var pUrl:URL?
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
@@ -25,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
       }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+     
         IQKeyboardManager.shared().isEnabled = true
         let defaults:UserDefaults = UserDefaults.standard
         UNUserNotificationCenter.current().delegate = self
@@ -34,9 +33,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                         print("User gave permissions for local notifications")
                     }
                 }
-        // Perfrom first launch setup
+  
         if !defaults.bool(forKey: UserDefaultsConstants.completedFirstLaunch) {
-            // Set default settings
+           
             defaults.set(true, forKey: UserDefaultsConstants.smartRewindEnabled)
             
             defaults.set(true, forKey: UserDefaultsConstants.completedFirstLaunch)
@@ -46,12 +45,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         
         UIApplication.shared.beginReceivingRemoteControlEvents()
         
-        try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.spokenAudio, options: [])
+        try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.spokenAudio, options: [.allowAirPlay, .allowBluetooth])
 
-        // register to audio-interruption notifications
+    
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleAudioInterruptions(_:)), name: AVAudioSession.interruptionNotification, object: nil)
 
-        // register to audio-route-change notifications
+       
         NotificationCenter.default.addObserver(self, selector: #selector(self.handleAudioRouteChange(_:)), name: AVAudioSession.routeChangeNotification, object: nil)
         
         //clean leftover sleep timer registry
@@ -129,7 +128,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 return
         }
 
-        // Pause playback if route changes due to a disconnect
+       
         switch reason {
         case .oldDeviceUnavailable:
             PlayerManager.shared.pause()
@@ -142,7 +141,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func setupMPRemoteCommands() {
         let commandCenter = MPRemoteCommandCenter.shared()
         
-        // Play / Pause
+    
         commandCenter.togglePlayPauseCommand.isEnabled = true
         commandCenter.togglePlayPauseCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.playPause()
@@ -161,7 +160,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return .success
         }
 
-        // Forward
+        
         commandCenter.skipForwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.forwardInterval)]
         commandCenter.skipForwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
             PlayerManager.shared.forward()
@@ -181,7 +180,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return .success
         }
 
-        // Rewind
+        
         commandCenter.skipBackwardCommand.preferredIntervals = [NSNumber(value: PlayerManager.shared.rewindInterval)]
         
         commandCenter.skipBackwardCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
@@ -202,16 +201,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
             return .success
         }
 
-        // 🔹 Custom Bookmark Button (re-using the system "like" command)
         commandCenter.bookmarkCommand.isEnabled = true
         commandCenter.likeCommand.localizedTitle = "Bookmark"
         commandCenter.likeCommand.addTarget { (_) -> MPRemoteCommandHandlerStatus in
-            print("🔖 Bookmark button pressed from lock screen")
+            print("Bookmark button pressed from lock screen")
             guard let book = PlayerManager.shared.currentBook else {
                 return .success
             }
             BookmarkManager.shared.saveWithoutNote(book: book ) { success in
                 if success {
+                    let generator = UINotificationFeedbackGenerator()
+                    generator.notificationOccurred(.success)
+                    self.showBookmarkFeedback()
                     print("Bookmark saved successfully")
                 } else {
                     print("Failed to save bookmark")
@@ -221,7 +222,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 
+    
+    func showBookmarkFeedback() {
+        
+        let content = UNMutableNotificationContent()
+        content.title = "Bookmark Added"
+        content.body = "Your bookmark was saved successfully."
 
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil
+        )
+        UNUserNotificationCenter.current().add(request)
+        var nowPlaying = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+
+        // Save original subtitle
+        let originalSubtitle = nowPlaying[MPMediaItemPropertyAlbumTitle]
+
+        // Show feedback
+        nowPlaying[MPMediaItemPropertyAlbumTitle] = "🔖 Bookmark added"
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlaying
+
+        // Revert after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            var reverted = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+            reverted[MPMediaItemPropertyAlbumTitle] = originalSubtitle
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = reverted
+        }
+    }
     private func showAlert(title: String, message: String) {
         guard let window = window else { return }
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)

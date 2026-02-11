@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="23727" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="24128" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_12" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="23721"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="24063"/>
         <capability name="Named colors" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -24,10 +24,9 @@
                                 <rect key="frame" x="62" y="0.0" width="40" height="236"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="T4x-kf-1az">
-                                        <rect key="frame" x="7.6666666666666643" y="105.66666666666667" width="25" height="25.000000000000014"/>
+                                        <rect key="frame" x="-4" y="94" width="48" height="48"/>
                                         <constraints>
-                                            <constraint firstAttribute="width" constant="25" id="Bd1-3E-OBv"/>
-                                            <constraint firstAttribute="height" constant="25" id="c0r-ot-0tD"/>
+                                            <constraint firstAttribute="width" secondItem="T4x-kf-1az" secondAttribute="height" multiplier="1:1" id="Ei3-Dl-zF2"/>
                                         </constraints>
                                         <color key="tintColor" name="BlackColor"/>
                                         <inset key="imageEdgeInsets" minX="0.0" minY="0.0" maxX="2.2250738585072014e-308" maxY="0.0"/>
@@ -39,9 +38,11 @@
                                 </subviews>
                                 <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 <constraints>
+                                    <constraint firstItem="T4x-kf-1az" firstAttribute="leading" secondItem="9Yq-k2-b44" secondAttribute="leading" constant="2" id="3Ev-HV-hMo"/>
                                     <constraint firstAttribute="width" constant="40" id="CHw-hd-xNq"/>
                                     <constraint firstItem="T4x-kf-1az" firstAttribute="centerX" secondItem="9Yq-k2-b44" secondAttribute="centerX" id="IHp-ka-WNP"/>
                                     <constraint firstItem="T4x-kf-1az" firstAttribute="centerY" secondItem="9Yq-k2-b44" secondAttribute="centerY" id="alA-S9-xGL"/>
+                                    <constraint firstAttribute="trailing" secondItem="T4x-kf-1az" secondAttribute="trailing" constant="2" id="br4-be-tb7"/>
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" ambiguous="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZEf-aW-Ewl">

@@ -1,19 +1,18 @@
-//
+
 //  LandscapePlayerViewController.swift
 //  SpeedListner
-//
 //  Created by satyam dwivedi on 31/10/25.
-//
+
 
 
 import UIKit
 import AVFoundation
 import AVKit
 
+
 final class LandscapePlayerViewController: UIViewController, DelegateforListeningSpeedVC, DelegateforBookmarkPopUpVC {
    
-   
-  
+
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var forwardButton: UIButton!
     @IBOutlet weak var remainingButton: UIButton!
@@ -22,17 +21,18 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     @IBOutlet weak var speedlbl: UILabel!
     @IBOutlet weak var coverImageView: UIImageView!
     @IBOutlet weak var speedEscalationButton: UIButton!
-    private let playImage = UIImage(systemName:"play.fill")
-    private let pauseImage = UIImage(systemName:"pause.fill")
+    
+    private let playImage = UIImage(named:"landPlayImg")
+    private let pauseImage = UIImage(named: "landPauseImg")
     var library = NewDataMannagerClass.getLibrary()
     private var routePickerView: AVRoutePickerView!
     private var coverImage = UIImage()
     var currentValue: Float = 0.1
-    // Keep a small state reference
+   
     private var isPlaying: Bool {
-        // adapt if your PlayerManager uses different property
-        return (PlayerManager.shared.audioPlayer?.isPlaying ?? false)
+        return PlayerManager.shared.isPlaying
     }
+    
     var items: [LibraryItem] {
         guard self.library != nil else {
             return []
@@ -60,6 +60,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     }
     
     // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
       
@@ -71,6 +72,8 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         NotificationCenter.default.addObserver(self, selector: #selector(self.onBookPause), name: Notification.Name.AudiobookPlayer.bookPaused, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.onBookEnd), name: Notification.Name.AudiobookPlayer.bookEnd, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.updateTimer), name: Notification.Name.AudiobookPlayer.escTime, object: nil)
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(self.onPlayback), name: Notification.Name.AudiobookPlayer.bookPlaying, object: nil)
         self.loadLibrary()
         setupAudioSession()
         setupRoutePickerView()
@@ -129,6 +132,9 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.setProgress()
         self.loadLibrary()
     }
+    @objc func onPlayback() {
+        self.setProgress()
+    }
     
     @objc func updateTimer() {
         
@@ -152,12 +158,11 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
                 }
                 
             }
-            
-            
+              
         }else{
             
         }
-       
+        setProgress()
        
     }
     private func setProgress() {
@@ -181,8 +186,6 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
             }
         }
         guard let book = self.book else {
-            
-          
             
             return
         }
@@ -223,10 +226,12 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
 
     var preSpeed:Float = 1.0
     @objc func speedEscBtnTap(_ sender: UIButton) {
+        
         guard !isLibraryEmpty() else {
                 showToast("Please add a book to the library if already added then play")
                 return
             }
+        
         let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
         if sender.tag == 0 {
             sender.tag = 1
@@ -326,6 +331,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     }
 
     @objc private func decreaseSpeed() {
+        
         let s = max(PlayerManager.shared.currentSpeed - 0.1, 0.1)
         PlayerManager.shared.currentSpeed = s
         if let setRate = PlayerManager.shared.perform(Selector(("setPlaybackRate:")), with: NSNumber(value: s)) {
@@ -496,8 +502,8 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
                 showToast("Please add a book to the library if already added then play")
                 return
             }
-        let vc:ListeningSpeedVC = self.storyboard?.instantiateViewController(withIdentifier: "ListeningSpeedVC") as! ListeningSpeedVC
-        
+        let vc:ListeningSpeedVC = self.storyboard?.instantiateViewController(withIdentifier: "ListeningSpeedVC2") as! ListeningSpeedVC
+        vc.comeFrom = "landscape"
         vc.delegateSpeedListeningVC = self
         
         let myDouble =  PlayerManager.shared.currentSpeed
@@ -563,7 +569,9 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         currentBok = book
         if book is Book {
             
-        }else{}
+        }else{
+            
+        }
         // let index = PlayerManager2.shared.currentPlayListIndex ?? 0
         // items[index].recentPlayTime = Date()
         self.viewWillAppear(true)

@@ -17,6 +17,8 @@
 			</array>
 		</dict>
 	</array>
+	<key>FREESCPT</key>
+	<string>Freestyle Script Regular.ttf</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -24,8 +26,14 @@
 	</dict>
 	<key>NSWidgetHostAppBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>OpenAIKey</key>
+	<string>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</string>
 	<key>SupportsLiveActivities</key>
 	<true/>
+	<key>UIAppFonts</key>
+	<array>
+		<string></string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -63,11 +71,5 @@
 			<false/>
 		</dict>
 	</dict>
-	<key>UIAppFonts</key>
-	<array>
-		<string></string>
-	</array>
-	<key>FREESCPT</key>
-	<string>Freestyle Script Regular.ttf</string>
 </dict>
 </plist>

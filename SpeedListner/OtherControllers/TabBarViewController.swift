@@ -59,9 +59,9 @@ class TabBarVC: UIViewController , UITabBarControllerDelegate {
         nav3?.navigationBar.isHidden = true
         tabBarCon.viewControllers = [nav1 , nav2 , nav3 ] as? [UIViewController]
 //        let tabBarItemsAll: UITabBar = tabBarCon.tabBar
-        tabBarCon.tabBar.barTintColor = #colorLiteral(red: 0.5810584426, green: 0.1285524964, blue: 0.5745313764, alpha: 1)
-        tabBarCon.tabBar.backgroundColor = #colorLiteral(red: 0.3880267739, green: 0.088985838, blue: 0.4682590961, alpha: 1)
-        tabBarCon.tabBar.tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+    //    tabBarCon.tabBar.barTintColor = #colorLiteral(red: 0.5810584426, green: 0.1285524964, blue: 0.5745313764, alpha: 1)
+    tabBarCon.tabBar.backgroundColor = #colorLiteral(red: 0.3880267739, green: 0.088985838, blue: 0.4682590961, alpha: 1)
+       // tabBarCon.tabBar.tintColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         //setting buttons
       //  tabBarItemsAll.unselectedItemTintColor = .gray
        
@@ -73,9 +73,39 @@ class TabBarVC: UIViewController , UITabBarControllerDelegate {
         
         
         // buttons shakhsiyan
-        let libraryButton = UITabBarItem(title: "Library", image: libraryImage, selectedImage: libraryImage)
-        let nowPlyButton = UITabBarItem(title: "Now Playing", image: nowPlyImage, selectedImage: nowPlyImage)
-        let uploadButton = UITabBarItem(title: "Upload", image: uploadImage, selectedImage: uploadImage)
+        let normalAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 12, weight: .bold)
+        ]
+
+        let selectedAttributes: [NSAttributedString.Key: Any] = [
+            .foregroundColor: UIColor.white,
+            .font: UIFont.systemFont(ofSize: 12, weight: .semibold)
+        ]
+
+        let libraryButton = UITabBarItem(
+            title: "Library",
+            image: libraryImage?.withRenderingMode(.alwaysOriginal),
+            selectedImage: libraryImage?.withRenderingMode(.alwaysOriginal)
+        )
+
+        let nowPlyButton = UITabBarItem(
+            title: "Now Playing",
+            image: nowPlyImage?.withRenderingMode(.alwaysOriginal),
+            selectedImage: nowPlyImage?.withRenderingMode(.alwaysOriginal)
+        )
+
+        let uploadButton = UITabBarItem(
+            title: "Upload",
+            image: uploadImage?.withRenderingMode(.alwaysOriginal),
+            selectedImage: uploadImage?.withRenderingMode(.alwaysOriginal)
+        )
+
+        // 🔹 Apply title attributes
+        [libraryButton, nowPlyButton, uploadButton].forEach { item in
+            item.setTitleTextAttributes(normalAttributes, for: .normal)
+            item.setTitleTextAttributes(selectedAttributes, for: .selected)
+        }
      
         
         nav1?.tabBarItem = libraryButton

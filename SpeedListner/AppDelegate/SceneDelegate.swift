@@ -28,7 +28,18 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
         guard let _ = (scene as? UIWindowScene) else { return }
     }
+    func windowScene(_ windowScene: UIWindowScene,
+                     supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
 
+        switch AppOrientationManager.shared.current {
+        case .normal:
+            return .allButUpsideDown
+        case .lockVertical:
+            return .portrait
+        case .lockHorizontal:
+            return .landscape
+        }
+    }
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         print("[SceneDelegate] App received URL while running.")
         
@@ -39,7 +50,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             print("[SceneDelegate] No file URL received in openURLContexts.")
         }
     }
-
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        AppOrientationManager.shared.applyOrientation(AppOrientationManager.shared.current)
+    }
     private func handleIncomingAudioFile(at url: URL) {
         print("[SceneDelegate] Handling file at URL: \(url)")
 

@@ -4,9 +4,7 @@
 //
 //  Created by satyam on 8/6/23.
 //
-protocol TabBarDataDelegate: AnyObject {
-    func sendData(data: Any)
-}
+
 import UIKit
 import AVFoundation
 import MediaPlayer
@@ -15,46 +13,59 @@ import DropDown
 import Agrume
 import AVKit
 import EasyTipView
+
+protocol TabBarDataDelegate: AnyObject {
+    func sendData(data: Any)
+}
+
 //let d = UserDefaults.standard.object(forKey: "desable") as? Bool ?? false
 var currentItem: LibraryItem!
+
 class PlayerViewController: UIViewController,TabBarDataDelegate {
+    
     func sendData(data: Any) {
        
     }
-    
     
     @IBOutlet weak var authorLabel: UILabel!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var optionsIndicatorButton: UIButton!
     @IBOutlet weak var playButton: UIButton!
     @IBOutlet weak var forwardButton: UIButton!
+    
     @IBOutlet weak var rewindButton: UIButton!
     @IBOutlet weak var maxTimeLabel: UILabel!
     @IBOutlet weak var timeSeparator: UILabel!
     @IBOutlet weak var leftVerticalView: UIView!
     @IBOutlet weak var remainingTime:UILabel!
+    
     @IBOutlet weak var sliderView: ProgressSlider!
     @IBOutlet weak var percentageLabel: UILabel!
     @IBOutlet weak var chaptersButton: UIButton!
     @IBOutlet weak var speedEscalationButton: UIButton!
     @IBOutlet weak var remainingButton: UIButton!
+    
     @IBOutlet weak var speedButton: UIButton!
     @IBOutlet weak var sleepButton: UIButton!
     @IBOutlet weak var speedlbl: UILabel!
     @IBOutlet weak var totalbookTimelbl: UILabel!
     @IBOutlet weak var remaininglbl: UILabel!
+    
     @IBOutlet weak var coverImageView: UIImageView!
     @IBOutlet weak var dropSpeedEscTimeDropImgV: UIImageView!
     @IBOutlet weak var sleepTimerWidthConstraint: NSLayoutConstraint!
     @IBOutlet weak var chapter: UILabel!
     @IBOutlet weak var dropSpeedEscTimeBtn: UIButton!
+    
     @IBOutlet weak var dropSpeedEscTimeLbl: UILabel!
     @IBOutlet weak var suffleBtn: UIButton!
     @IBOutlet weak var repeatOrLeaniearBtn: UIButton!
     @IBOutlet weak var grandTotalTime: UILabel!
     @IBOutlet weak var wordPerMinuteLbl: UILabel!
+    
     @IBOutlet weak var timeSavedMinute: UILabel!
     @IBOutlet weak var mRALable: UILabel!
+    
     var currentValue: Float = 0.1
     weak var delegate: TabBarDataDelegate?
     private let playImage = UIImage(systemName:"play.fill")
@@ -64,6 +75,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     private var tipView: EasyTipView?
     private let topMenu = DropDown()
     var taponMini = false
+    
+    
     lazy var dropDowns: [DropDown] = {
         return [
             self.topMenu
@@ -105,9 +118,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             return 0.0
         }
         
-        //        guard book.hasChapters, let start = book.currentChapter?.start else {
-        //            return book.currentTime
-        //        }
+       
         
         return book.currentTime
     }
@@ -125,9 +136,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             return 0.0
         }
         
-        //        guard book.hasChapters, let duration = book.currentChapter?.duration else {
-        //            return book.duration
-        //        }
+     
         
         return book.duration
     }
@@ -179,6 +188,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         let id = UserDetail.shared.getPreviousUserId()
         let currentId = UserDetail.shared.getUserId()
         print(id,currentId,"checkingIds")
+        
         if id == currentId {
             self.loadFiles()
            
@@ -217,7 +227,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
     }
     
-    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        tipView?.dismiss()
+    }
     override func viewWillAppear(_ animated: Bool){
         guard let c = currentBok else{return}
         book = c
@@ -464,7 +477,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             self.percentageLabel.text = "\(Int(round(book.progress * 100)))%"
         }
         self.percentageLabel.isHidden = false
-        self.chapter.text = "Chapter \(currentChapter.index) of \(chapters.count)"
+        self.chapter.text = "Chapter \(currentChapter.index) Of \(chapters.count)"
         if !self.sliderView.isTracking {
             self.sliderView.value = Float(book.progress)
             self.sliderView.setNeedsDisplay()
@@ -511,7 +524,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
             preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
 
-            tipView = EasyTipView(text: "WPM Stands For Words-Per-Minute. The Average Reading Speed Is 200 To 250 WPM. Fast Readers Zip To 400+, Around 11% Of Readers Get To 600+. With SpeedListener And SpeedEscalation, You Can Easily Crush These Speeds!", preferences: preferences)
+            tipView = EasyTipView(text: "WPM Stands For Words-Per-Minute. The Average Reading Speed Is 200 To 250 WPM. Fast Readers Zip To 400+, Around 11% Of Readers Get To 600+.\n With SpeedListener, SpeedEscalation, And A Little Dedication, You Can Easily Crush These Speeds!", preferences: preferences)
             tipView?.show(forView: sender, withinSuperview: self.view)
             sender.tag = 1
         }
@@ -1384,7 +1397,12 @@ extension PlayerViewController: AVAudioPlayerDelegate {
             self.remainingTime.text = self.formatTime(Int(r))
          
         }
-        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.audioPlayer?.duration ?? 0.0, currentSpeed: Double(PlayerManager.shared.audioPlayer?.rate ?? 0)))"
+//        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.audioPlayer?.duration ?? 0.0, currentSpeed: Double(PlayerManager.shared.audioPlayer?.rate ?? 0)))"
+        
+        
+        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.duration, currentSpeed:  Double(PlayerManager.shared.speed)))"
+        
+       
         
         let uid = PlayerManager.shared.currentUserID
         if let avg = SpeedAnalyticsManager.shared.averageAllTime(userID: uid) {
@@ -1577,7 +1595,9 @@ extension PlayerViewController:DelegateforListeningSpeedVC,DelegateforBookmarkPo
             self.remainingTime.text = self.formatTime(Int(r))
             //remaininglbl.text = "Remaning"
         }
-        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.audioPlayer?.duration ?? 0.0, currentSpeed: Double(PlayerManager.shared.audioPlayer?.rate ?? 0)))"
+//        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.audioPlayer?.duration ?? 0.0, currentSpeed: Double(PlayerManager.shared.audioPlayer?.rate ?? 0)))"
+        
+        self.wordPerMinuteLbl.text = "WPM ≈ \(calculateRoundedSpeed(totalDuration: PlayerManager.shared.duration, currentSpeed:  Double(PlayerManager.shared.speed)))"
     }
     
 }

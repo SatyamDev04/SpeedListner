@@ -10,52 +10,56 @@
 import AVFoundation
 
 class AudioClipUtils {
-    /// Extracts a 15-second clip (5s before, 10s after) around a given timestamp and saves it to persistent Documents/Clips folder
-    static func extract5SecClip(from inputURL: URL, at timestamp: TimeInterval, completion: @escaping (URL?) -> Void) {
+
+    /// Extracts a 20-second clip (5s before, 15s after)
+    static func extract20SecClip(
+        from inputURL: URL,
+        at timestamp: TimeInterval,
+        completion: @escaping (URL?) -> Void
+    ) {
+
         let fileManager = FileManager.default
         let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let clipsFolderURL = documentsURL.appendingPathComponent("Clips", isDirectory: true)
 
-        // Create folder if it doesn't exist
+        // Create folder if needed
         if !fileManager.fileExists(atPath: clipsFolderURL.path) {
-            do {
-                try fileManager.createDirectory(at: clipsFolderURL, withIntermediateDirectories: true, attributes: nil)
-            } catch {
-                print("[ERROR] Failed to create Clips folder: \(error)")
-                DispatchQueue.main.async { completion(nil) }
-                return
-            }
+            try? fileManager.createDirectory(at: clipsFolderURL, withIntermediateDirectories: true)
         }
 
-        // ✅ Updated logic → 15s total, 5s before, 10s after
+        let asset = AVAsset(url: inputURL)
+        let duration = CMTimeGetSeconds(asset.duration)
+
+        // ✅ NEW LOGIC (5 before, 15 after)
         let start = max(0, timestamp - 5.0)
-        let end = timestamp + 10.0
+        let end = min(duration, timestamp + 15.0)
+
         let outputURL = clipsFolderURL.appendingPathComponent("clip_\(Int(timestamp)).m4a")
 
-        let asset = AVAsset(url: inputURL)
         let composition = AVMutableComposition()
 
         asset.loadValuesAsynchronously(forKeys: ["tracks"]) {
+
             var error: NSError?
             let status = asset.statusOfValue(forKey: "tracks", error: &error)
-            guard status == .loaded, let track = asset.tracks(withMediaType: .audio).first else {
-                print("[ERROR] Failed to load audio track: \(error?.localizedDescription ?? "Unknown")")
+
+            guard status == .loaded,
+                  let track = asset.tracks(withMediaType: .audio).first else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
 
             let startTime = CMTime(seconds: start, preferredTimescale: 600)
             let endTime = CMTime(seconds: end, preferredTimescale: 600)
-            let range = CMTimeRange(start: startTime, end: endTime)
+            let timeRange = CMTimeRange(start: startTime, end: endTime)
 
             do {
                 let compTrack = composition.addMutableTrack(
                     withMediaType: .audio,
                     preferredTrackID: kCMPersistentTrackID_Invalid
                 )
-                try compTrack?.insertTimeRange(range, of: track, at: .zero)
+                try compTrack?.insertTimeRange(timeRange, of: track, at: .zero)
             } catch {
-                print("[ERROR] Failed to insert time range: \(error)")
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
@@ -64,8 +68,10 @@ class AudioClipUtils {
                 try? fileManager.removeItem(at: outputURL)
             }
 
-            guard let exporter = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetAppleM4A) else {
-                print("[ERROR] Failed to create export session")
+            guard let exporter = AVAssetExportSession(
+                asset: composition,
+                presetName: AVAssetExportPresetAppleM4A
+            ) else {
                 DispatchQueue.main.async { completion(nil) }
                 return
             }
@@ -74,19 +80,13 @@ class AudioClipUtils {
             exporter.outputFileType = .m4a
 
             exporter.exportAsynchronously {
-                switch exporter.status {
-                case .completed:
-                    print("[INFO] Exported clip to \(outputURL.path)")
-                    DispatchQueue.main.async { completion(outputURL) }
-                case .failed, .cancelled:
-                    print("[ERROR] Export failed: \(exporter.error?.localizedDescription ?? "Unknown error")")
-                    DispatchQueue.main.async { completion(nil) }
-                default:
-                    break
+                DispatchQueue.main.async {
+                    completion(exporter.status == .completed ? outputURL : nil)
                 }
             }
         }
-    }
+    
+}
 
     /// Deletes the saved 15-second clip at given path
     static func deleteClip(at path: String?) {

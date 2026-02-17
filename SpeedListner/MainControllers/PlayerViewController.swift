@@ -766,11 +766,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             return
         }
         
-        if book.hasChapters {
+//        if book.hasChapters {
             handlePreviousChapterAction()
-        }else{
-            self.showToast("Book have no chapter")
-        }
+//        }else{
+//            self.showToast("Book have no chapter")
+//        }
         
         
     }
@@ -868,33 +868,71 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
 //        
 //    }
     
+//    func handlePreviousChapterAction() {
+//        if #available(iOS 10.0, *) {
+//            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+//        }
+//
+//        guard let currentChapter = self.book?.currentChapter else {
+//            // fallback: if no current chapter, go to previous book in playlist
+//            let result = self.nextBookOfPlayList()
+//            guard !self.plalistItems.isEmpty else { return }
+//            guard let index = result.1 else { return }
+//            guard let books = Array(self.plalistItems.suffix(from: index)) as? [Book] else { return }
+//            self.setupPlayer(books: books)
+//            return
+//        }
+//
+//        // ⏮ Current playback time
+//        let currentTime = PlayerManager.shared.currentTime
+//
+//        if currentTime - currentChapter.start > 3 {
+//            // If >3s into the chapter → restart current chapter
+//            PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
+//        } else if let previous = PlayerManager.shared.previousChapter(after: currentChapter) {
+//            // If already near start → go back one chapter
+//            PlayerManager.shared.jumpTo(previous.start + 0.01)
+//        } else {
+//            // Already at first chapter → just restart it
+//            PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
+//        }
+//    }
+    
+    
     func handlePreviousChapterAction() {
+
         if #available(iOS 10.0, *) {
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         }
 
-        guard let currentChapter = self.book?.currentChapter else {
-            // fallback: if no current chapter, go to previous book in playlist
-            let result = self.nextBookOfPlayList()
-            guard !self.plalistItems.isEmpty else { return }
-            guard let index = result.1 else { return }
-            guard let books = Array(self.plalistItems.suffix(from: index)) as? [Book] else { return }
-            self.setupPlayer(books: books)
+        guard let book = self.book else { return }
+
+        // 🔹 CASE 1: Book has NO chapters
+        if !book.hasChapters {
+            PlayerManager.shared.jumpTo(0.0)
             return
         }
 
-        // ⏮ Current playback time
+        // 🔹 CASE 2: Book has chapters
+        guard let currentChapter = book.currentChapter else {
+            // If somehow chapter not detected → go to beginning
+            PlayerManager.shared.jumpTo(0.0)
+            return
+        }
+
         let currentTime = PlayerManager.shared.currentTime
 
+        // If more than 3 sec into chapter → restart current chapter
         if currentTime - currentChapter.start > 3 {
-            // If >3s into the chapter → restart current chapter
             PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
-        } else if let previous = PlayerManager.shared.previousChapter(after: currentChapter) {
-            // If already near start → go back one chapter
+        }
+        // If near start → go to previous chapter
+        else if let previous = PlayerManager.shared.previousChapter(after: currentChapter) {
             PlayerManager.shared.jumpTo(previous.start + 0.01)
-        } else {
-            // Already at first chapter → just restart it
-            PlayerManager.shared.jumpTo(currentChapter.start + 0.01)
+        }
+        // If already first chapter → go to beginning
+        else {
+            PlayerManager.shared.jumpTo(0.0)
         }
     }
     
@@ -1109,8 +1147,22 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help","Feedback"])
-        let imagesArr = ["bi_bookmark-fill","history","Settings","question","fluent_person-1x"]
+        self.topMenu.dataSource.append(contentsOf: [
+            "Bookmarks",
+            "History",
+            "Settings",
+            "Help",
+            "Feedback",
+            "About"
+        ])
+        let imagesArr = [
+            "bi_bookmark-fill",
+            "history",
+            "Settings",
+            "question",
+            "fluent_person-1x",
+            "ep_info-filled 1"
+        ]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -1122,31 +1174,39 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             
         }
         self.topMenu.selectionAction = { [unowned self] (index, item) in
-            if index == 0 {
+            
+            switch index {
+                
+            case 0:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "BookMarkVC") as! BookMarkVC
                 vc.dataBack = { t in
                     PlayerManager.shared.jumpTo(t)
                 }
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else   if index == 1{
                 
+            case 1:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "HistoryViewController") as! HistoryViewController
-              
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else if index == 2{
-             //   Help & Feedback
                 
+            case 2:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
-           
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else if index == 3{
+                
+            case 3:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
-           
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
-              
+                
+            case 4:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
+                
+            case 5:
+                let aboutVC = AboutViewController()
+                aboutVC.modalPresentationStyle = .formSheet
+                self.present(aboutVC, animated: true)
+                
+            default:
+                break
             }
         }
         self.topMenu.show()

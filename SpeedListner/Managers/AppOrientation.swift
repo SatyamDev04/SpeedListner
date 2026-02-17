@@ -5,45 +5,41 @@
 //  Created by YATIN  KALRA on 11/02/26.
 //
 
-
 import UIKit
 
-enum AppOrientation: String {
-    case normal
-    case lockVertical
-    case lockHorizontal
-}
 
 final class AppOrientationManager {
 
     static let shared = AppOrientationManager()
 
-    private let key = "AppOrientationSetting"
-
-    var current: AppOrientation {
-        get {
-            if let value = UserDefaults.standard.string(forKey: key),
-               let orientation = AppOrientation(rawValue: value) {
-                return orientation
-            }
-            return .normal
-        }
-        set {
-            UserDefaults.standard.set(newValue.rawValue, forKey: key)
-            applyOrientation(newValue)
-        }
+    enum OrientationMode {
+        case normal
+        case lockVertical
+        case lockHorizontal
     }
 
-    func applyOrientation(_ orientation: AppOrientation) {
-        switch orientation {
+    var current: OrientationMode = .normal
+    
+    
+    func applyOrientation(_ mode: OrientationMode) {
+
+        current = mode
+
+        guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene else { return }
+
+        switch mode {
         case .normal:
-            UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: .allButUpsideDown))
         case .lockVertical:
-            UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: .portrait))
         case .lockHorizontal:
-            UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+            scene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
         }
 
-        UINavigationController.attemptRotationToDeviceOrientation()
+        UIViewController.attemptRotationToDeviceOrientation()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            LandscapePlayerManager.shared.forceCheck()
+        }
     }
 }
+

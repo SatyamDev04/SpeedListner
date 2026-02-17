@@ -98,6 +98,16 @@ class SettingVC: UIViewController, Afterpay {
         seclectOrentation.addTarget(self, action: #selector(orientationChanged), for: .valueChanged)
 
     }
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+            
+            return .portrait
+        }
+
+        override var shouldAutorotate: Bool {
+          
+            return false
+        }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if let d = UserDefaults.standard.object(forKey: "desable") as? Bool{
@@ -139,11 +149,17 @@ class SettingVC: UIViewController, Afterpay {
     @objc private func orientationChanged() {
         switch seclectOrentation.selectedSegmentIndex {
         case 0:
-            AppOrientationManager.shared.current = .normal
+            DispatchQueue.main.async {
+                AppOrientationManager.shared.applyOrientation(.normal)
+            }
         case 1:
-            AppOrientationManager.shared.current = .lockVertical
+            DispatchQueue.main.async {
+                AppOrientationManager.shared.applyOrientation(.lockVertical)
+            }
         case 2:
-            AppOrientationManager.shared.current = .lockHorizontal
+            DispatchQueue.main.async {
+                AppOrientationManager.shared.applyOrientation(.lockHorizontal)
+            }
         default:
             break
         }

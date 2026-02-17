@@ -149,6 +149,8 @@
 		DDC04B1D2CF6F4E5000745F9 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */; };
 		DDDE116E2DA3E514007C0CDD /* BookDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */; };
 		DDDE116F2DA3E514007C0CDD /* BookDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */; };
+		DDE86F072F3DB7DA000C9284 /* MainNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE86F062F3DB7DA000C9284 /* MainNavigationController.swift */; };
+		DDE872C12F3DE8C0000C9284 /* AboutViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE872C02F3DE8C0000C9284 /* AboutViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -332,6 +334,8 @@
 		DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
 		DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailCell.swift; sourceTree = "<group>"; };
 		DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookDetailCell.xib; sourceTree = "<group>"; };
+		DDE86F062F3DB7DA000C9284 /* MainNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainNavigationController.swift; sourceTree = "<group>"; };
+		DDE872C02F3DE8C0000C9284 /* AboutViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutViewController.swift; sourceTree = "<group>"; };
 		E3EC947E04888BAF2988905C /* Pods-SpeedListnerTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-SpeedListnerTests.debug.xcconfig"; path = "Target Support Files/Pods-SpeedListnerTests/Pods-SpeedListnerTests.debug.xcconfig"; sourceTree = "<group>"; };
 		FDE8249FF0A533EA6A2E32EA /* Pods_SpeedListnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_SpeedListnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -505,6 +509,7 @@
 				DD6795752E606BFA003DEA49 /* SpeedStatsViewController.swift */,
 				DD632EF12F3C808400A3122B /* AppOrientation.swift */,
 				DD5DC5B92F3A17ED00642BD0 /* AudioAmplifier.swift */,
+				DDE872C02F3DE8C0000C9284 /* AboutViewController.swift */,
 			);
 			path = Managers;
 			sourceTree = "<group>";
@@ -553,6 +558,7 @@
 			children = (
 				DD0EED7D2C8F2456004F2863 /* AppDelegate.swift */,
 				DD0EED7F2C8F2456004F2863 /* SceneDelegate.swift */,
+				DDE86F062F3DB7DA000C9284 /* MainNavigationController.swift */,
 			);
 			path = AppDelegate;
 			sourceTree = "<group>";
@@ -1002,6 +1008,7 @@
 				DD0EF00D2C8F31BD004F2863 /* DropDownCell.swift in Sources */,
 				DD0EF0032C8F31BD004F2863 /* UploadFileCell.swift in Sources */,
 				DD632EF22F3C808400A3122B /* AppOrientation.swift in Sources */,
+				DDE86F072F3DB7DA000C9284 /* MainNavigationController.swift in Sources */,
 				DD8E53792E165AC000DF31C2 /* BookmarksActivityItemProvider.swift in Sources */,
 				DD0EF0532C8F320F004F2863 /* SettingVC.swift in Sources */,
 				DD93829A2E5DD40100CE3314 /* BookmarkManager.swift in Sources */,
@@ -1038,6 +1045,7 @@
 				DD0EF0512C8F320F004F2863 /* RecoverPasswordVC.swift in Sources */,
 				DDDE116F2DA3E514007C0CDD /* BookDetailCell.swift in Sources */,
 				DD0EF0542C8F320F004F2863 /* FAQVC.swift in Sources */,
+				DDE872C12F3DE8C0000C9284 /* AboutViewController.swift in Sources */,
 				DD0EF05F2C8F320F004F2863 /* CancelSubscriptionVC.swift in Sources */,
 				DD0EEFBA2C8F2F5B004F2863 /* Constant.swift in Sources */,
 				DD0EF05A2C8F320F004F2863 /* PauseTimerVC.swift in Sources */,
@@ -1233,14 +1241,14 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.speedListner.ios.SpeedListner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -1279,14 +1287,14 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.2;
+				MARKETING_VERSION = 2.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.speedListner.ios.SpeedListner;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

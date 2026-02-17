@@ -20,7 +20,7 @@ class LoginVC: UIViewController {
     
     var iconClick: Bool = true
     let loading = indicator()
-    
+ 
     override func viewDidLoad() {
         super.viewDidLoad()
         if traitCollection.userInterfaceStyle == .dark {
@@ -51,7 +51,18 @@ class LoginVC: UIViewController {
         
     }
     
- 
+//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+//        switch AppOrientationManager.shared.current {
+//        case .normal:
+//            return .allButUpsideDown
+//        case .lockVertical:
+//            return .portrait
+//        case .lockHorizontal:
+//            return .landscape
+//        }
+//    }
+//    
+    
     @IBAction func btnEye_Password(_ sender: Any) {
         if(iconClick == true) {
             txt_Password.isSecureTextEntry = false

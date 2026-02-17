@@ -59,6 +59,33 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         return book.currentTime
     }
     
+    
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+        switch AppOrientationManager.shared.current {
+        case .lockHorizontal:
+            return .landscape
+            
+        case .lockVertical:
+            return .portrait
+            
+        case .normal:
+            return .allButUpsideDown
+        }
+    }
+
+    override var shouldAutorotate: Bool {
+        switch AppOrientationManager.shared.current {
+        case .lockHorizontal:
+            return false
+            
+        case .lockVertical:
+            return false
+            
+        case .normal:
+            return true    
+        }
+    }
+    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {

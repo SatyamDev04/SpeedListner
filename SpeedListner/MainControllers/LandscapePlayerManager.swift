@@ -9,7 +9,17 @@ import UIKit
 
 final class LandscapePlayerManager {
     static let shared = LandscapePlayerManager()
-    private init() {}
+
+    /// Listen for orientation lock changes and re-check presentation when lock mode is changed.
+    init() {
+        NotificationCenter.default.addObserver(self, selector: #selector(self.orientationLockChanged), name: NSNotification.Name("AppOrientationLockChanged"), object: nil)
+    }
+
+   
+
+    deinit {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("AppOrientationLockChanged"), object: nil)
+    }
 
     private var isPresented = false
     private weak var presentedVC: UIViewController?
@@ -36,17 +46,25 @@ final class LandscapePlayerManager {
         NotificationCenter.default.removeObserver(self)
         UIDevice.current.endGeneratingDeviceOrientationNotifications()
     }
-
+    func forceCheck() {
+        checkAndPresentIfNeeded()
+    }
     @objc private func deviceOrientationChanged() {
+        guard AppOrientationManager.shared.current == .normal else { return }
         DispatchQueue.main.async {
             self.checkAndPresentIfNeeded()
         }
     }
 
     @objc private func sceneDidBecomeActive() {
+        guard AppOrientationManager.shared.current == .normal else { return }
         DispatchQueue.main.async {
             self.checkAndPresentIfNeeded()
         }
+    }
+    
+    @objc private func orientationLockChanged() {
+        self.checkAndPresentIfNeeded()
     }
 
     // MARK: - Determine interface orientation reliably
@@ -66,13 +84,21 @@ final class LandscapePlayerManager {
     }
 
     // MARK: - Present/dismiss logic (robust)
-    private func checkAndPresentIfNeeded() {
-        let shouldBeLandscape = isAppInterfaceLandscape()
+    func checkAndPresentIfNeeded() {
 
-        if shouldBeLandscape {
+        switch AppOrientationManager.shared.current {
+
+        case .normal:
+            if isAppInterfaceLandscape() {
+                presentLandscapeIfNeeded()
+            } else {
+                dismissLandscapeIfNeededCompletely()
+            }
+
+        case .lockHorizontal:
             presentLandscapeIfNeeded()
-        } else {
-            // Try to dismiss landscape even if other modals are on top.
+
+        case .lockVertical:
             dismissLandscapeIfNeededCompletely()
         }
     }
@@ -107,7 +133,7 @@ final class LandscapePlayerManager {
 
         // instantiate and present
         let story = UIStoryboard(name: "Main", bundle: nil)
-                let vc = story.instantiateViewController(withIdentifier: "LandscapePlayerViewController") as! LandscapePlayerViewController
+        let vc = story.instantiateViewController(withIdentifier: "LandscapePlayerViewController") as! LandscapePlayerViewController
         vc.modalPresentationStyle = .fullScreen
         vc.modalTransitionStyle = .crossDissolve
 

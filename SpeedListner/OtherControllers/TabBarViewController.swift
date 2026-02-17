@@ -15,6 +15,21 @@ class TabBarVC: UIViewController , UITabBarControllerDelegate {
         self.navigationController?.pushViewController(self.tabbarFunc(), animated: false)
         self.navigationController?.isNavigationBarHidden = true
     }
+    
+//    override var supportedInterfaceOrientations: UIInterfaceOrientationMask {
+//          switch AppOrientationManager.shared.current {
+//          case .normal:
+//              return .allButUpsideDown
+//          case .lockVertical:
+//              return .portrait
+//          case .lockHorizontal:
+//              return .landscape
+//          }
+//      }
+//
+//      override var shouldAutorotate: Bool {
+//          return true
+//      }
     private func tabbarFunc() ->UITabBarController{
         
         //self delagting

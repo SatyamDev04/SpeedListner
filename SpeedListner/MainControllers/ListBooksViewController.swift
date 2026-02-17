@@ -502,8 +502,22 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
         self.topMenu.selectionBackgroundColor = .clear
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
-        self.topMenu.dataSource.append(contentsOf: ["Bookmarks","History","Settings","Help","Feedback"])
-        let imagesArr = ["bi_bookmark-fill","history","Settings","question","fluent_person-1x"]
+        self.topMenu.dataSource.append(contentsOf: [
+            "Bookmarks",
+            "History",
+            "Settings",
+            "Help",
+            "Feedback",
+            "About"
+        ])
+        let imagesArr = [
+            "bi_bookmark-fill",
+            "history",
+            "Settings",
+            "question",
+            "fluent_person-1x",
+            "ep_info-filled 1" // 🔁 add your About icon asset name
+        ]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -515,31 +529,39 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
             
         }
         self.topMenu.selectionAction = { [unowned self] (index, item) in
-            if index == 0 {
+            
+            switch index {
+                
+            case 0:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "BookMarkVC") as! BookMarkVC
                 vc.dataBack = { t in
                     PlayerManager.shared.jumpTo(t)
                 }
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else   if index == 1{
                 
+            case 1:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "HistoryViewController") as! HistoryViewController
-              
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else if index == 2{
-             //   Help & Feedback
                 
+            case 2:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
-           
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else if index == 3{
+                
+            case 3:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
-           
                 self.navigationController?.pushViewController(vc, animated: true)
-            }else{
-              
+                
+            case 4:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
+                
+            case 5:
+                let aboutVC = AboutViewController()
+                aboutVC.modalPresentationStyle = .formSheet
+                self.present(aboutVC, animated: true)
+                
+            default:
+                break
             }
         }
         self.topMenu.show()

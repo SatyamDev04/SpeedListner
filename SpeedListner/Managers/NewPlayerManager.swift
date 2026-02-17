@@ -100,7 +100,7 @@ class PlayerManager: NSObject {
             if isBoostEnabled {
                 audioplayer.volume = 2.0
             } else {
-                audioplayer.volume = 0.7   // base lower volume
+                audioplayer.volume = 0.6   // base lower volume
             }
             DispatchQueue.main.async(execute: {
                 // Set book metadata for lockscreen and control center
@@ -870,7 +870,7 @@ extension PlayerManager {
         if enabled {
             player.volume = 2.0   // max possible loud
         } else {
-            player.volume = 0.7   // base volume
+            player.volume = 0.6   // base volume
         }
     }
     

@@ -27,7 +27,7 @@
 	<key>NSWidgetHostAppBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>OpenAIKey</key>
-	<string>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</string>
+	<string>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</string>
 	<key>SupportsLiveActivities</key>
 	<true/>
 	<key>UIAppFonts</key>

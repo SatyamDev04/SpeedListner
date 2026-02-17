@@ -11,7 +11,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
     var pUrl: URL?
-
+    var orientationLock: UIInterfaceOrientationMask = .all
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         print("[SceneDelegate] App is connecting to the scene.")
 
@@ -27,10 +27,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         }
 
         guard let _ = (scene as? UIWindowScene) else { return }
+        print(type(of: window?.rootViewController),"root")
     }
+    
+    
     func windowScene(_ windowScene: UIWindowScene,
                      supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
-
+        print(window?.rootViewController)
         switch AppOrientationManager.shared.current {
         case .normal:
             return .allButUpsideDown
@@ -40,6 +43,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
             return .landscape
         }
     }
+    
+    
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
         print("[SceneDelegate] App received URL while running.")
         

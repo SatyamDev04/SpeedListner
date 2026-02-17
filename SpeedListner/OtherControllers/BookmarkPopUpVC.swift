@@ -246,7 +246,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                 let t = self.arrBookmarksNotes[index].timeStamp
                 let time = self.arrBookmarksNotes[index].time
                 let date = self.arrBookmarksNotes[index].date
-                AudioClipUtils.extract5SecClip(from: book.fileURL, at: t) { [self] url in
+                AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { [self] url in
                     if let clipURL = url {
                         self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus, audioClipPath: clipURL)
                         print(clipURL, "aya kya url",starStatus)
@@ -288,7 +288,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             let date = Date.getCurrentDate()
             
             
-            AudioClipUtils.extract5SecClip(from: book.fileURL, at: t) { [self] url in
+            AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { [self] url in
                 if let clipURL = url {
                     self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
                     print(clipURL, "aya kya url")
@@ -322,7 +322,7 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             let date = Date.getCurrentDate()
            
             
-            AudioClipUtils.extract5SecClip(from: book.fileURL, at: t) { url in
+            AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { url in
                 if let clipURL = url {
                     self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
                     print(clipURL, "aya kya url")

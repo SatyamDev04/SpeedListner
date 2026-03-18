@@ -226,7 +226,8 @@ class LetterSearchVC: UIViewController {
             self.sortByTxt.text = "Oldest Upload"
         case "2":
             sortedBooks = bookItems.sorted {
-                ($0.recentPlayTime ?? Date.distantFuture) > ($1.recentPlayTime ?? Date.distantPast)
+                ($0.recentPlayTime ?? .distantPast) >
+                ($1.recentPlayTime ?? .distantPast)
             }
             self.sortByTxt.text = "Recently Played"
         case "3":
@@ -799,29 +800,52 @@ extension LetterSearchVC: UITableViewDataSource, UITableViewDelegate {
     
 }
     func loadPlayer(books: [Book]) {
+
         guard let book = books.first else { return }
-        
+
         guard NewDataMannagerClass.exists(book) else {
             self.showAlert(
                 "File Missing!",
-                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                message: "This Audiobook File Was Removed From Your Device.",
                 style: .alert
             )
-            
             return
         }
-        
-        //  MBProgressHUD.showAdded(to: self.view, animated: true)
-        
-        // Replace player with new one
-        PlayerManager.shared.load(books) { (loaded) in
+
+        var finalQueue: [Book] = books
+
+        // 🔥 IMPORTANT: अगर सिर्फ 1 book आई है
+        if books.count == 1 {
+
+            // 1️⃣ Try playlist context
+            if let playlist = findPlaylistContaining(book: book) {
+                finalQueue = (playlist.books?.array as? [Book]) ?? []
+            }
+            // 2️⃣ fallback → library items (NOT getAllBooks ❗)
+            else {
+                finalQueue = getLibraryBooksInOrder()
+            }
+        }
+
+        // 🔥 STEP 1: SET QUEUE
+        PlayerManager.shared.playbackQueue = finalQueue
+
+        // 🔥 STEP 2: SET INDEX
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
+
+        // 🔥 STEP 3: LOAD CURRENT BOOK ONLY
+        PlayerManager.shared.load([book]) { loaded in
+
             guard loaded else {
-                //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert(
+                    "File error!",
+                    message: "This Audiobook file couldn't be loaded.",
+                    style: .alert
+                )
                 return
             }
+
             self.showPlayerView(book: book)
-            
             PlayerManager.shared.play()
         }
     }
@@ -836,7 +860,68 @@ extension LetterSearchVC: UITableViewDataSource, UITableViewDelegate {
             self.tabBarController?.selectedIndex = 1
         }
     }
+    func getLibraryBooksInOrder() -> [Book] {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return []
+        }
+
+        var books: [Book] = []
+
+        for item in items {
+            if let book = item as? Book {
+                books.append(book)
+            }
+        }
+
+        return books
+    }
+    func findPlaylistContaining(book: Book) -> Playlist? {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return nil
+        }
+
+        for item in items {
+
+            if let playlist = item as? Playlist {
+
+                if let books = playlist.books?.array as? [Book],
+                   books.contains(book) {
+                    return playlist
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: playlist) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
     
+    func findInChildPlaylists(book: Book, playlist: Playlist) -> Playlist? {
+
+        if let children = playlist.children?.allObjects as? [Playlist] {
+            for child in children {
+
+                if let books = child.books?.array as? [Book],
+                   books.contains(book) {
+                    return child
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: child) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
 }
 
 extension LetterSearchVC: PlaylistSelectionDelegate ,UITextFieldDelegate{
@@ -985,58 +1070,45 @@ extension LetterSearchVC{
     
     
     @objc func valueChange(_ textField:UITextField){
-    //    self.filterData(newString: textField.text ?? "")
+        self.filterData(newString: textField.text ?? "")
     }
     
     func filterData(newString: String) {
-        // ---- debounce filtering (1s) ----
+        
         debounceWorkItem?.cancel()
+        
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
-
-            if !newString.isEmpty {
-                let searchPrefix = String(newString.prefix(1)).lowercased()
-
-                let filteredArray = t_items.filter { item in
-                    let titleWords = item.title?.lowercased().split(separator: " ") ?? []
-                    let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
-                    let titleMatch = titleWords.contains { $0.hasPrefix(searchPrefix) }
-                    let authorMatch = authorWords.contains { $0.hasPrefix(searchPrefix) }
-                    return titleMatch || authorMatch
-                }
-                self.playlistItems = filteredArray
+            
+            // 🔹 Normalize input
+            let cleanedInput = newString
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+            
+            // 🔹 Get ALL books (entire library + subfolders)
+            let allBooks = self.getAllBooks(from: self.library)
+            
+            if cleanedInput.isEmpty {
+                self.filteredBooks = allBooks
             } else {
-                self.playlistItems = self.t_items
+                self.filteredBooks = allBooks.filter { book in
+                    guard let title = book.title else { return false }
+                    
+                    let normalizedTitle = title
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                        .lowercased()
+                    
+                    return normalizedTitle.hasPrefix(cleanedInput)
+                }
             }
-
-            filteredBooks = getAllBooks(from: library).filter {
-                $0.title?.localizedCaseInsensitiveContains(newString) == true
-            }
-
-            let rowHeight: CGFloat = 40
-            let maxHeight: CGFloat = 200
-            let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
-
-          //  searchTblVH.constant = calculatedHeight
-           // searchTblV.isHidden = filteredBooks.isEmpty
-
-      //      self.searchTblV.reloadData()
-            self.tableView.reloadData()
-        }
-        debounceWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
-
-        // ---- debounce keyboard hide (10s idle) ----
-        keyboardHideWorkItem?.cancel()
-        let hideItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
+            
             DispatchQueue.main.async {
-                // hides whatever is first responder (your search field)
-                self.view.endEditing(true)
+                self.tableView.reloadData()
             }
         }
-        keyboardHideWorkItem = hideItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideItem)
+        
+        debounceWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: workItem)
     }
     
     func getAllBooks(from library: Library) -> [Book] {
@@ -1350,16 +1422,22 @@ extension LetterSearchVC:UICollectionViewDelegate,UICollectionViewDataSource{
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if selectedTxt == AlphabetArr[indexPath.row]{
-            self.selectedTxt = ""
-            self.filterData(newString:"")
-        }else{
-            self.selectedTxt = AlphabetArr[indexPath.row]
-            self.filterData(newString: self.selectedTxt)
+
+        let selectedLetter = AlphabetArr[indexPath.row]
+
+        if selectedTxt == selectedLetter {
+            selectedTxt = ""
+            filteredBooks.removeAll()
+            tableView.reloadData()
+        } else {
+            selectedTxt = selectedLetter
+            performLetterSearch(letter: selectedLetter)
         }
-        
-        self.collecV.reloadData()
+
+        collecV.reloadData()
     }
+    
+    
     @IBAction func collLeftScroll_Action(_ sender: UIButton){
         
         let collectionBounds = self.collecV.bounds
@@ -1379,7 +1457,27 @@ extension LetterSearchVC:UICollectionViewDelegate,UICollectionViewDataSource{
         self.moveCollectionToFrame(contentOffset: contentOffset)
         
     }
+    
+    private func performLetterSearch(letter: String) {
+        let allBooks = getAllBooks(from: library)
 
+        let target = letter.lowercased()
+
+        filteredBooks = allBooks.filter { book in
+            let title = normalizedTitle(book.title)
+
+            guard let firstChar = title.first else { return false }
+
+            return String(firstChar) == target
+        }
+
+        tableView.reloadData()
+    }
+    private func normalizedTitle(_ title: String?) -> String {
+        return title?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased() ?? ""
+    }
         
 }
 extension LetterSearchVC {
@@ -1443,7 +1541,7 @@ extension LetterSearchVC {
                     }
                     // confirm delete book
                     let confirm = UIAlertController(
-                        title: "All The Notes Associated With This Book Will Be Deleted!",
+                        title: "All The Notes Associated With This Audiobook Will Be Deleted!",
                         message: "Do You Really Want To Delete :\(book.title ?? "")?",
                         preferredStyle: .alert
                     )

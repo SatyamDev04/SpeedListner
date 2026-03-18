@@ -11,10 +11,12 @@ import AVFoundation
 
 class AudioClipUtils {
 
-    /// Extracts a 20-second clip (5s before, 15s after)
-    static func extract20SecClip(
+  
+    static func extractClip(
         from inputURL: URL,
-        at timestamp: TimeInterval,
+        startTime: TimeInterval,
+        endTime: TimeInterval,
+        identifier: String,
         completion: @escaping (URL?) -> Void
     ) {
 
@@ -30,11 +32,11 @@ class AudioClipUtils {
         let asset = AVAsset(url: inputURL)
         let duration = CMTimeGetSeconds(asset.duration)
 
-        // ✅ NEW LOGIC (5 before, 15 after)
-        let start = max(0, timestamp - 5.0)
-        let end = min(duration, timestamp + 15.0)
+        // 🔒 Safety clamp (but DO NOT recalculate logic)
+        let safeStart = max(0, startTime)
+        let safeEnd = min(duration, endTime)
 
-        let outputURL = clipsFolderURL.appendingPathComponent("clip_\(Int(timestamp)).m4a")
+        let outputURL = clipsFolderURL.appendingPathComponent("clip_\(identifier).m4a")
 
         let composition = AVMutableComposition()
 
@@ -49,9 +51,9 @@ class AudioClipUtils {
                 return
             }
 
-            let startTime = CMTime(seconds: start, preferredTimescale: 600)
-            let endTime = CMTime(seconds: end, preferredTimescale: 600)
-            let timeRange = CMTimeRange(start: startTime, end: endTime)
+            let cmStart = CMTime(seconds: safeStart, preferredTimescale: 600)
+            let cmEnd = CMTime(seconds: safeEnd, preferredTimescale: 600)
+            let timeRange = CMTimeRange(start: cmStart, end: cmEnd)
 
             do {
                 let compTrack = composition.addMutableTrack(
@@ -85,8 +87,7 @@ class AudioClipUtils {
                 }
             }
         }
-    
-}
+    }
 
     /// Deletes the saved 15-second clip at given path
     static func deleteClip(at path: String?) {

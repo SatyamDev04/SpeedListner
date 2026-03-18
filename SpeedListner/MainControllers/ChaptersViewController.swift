@@ -50,17 +50,7 @@ class ChaptersViewController: UITableViewController {
         self.tableView.tableHeaderView = headerView
         
         self.tableView.reloadData()
-    let asset = AVAsset(url: PlayerManager.shared.currentBook?.fileURL ?? URL(fileURLWithPath: ""))
-    for locale in asset.availableChapterLocales {
-        let chaptersMetadata = asset.chapterMetadataGroups(withTitleLocale: locale, containingItemsWithCommonKeys: [AVMetadataKey.commonKeyArtwork])
 
-        for (index, chapterMetadata) in chaptersMetadata.enumerated() {
-        let titleFromMeta = AVMetadataItem.metadataItems(from: asset.metadata, withKey: AVMetadataKey.commonKeyTitle, keySpace: AVMetadataKeySpace.common).first?.value?.copy(with: nil) as? String
-          print(chapterMetadata.items,"hgjkl;'lk")
-
-          
-        }
-     }
   
     }
 
@@ -82,18 +72,17 @@ class ChaptersViewController: UITableViewController {
         let cell = tableView.dequeueReusableCell(withIdentifier: "ChapterCell", for: indexPath)
         print("cellForRowAt indexPath: \(indexPath)")
         let chapter = self.chapters[indexPath.row]
-     //   let chapter = self.chapters[indexPath.row]
-//        if ((chapter.title?.contains("Chapter")) != nil){
-        if indexPath.row == 0{
-            
-        
-    cell.textLabel?.text = "Intro"
-    
-    }else{
-    
-        cell.textLabel?.text =  "Chapter \(indexPath.row)" /*+ (chapter.title ?? "")*/
-    
-    }
+        if chapter.index == 0 {
+            cell.textLabel?.text = "Intro"
+        } else {
+            let cleanedTitle = cleanChapterTitle(chapter.title)
+
+            if cleanedTitle.isEmpty {
+                cell.textLabel?.text = "Chapter \(chapter.index)"
+            } else {
+                cell.textLabel?.text = "Chapter \(chapter.index): \(cleanedTitle)"
+            }
+        }
         let roundedX2 = Double(round(PlayerManager.shared.speed * 10) / 10)
         let adjustedStart = chapter.start / roundedX2
         let duration = chapter.duration / roundedX2
@@ -115,7 +104,29 @@ class ChaptersViewController: UITableViewController {
         self.done(nil)
     }
 
+    func cleanChapterTitle(_ title: String?) -> String {
+        guard let title = title?.trimmingCharacters(in: .whitespacesAndNewlines), !title.isEmpty else {
+            return ""
+        }
 
+        let lower = title.lowercased()
+
+        // Remove "chapter X" from beginning
+        if lower.hasPrefix("chapter") {
+            let components = title.split(separator: " ")
+            
+            // If only "Chapter 1"
+            if components.count <= 2 {
+                return ""
+            }
+            
+            // Remove first 2 words (Chapter + number)
+            let remaining = components.dropFirst(2)
+            return remaining.joined(separator: " ")
+        }
+
+        return title
+    }
 }
 
 

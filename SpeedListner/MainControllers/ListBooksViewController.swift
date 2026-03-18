@@ -121,8 +121,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
 
         case "2":
             sortedBooks = books.sorted {
-                ($0.recentPlayTime ?? Date.distantFuture) >
-                ($1.recentPlayTime ?? Date.distantPast)
+                ($0.recentPlayTime ?? .distantPast) >
+                ($1.recentPlayTime ?? .distantPast)
             }
             self.sortByTxt.text = "Recently Played"
 
@@ -580,8 +580,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
             guard let self = self else { return }
 
             UserDetail.shared.savedSortBy("\(index)")
-            let playlists = self.items.compactMap { $0 as? Playlist }
-            let books = self.items.compactMap { $0 as? Book }
+            let playlists = self.t_items.compactMap { $0 as? Playlist }
+            let books = self.t_items.compactMap { $0 as? Book }
 
           
             let sortedPlaylists = playlists.sorted {
@@ -864,19 +864,82 @@ extension ListBooksViewController {
     }
     
     private func loadPreviousBook() {
+
         guard let identifier = UserDefaults.standard.string(forKey: UserDefaultsConstants.lastPlayedBook),
-        let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
+              let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
             return
         }
-        
+
         currentItem = item
-      PlayerManager.shared.load([item]) { (loaded) in
-            guard loaded else {
-                return
-            }
-            
-            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.playerDismissed, object: nil, userInfo: nil)
+
+        // 🔥 STEP 1: Find correct source (playlist OR library)
+        let books: [Book]
+
+        if let playlist = findPlaylistContaining(book: item) {
+            books = (playlist.books?.array as? [Book]) ?? []
+        } else {
+            // fallback → full library
+            books = getAllBooks(from: NewDataMannagerClass.getLibrary())
         }
+
+        // 🔥 STEP 2: Set queue
+        PlayerManager.shared.playbackQueue = books
+        PlayerManager.shared.currentIndex = books.firstIndex(of: item) ?? 0
+
+        // 🔥 STEP 3: Load correct book
+        PlayerManager.shared.load([item]) { loaded in
+            guard loaded else { return }
+
+            NotificationCenter.default.post(
+                name: Notification.Name.AudiobookPlayer.playerDismissed,
+                object: nil
+            )
+        }
+    }
+    func findPlaylistContaining(book: Book) -> Playlist? {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return nil
+        }
+
+        for item in items {
+
+            if let playlist = item as? Playlist {
+
+                if let books = playlist.books?.array as? [Book],
+                   books.contains(book) {
+                    return playlist
+                }
+
+                // check nested playlists
+                if let found = findInChildPlaylists(book: book, playlist: playlist) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+
+    func findInChildPlaylists(book: Book, playlist: Playlist) -> Playlist? {
+
+        if let children = playlist.children?.allObjects as? [Playlist] {
+            for child in children {
+
+                if let books = child.books?.array as? [Book],
+                   books.contains(book) {
+                    return child
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: child) {
+                    return found
+                }
+            }
+        }
+
+        return nil
     }
 }
 
@@ -885,7 +948,7 @@ extension ListBooksViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         if tableView == searchTblV {
-            return filteredBooks.count
+            return filteredBooks.count + matchedPlaylists.count
         }else{
           return self.items.count
         }
@@ -893,11 +956,18 @@ extension ListBooksViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if tableView == searchTblV {
-            
+
             let cell = tableView.dequeueReusableCell(withIdentifier: "SearchResultCell", for: indexPath) as! SearchResultTableViewCell
+
+            if indexPath.row < filteredBooks.count {
                 let book = filteredBooks[indexPath.row]
                 cell.configure(title: book.title ?? "Untitled Book", icon: book.artwork)
-                return cell
+            } else {
+                let playlist = matchedPlaylists[indexPath.row - filteredBooks.count]
+                cell.configure(title: playlist.title ?? "Folder", icon: UIImage(named: "folder"))
+            }
+
+            return cell
         }else{
             let item = items[indexPath.row]
             let isSelected = selectedIndices.contains(indexPath)
@@ -1215,31 +1285,102 @@ extension ListBooksViewController: UITableViewDataSource {
     
     
     func loadPlayer(books: [Book]) {
+
         guard let book = books.first else { return }
-        
+
         guard NewDataMannagerClass.exists(book) else {
             self.showAlert(
                 "File Missing!",
-                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                message: "This Audiobook File Was Removed From Your Device.",
                 style: .alert
             )
             return
         }
-        
-        PlayerManager.shared.load(books) { (loaded) in
+
+        var finalQueue: [Book] = books
+
+        // 🔥 IMPORTANT: अगर सिर्फ 1 book आई है
+        if books.count == 1 {
+
+            // 1️⃣ Try playlist context
+            if let playlist = findPlaylistContaining(book: book) {
+                finalQueue = (playlist.books?.array as? [Book]) ?? []
+            }
+            // 2️⃣ fallback → library items (NOT getAllBooks ❗)
+            else {
+                finalQueue = getLibraryBooksInOrder()
+            }
+        }
+
+        // 🔥 STEP 1: SET QUEUE
+        PlayerManager.shared.playbackQueue = finalQueue
+
+        // 🔥 STEP 2: SET INDEX
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
+
+        // 🔥 STEP 3: LOAD CURRENT BOOK ONLY
+        PlayerManager.shared.load([book]) { loaded in
+
             guard loaded else {
                 self.showAlert(
-                    "File Missing!",
-                    message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                    "File error!",
+                    message: "This Audiobook file couldn't be loaded.",
                     style: .alert
                 )
                 return
             }
-            PlayerManager.shared.playPause()
-            self.tabBarController?.selectedIndex = 1
-           
+
+            self.showPlayerView(book: book)
+            PlayerManager.shared.play()
         }
     }
+    
+    func getLibraryBooksInOrder() -> [Book] {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return []
+        }
+
+        var books: [Book] = []
+
+        for item in items {
+            if let book = item as? Book {
+                books.append(book)
+            }
+        }
+
+        return books
+    }
+    
+//    commented on 18 march 26
+//    func loadPlayer(books: [Book]) {
+//        guard let book = books.first else { return }
+//        
+//        guard NewDataMannagerClass.exists(book) else {
+//            self.showAlert(
+//                "File Missing!",
+//                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+//                style: .alert
+//            )
+//            return
+//        }
+//        
+//        PlayerManager.shared.load(books) { (loaded) in
+//            guard loaded else {
+//                self.showAlert(
+//                    "File Missing!",
+//                    message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+//                    style: .alert
+//                )
+//                return
+//            }
+//            PlayerManager.shared.playPause()
+//            self.tabBarController?.selectedIndex = 1
+//           
+//        }
+//    }
     
     @objc func bookReady() {
         self.tableView.reloadData()
@@ -1274,7 +1415,7 @@ extension ListBooksViewController: UITableViewDelegate {
     
     func handleDelete(book: Book, indexPath: IndexPath? = nil,alert:Bool? = true) {
         if alert ?? false{
-            let alert = UIAlertController(title: "All The Notes Associated With This Book Will Be Deleted!", message: "Do You Really Want To Delete: \(book.title ?? "")...?", preferredStyle: .alert)
+            let alert = UIAlertController(title: "All The Notes Associated With This Audiobook Will Be Deleted!", message: "Do You Really Want To Delete: \(book.title ?? "")...?", preferredStyle: .alert)
             
             alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                 self.tableView.setEditing(false, animated: true)
@@ -1389,8 +1530,21 @@ extension ListBooksViewController: UITableViewDelegate {
     
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if tableView == searchTblV{
-            self.searchResultBookPlay(self.filteredBooks[indexPath.row])
+        if tableView == searchTblV {
+
+            if indexPath.row < filteredBooks.count {
+                self.searchResultBookPlay(self.filteredBooks[indexPath.row])
+            } else {
+                let playlist = matchedPlaylists[indexPath.row - filteredBooks.count]
+
+                let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                if let playlistVC = storyboard.instantiateViewController(withIdentifier: "NewPlaylistViewController") as? NewPlaylistViewController {
+                    playlistVC.playlist = playlist
+                    playlistVC.comeFrom = "1"
+                    playlistVC.p = "1"
+                    self.navigationController?.pushViewController(playlistVC, animated: true)
+                }
+            }
         }else{
             PlayerManager.shared.miniPlayerIsHidden = false
             let item = self.items[indexPath.row]
@@ -1544,7 +1698,7 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if selectedTxt == AlphabetArr[indexPath.row]{
             self.selectedTxt = ""
-          //  self.filterData(newString:"")
+          // self.filterData(newString:"")
         }else{
             let vc = storyboard?.instantiateViewController(withIdentifier: "LetterSearchVC") as! LetterSearchVC
             
@@ -1587,57 +1741,93 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
     }
     
     func filterTextfieldData(newString: String) {
-        // ---- 1) Debounce filtering (1s) ----
+
         debounceWorkItem?.cancel()
 
         let filterWork = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
 
-            if !newString.isEmpty {
-                let lowercasedInput = newString.lowercased()
+            let cleanedInput = newString
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
+
+            if !cleanedInput.isEmpty {
 
                 let filteredArray = t_items.filter { item in
                     let titleWords  = item.title?.lowercased().split(separator: " ") ?? []
                     let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
-                    let titleMatch  = titleWords.contains { $0.hasPrefix(lowercasedInput) }
-                    let authorMatch = authorWords.contains { $0.hasPrefix(lowercasedInput) }
+
+                    let titleMatch  = titleWords.contains { $0.hasPrefix(cleanedInput) }
+                    let authorMatch = authorWords.contains { $0.hasPrefix(cleanedInput) }
+
                     return titleMatch || authorMatch
                 }
+
                 self.items = filteredArray
+
             } else {
-                self.items = self.t_items
+                let playlists = self.t_items.compactMap { $0 as? Playlist }
+                let books = self.t_items.compactMap { $0 as? Book }
+
+                self.items = playlists + books
             }
 
-            filteredBooks = getAllBooks(from: library).filter {
-                $0.title?.localizedCaseInsensitiveContains(newString) == true
+            if cleanedInput.isEmpty {
+
+                filteredBooks = []
+                matchedPlaylists = []
+                self.searchTblV.isHidden = true
+                return
+
+            }
+
+            filteredBooks = getAllBooks(from: library).filter { book in
+
+                let title = book.title?.lowercased() ?? ""
+                let matchesSearch = title.hasPrefix(cleanedInput)
+
+                // check if already visible in current library list
+                let alreadyVisible = self.items.contains {
+                    if let visibleBook = $0 as? Book {
+                        return visibleBook.identifier == book.identifier
+                    }
+                    return false
+                }
+
+                return matchesSearch && !alreadyVisible
+            }
+
+            matchedPlaylists = getAllPlaylists(from: library).filter { playlist in
+                
+                let title = playlist.title?.lowercased() ?? ""
+                
+                let matchesSearch = title.hasPrefix(cleanedInput)
+                
+                let alreadyVisible = self.items.contains {
+                    if let visiblePlaylist = $0 as? Playlist {
+                        return visiblePlaylist.identifier == playlist.identifier
+                    }
+                    return false
+                }
+                
+                return matchesSearch && !alreadyVisible
             }
 
             let rowHeight: CGFloat = 40
             let maxHeight: CGFloat = 200
-            let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
-
-//            searchTblVH.constant = calculatedHeight
-//            UIView.animate(withDuration: 0.25) {
-//                self.searchTblV.alpha = 1.0
-//                self.searchTblV.isHidden = self.filteredBooks.isEmpty
-//            }
-//
-//            self.searchTblV.reloadData()
-
-            matchedPlaylists = getAllPlaylists(from: library).filter {
-                $0.title?.localizedCaseInsensitiveContains(newString) == true
-            }
-
-            self.tableView.reloadData()
+            let totalResults = filteredBooks.count + matchedPlaylists.count
+            let calculatedHeight = min(CGFloat(totalResults) * rowHeight, maxHeight)
+            self.searchTblVH.constant = calculatedHeight
+            self.searchTblV.isHidden = cleanedInput.isEmpty || filteredBooks.isEmpty
+            self.searchTblV.reloadData()
         }
 
         debounceWorkItem = filterWork
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: filterWork)
 
-        // ---- 2) Debounce keyboard hide (10s idle) ----
         keyboardHideWorkItem?.cancel()
         let hideWork = DispatchWorkItem { [weak self] in
-            self?.view.endEditing(true)   // hides keyboard after 10s of no typing
+            self?.view.endEditing(true)
         }
         keyboardHideWorkItem = hideWork
         DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideWork)

@@ -42,14 +42,14 @@ class TranscriptionSummaryVC: UIViewController {
         // Use an SF Symbol; use "chevron.compact.down" or "chevron.down"
         iv.image = UIImage(systemName: "chevron.compact.down")
         iv.contentMode = .scaleAspectFit
-        iv.tintColor = .darkGray
+        iv.tintColor = .secondaryLabel
         return iv
     }()
 
     private let timeLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .semibold)
-        label.textColor = .black
+        label.textColor = .label
         label.numberOfLines = 1
         return label
     }()
@@ -64,7 +64,7 @@ class TranscriptionSummaryVC: UIViewController {
     private let summaryLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = .darkGray
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
         return label
     }()
@@ -79,7 +79,7 @@ class TranscriptionSummaryVC: UIViewController {
     private let transcriptionLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14)
-        label.textColor = .darkGray
+        label.textColor = .secondaryLabel
         label.numberOfLines = 0
         return label
     }()
@@ -100,7 +100,7 @@ class TranscriptionSummaryVC: UIViewController {
     // MARK: - Setup
 
     private func setupViews() {
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
 
         view.addSubview(scrollView)
         scrollView.translatesAutoresizingMaskIntoConstraints = false

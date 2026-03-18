@@ -192,6 +192,7 @@ class ListeningSpeedVC: UIViewController {
     }
     @IBAction func btnCross_Action(_ sender: Any) {
         self.delegateSpeedListeningVC?.MethodforPop()
+        LandscapePlayerManager.shared.isModalBeingPresented = false
         self.dismiss(animated: true)
     }
     @IBAction func btnDone_Action(_ sender: Any) {
@@ -200,6 +201,7 @@ class ListeningSpeedVC: UIViewController {
             let currentValue1 = round(currentValue * 100) / 100.0
             let dataToBeSent = currentValue1
             self.delegateSpeedListeningVC?.sendDataToFirstViewController(myData: dataToBeSent)
+            LandscapePlayerManager.shared.isModalBeingPresented = false
             self.dismiss(animated: true)
             
         }

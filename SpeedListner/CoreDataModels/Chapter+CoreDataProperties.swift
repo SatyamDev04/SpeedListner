@@ -19,6 +19,7 @@ extension Chapter {
     @NSManaged public var duration: Double
     @NSManaged public var index: Int16
     @NSManaged public var start: Double
+    @NSManaged public var c_end: Double
     @NSManaged public var title: String?
     @NSManaged public var book: Book?
 

@@ -9,7 +9,8 @@ import UIKit
 
 final class LandscapePlayerManager {
     static let shared = LandscapePlayerManager()
-
+    var isModalBeingPresented = false
+    
     /// Listen for orientation lock changes and re-check presentation when lock mode is changed.
     init() {
         NotificationCenter.default.addObserver(self, selector: #selector(self.orientationLockChanged), name: NSNotification.Name("AppOrientationLockChanged"), object: nil)
@@ -85,7 +86,9 @@ final class LandscapePlayerManager {
 
     // MARK: - Present/dismiss logic (robust)
     func checkAndPresentIfNeeded() {
-
+//        if isModalBeingPresented {
+//            return
+//        }
         switch AppOrientationManager.shared.current {
 
         case .normal:

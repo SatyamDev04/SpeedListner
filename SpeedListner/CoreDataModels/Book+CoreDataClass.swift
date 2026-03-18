@@ -49,40 +49,117 @@ public class Book: LibraryItem {
         return !(self.chapters?.array.isEmpty ?? true)
     }
 
+//    func setChapters(from asset: AVAsset, book: Book, context: NSManagedObjectContext) {
+//        for locale in asset.availableChapterLocales {
+//            let chaptersMetadata = asset.chapterMetadataGroups(withTitleLocale: locale, containingItemsWithCommonKeys: [AVMetadataKey.commonKeyArtwork])
+//
+//            for (index, chapterMetadata) in chaptersMetadata.enumerated() {
+//                let chapterIndex = index + 1
+//                let chapter = Chapter(from: asset, context: context)
+//
+//                // Set chapter properties
+//                chapter.title = AVMetadataItem.metadataItems(
+//                    from: chapterMetadata.items,
+//                    withKey: AVMetadataKey.commonKeyTitle,
+//                    keySpace: AVMetadataKeySpace.common
+//                ).first?.value?.copy(with: nil) as? String ?? ""
+//                chapter.start = CMTimeGetSeconds(chapterMetadata.timeRange.start)
+//                chapter.duration = CMTimeGetSeconds(chapterMetadata.timeRange.duration)
+//                chapter.index = Int16(chapterIndex)
+//
+//                // Set the relationship between chapter and book
+//                chapter.book = book
+//
+//                // Add chapter to the book
+//                book.addToChapters(chapter)
+//            }
+//        }
+//
+//        // Save context
+//        do {
+//            try context.save()
+//        } catch {
+//            print("Failed to save chapters: \(error)")
+//        }
+//    }
+    //Fixed on 18 march 2026
     func setChapters(from asset: AVAsset, book: Book, context: NSManagedObjectContext) {
-        for locale in asset.availableChapterLocales {
-            let chaptersMetadata = asset.chapterMetadataGroups(withTitleLocale: locale, containingItemsWithCommonKeys: [AVMetadataKey.commonKeyArtwork])
 
-            for (index, chapterMetadata) in chaptersMetadata.enumerated() {
-                let chapterIndex = index + 1
-                let chapter = Chapter(from: asset, context: context)
+        guard let locale = asset.availableChapterLocales.first else { return }
 
-                // Set chapter properties
-                chapter.title = AVMetadataItem.metadataItems(
-                    from: chapterMetadata.items,
-                    withKey: AVMetadataKey.commonKeyTitle,
-                    keySpace: AVMetadataKeySpace.common
-                ).first?.value?.copy(with: nil) as? String ?? ""
-                chapter.start = CMTimeGetSeconds(chapterMetadata.timeRange.start)
-                chapter.duration = CMTimeGetSeconds(chapterMetadata.timeRange.duration)
-                chapter.index = Int16(chapterIndex)
+        let chaptersMetadata = asset.chapterMetadataGroups(
+            withTitleLocale: locale,
+            containingItemsWithCommonKeys: [AVMetadataKey.commonKeyTitle]
+        )
 
-                // Set the relationship between chapter and book
-                chapter.book = book
+        var tempChapters: [Chapter] = []
+        var chapterCounter = 1
 
-                // Add chapter to the book
-                book.addToChapters(chapter)
+        for (index, chapterMetadata) in chaptersMetadata.enumerated() {
+
+            let chapter = Chapter(from: asset, context: context)
+
+            // ✅ Title extract
+            let extractedTitle = AVMetadataItem.metadataItems(
+                from: chapterMetadata.items,
+                withKey: AVMetadataKey.commonKeyTitle,
+                keySpace: AVMetadataKeySpace.common
+            ).first?.value as? String
+
+            let cleanTitle = extractedTitle?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let titleLower = cleanTitle.lowercased()
+
+            chapter.title = cleanTitle.isEmpty ? "Chapter \(index + 1)" : cleanTitle
+
+            // ✅ Time
+            let startTime = CMTimeGetSeconds(chapterMetadata.timeRange.start)
+            chapter.start = startTime
+            chapter.duration = CMTimeGetSeconds(chapterMetadata.timeRange.duration)
+
+            // 🔥 SMART LOGIC
+            let isIntroLike =
+                titleLower.contains("intro") ||
+                titleLower.contains("preface") ||
+                titleLower.contains("dedication") ||
+                titleLower.contains("foreword") ||
+                titleLower.contains("prologue")
+
+            if index == 0 {
+                if isIntroLike || startTime < 60 {
+                    chapter.index = 0   // Intro
+                } else {
+                    chapter.index = Int16(chapterCounter)
+                    chapterCounter += 1
+                }
+            } else {
+                chapter.index = Int16(chapterCounter)
+                chapterCounter += 1
+            }
+
+            chapter.book = book
+            tempChapters.append(chapter)
+            book.addToChapters(chapter)
+        }
+
+        // ✅ Sort
+        let sortedChapters = tempChapters.sorted { $0.start < $1.start }
+
+        // ✅ End time
+        for i in 0..<sortedChapters.count {
+            if i < sortedChapters.count - 1 {
+                sortedChapters[i].c_end = sortedChapters[i + 1].start
+            } else {
+                sortedChapters[i].c_end = book.duration
             }
         }
 
-        // Save context
         do {
             try context.save()
         } catch {
             print("Failed to save chapters: \(error)")
         }
     }
-
+    
     convenience init(from bookUrl: BookURL, context: NSManagedObjectContext) {
         let entity = NSEntityDescription.entity(forEntityName: "Book", in: context)!
         self.init(entity: entity, insertInto: context)

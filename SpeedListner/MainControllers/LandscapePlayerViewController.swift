@@ -28,7 +28,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     private var routePickerView: AVRoutePickerView!
     private var coverImage = UIImage()
     var currentValue: Float = 0.1
-   
+    private let closeButton = UIButton(type: .system)
     private var isPlaying: Bool {
         return PlayerManager.shared.isPlaying
     }
@@ -104,6 +104,9 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.loadLibrary()
         setupAudioSession()
         setupRoutePickerView()
+//        if AppOrientationManager.shared.current == .lockHorizontal {
+//            setupCloseButton()
+//        }
     }
 
     deinit {
@@ -159,6 +162,36 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.setProgress()
         self.loadLibrary()
     }
+    
+    private func setupCloseButton() {
+        
+        let config = UIImage.SymbolConfiguration(pointSize: 22, weight: .bold)
+        let image = UIImage(systemName: "xmark", withConfiguration: config)
+        
+        closeButton.setImage(image, for: .normal)
+        closeButton.tintColor = .white
+        closeButton.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        closeButton.layer.cornerRadius = 18
+        closeButton.clipsToBounds = true
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        closeButton.addTarget(self, action: #selector(closeLandscape), for: .touchUpInside)
+        
+        view.addSubview(closeButton)
+        
+        NSLayoutConstraint.activate([
+            closeButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 12),
+            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            closeButton.widthAnchor.constraint(equalToConstant: 36),
+            closeButton.heightAnchor.constraint(equalToConstant: 36)
+        ])
+    }
+    
+    @objc private func closeLandscape() {
+        AppOrientationManager.shared.current = .lockVertical
+        AppOrientationManager.shared.applyOrientation(.lockVertical)
+    }
+    
     @objc func onPlayback() {
         self.setProgress()
     }
@@ -525,6 +558,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     
     }
     @IBAction func presentSpeed(_ sender: UIButton) {
+        LandscapePlayerManager.shared.isModalBeingPresented = true
         guard !isLibraryEmpty() else {
                 showToast("Please add a book to the library if already added then play")
                 return

@@ -218,10 +218,8 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
          }
         tapOnText = 1
     }
-    func textViewDidEndEditing(_ textView: UITextView) {
-        
-
-    }
+    
+    func textViewDidEndEditing(_ textView: UITextView) {}
     
     @IBAction func btnDone_Action(_ sender: UIButton) {
         guard self.book != nil else {
@@ -244,9 +242,19 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                 }) else {return}
                 
                 let t = self.arrBookmarksNotes[index].timeStamp
+                let identifier = "\(Int(self.arrBookmarksNotes[index].timeStamp))"
+
                 let time = self.arrBookmarksNotes[index].time
                 let date = self.arrBookmarksNotes[index].date
-                AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { [self] url in
+                let start = max(0, t - 5.0)
+                let end = min(book.duration, t + 15.0)
+                
+                AudioClipUtils.extractClip(
+                    from: book.fileURL,
+                    startTime: start,
+                    endTime: end,
+                    identifier: identifier
+                ) { [self] url in
                     if let clipURL = url {
                         self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus, audioClipPath: clipURL)
                         print(clipURL, "aya kya url",starStatus)
@@ -283,22 +291,39 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             
         }else{
             
-            let t = self.book.currentTime
+           
             let time = formatTime(Int(self.book.currentTime))
             let date = Date.getCurrentDate()
             
             
-            AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { [self] url in
+           
+            let t = PlayerManager.shared.currentTime
+            let start = max(0, t - 5.0)
+            let end = min(book.duration, t + 15.0)
+
+            print("📌 Bookmark pressed at:", t)
+            print("📌 Calculated start:", start)
+            print("📌 Calculated end:", end)
+            AudioClipUtils.extractClip(
+                from: book.fileURL,
+                startTime: start,
+                endTime: end,
+                identifier: "\(Int(t))"
+            ) { [self] url in
                 if let clipURL = url {
                     self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
                     print(clipURL, "aya kya url")
                     DispatchQueue.main.async{
                         self.saveBookMarksNotes()
+                        print("AVAudioPlayer time:", self.formatTime2(PlayerManager.shared.audioPlayer?.currentTime ?? 0))
+                        print("Book time:",  self.formatTime2(self.book.currentTime))
                     }
                 } else {
                     self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus))
                     DispatchQueue.main.async{
                         self.saveBookMarksNotes()
+                        print("AVAudioPlayer time:", self.formatTime2(PlayerManager.shared.audioPlayer?.currentTime ?? 0))
+                        print("Book time:", self.formatTime2(self.book.currentTime))
                     }
                 }
             }
@@ -322,7 +347,15 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             let date = Date.getCurrentDate()
            
             
-            AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { url in
+            let start = max(0, t - 5.0)
+            let end = min(book.duration, t + 15.0)
+            
+            AudioClipUtils.extractClip(
+                from: book.fileURL,
+                startTime: start,
+                endTime: end,
+                identifier: "\(Int(t))"
+            ){ url in
                 if let clipURL = url {
                     self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
                     print(clipURL, "aya kya url")

@@ -367,7 +367,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             let  ts = model.timeStamp
                    timestamp = ts
             let start = max(0, timestamp - 5.0)
-            let end   = timestamp + 10.0
+            let end   = timestamp + 15.0
             
         cell.bookmarkTimelbl.text = "\(formatTime(from: start)) ➔ \(formatTime(from: end)) on \(model.date)"
                

@@ -28,8 +28,16 @@ class BookmarkManager {
         let t = book.currentTime
         let time = formatTime(Int(book.currentTime))
         let date = Date.getCurrentDate()
+       
+        let start = max(0, t - 5.0)
+        let end = min(book.duration, t + 15.0)
         
-        AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { url in
+        AudioClipUtils.extractClip(
+            from: book.fileURL,
+            startTime: start,
+            endTime: end,
+            identifier: "\(Int(t))"
+        ) { url in
             if let clipURL = url {
                 arrBookmarksNotes.append(BookmarksModel(
                     indentifier: book.identifier ?? "",
@@ -69,8 +77,14 @@ class BookmarkManager {
         let t = book.currentTime
         let time = formatTime(Int(book.currentTime))
         let date = Date.getCurrentDate()
-        
-        AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { url in
+        let start = max(0, t - 5.0)
+        let end = min(book.duration, t + 15.0)
+        AudioClipUtils.extractClip(
+            from: book.fileURL,
+            startTime: start,
+            endTime: end,
+            identifier: "\(Int(t))"
+        ){ url in
             if let clipURL = url {
                 arrBookmarksNotes.append(BookmarksModel(
                     indentifier: book.identifier ?? "",
@@ -111,7 +125,15 @@ class BookmarkManager {
         let time = arrBookmarksNotes[index].time
         let date = arrBookmarksNotes[index].date
         
-        AudioClipUtils.extract20SecClip(from: book.fileURL, at: t) { url in
+        let start = max(0, t - 5.0)
+        let end = min(book.duration, t + 15.0)
+        
+        AudioClipUtils.extractClip(
+            from: book.fileURL,
+            startTime: start,
+            endTime: end,
+            identifier: "\(Int(t))"
+        ){ url in
             if let clipURL = url {
                 arrBookmarksNotes[index] = BookmarksModel(
                     indentifier: book.identifier ?? "",

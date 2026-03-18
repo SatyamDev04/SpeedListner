@@ -22,6 +22,8 @@ struct BookmarksModel: Codable {
     var transcription:String?
     var summary:String?
     var audioClipPath:URL?
+    var startTime: Double?
+    var endTime: Double?
     
 }
 
@@ -52,55 +54,61 @@ extension BookmarkDisplayItem {
 class AudioBookmarkExtractor {
 
     /// Groups adjacent bookmarks within `threshold` seconds (default 20s gap allowed between segments)
-    static func groupBookmarks(_ bookmarks: [BookmarksModel], threshold: TimeInterval = 20) -> [BookmarkSegment] {
-        let sorted = bookmarks.sorted(by: { $0.timeStamp < $1.timeStamp })
+    static func groupBookmarks(
+        _ bookmarks: [BookmarksModel],
+        threshold: TimeInterval = 20
+    ) -> [BookmarkSegment] {
+
+        let sorted = bookmarks.sorted { $0.timeStamp < $1.timeStamp }
         var segments: [BookmarkSegment] = []
         var currentGroup: [BookmarksModel] = []
-        var mergedTimestamps: [Double] = []
-
-        print("All Timestamps: \(sorted.map { $0.timeStamp })")
 
         for bookmark in sorted {
-            if let last = currentGroup.last {
-                let gap = bookmark.timeStamp - (last.timeStamp + 10) 
+
+            guard let start = bookmark.startTime,
+                  let end = bookmark.endTime else {
+                continue
+            }
+
+            if let last = currentGroup.last,
+               let lastEnd = last.endTime {
+
+                let gap = start - lastEnd
+
                 if gap <= threshold {
                     currentGroup.append(bookmark)
                 } else {
-                    if currentGroup.count > 1 {
-                        mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-                        segments.append(
-                            BookmarkSegment(
-                                identifiers: "",
-                                startTime: max(currentGroup.first!.timeStamp - 5, 0),
-                                endTime: currentGroup.last!.timeStamp + 10,
-                                url: nil,
-                                date: currentGroup.last?.date ?? ""
-                            )
-                        )
-                    }
+                    appendSegment(from: currentGroup, to: &segments)
                     currentGroup = [bookmark]
                 }
+
             } else {
                 currentGroup = [bookmark]
             }
         }
 
-        // Final group
-        if currentGroup.count > 1 {
-            mergedTimestamps.append(contentsOf: currentGroup.map { $0.timeStamp })
-            segments.append(
-                BookmarkSegment(
-                    identifiers: "",
-                    startTime: max(currentGroup.first!.timeStamp - 5, 0),
-                    endTime: currentGroup.last!.timeStamp + 10,
-                    url: nil,
-                    date: currentGroup.last?.date ?? ""
-                )
-            )
-        }
+        appendSegment(from: currentGroup, to: &segments)
 
-        print("\nMerged Timestamps: \(mergedTimestamps)")
         return segments
+    }
+
+    private static func appendSegment(
+        from group: [BookmarksModel],
+        to segments: inout [BookmarkSegment]
+    ) {
+        guard group.count > 1,
+              let firstStart = group.first?.startTime,
+              let lastEnd = group.last?.endTime else { return }
+
+        segments.append(
+            BookmarkSegment(
+                identifiers: "\(firstStart)-\(lastEnd)",
+                startTime: firstStart,
+                endTime: lastEnd,
+                url: nil,
+                date: group.last?.date ?? ""
+            )
+        )
     }
 
     /// Extract audio segments for each grouped segment (returns multiple URLs if needed)

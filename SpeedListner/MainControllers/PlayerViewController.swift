@@ -208,25 +208,103 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
 
         }
     }
-    
+    func findPlaylistContaining(book: Book) -> Playlist? {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return nil
+        }
+
+        for item in items {
+
+            if let playlist = item as? Playlist {
+
+                if let books = playlist.books?.array as? [Book],
+                   books.contains(book) {
+                    return playlist
+                }
+
+                // check nested playlists
+                if let found = findInChildPlaylists(book: book, playlist: playlist) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+
+    func findInChildPlaylists(book: Book, playlist: Playlist) -> Playlist? {
+
+        if let children = playlist.children?.allObjects as? [Playlist] {
+            for child in children {
+
+                if let books = child.books?.array as? [Book],
+                   books.contains(book) {
+                    return child
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: child) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+
+//18 march 26
    
+//    private func loadPreviousBook() {
+//        guard let identifier = UserDefaults.standard.string(forKey: UserDefaultsConstants.lastPlayedBook),
+//        let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
+//            return
+//        }
+//        
+//        currentItem = item
+//        currentBok = item
+//      PlayerManager.shared.load([item]) { (loaded) in
+//            guard loaded else {
+//                return
+//            }
+//            
+//            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.playerDismissed, object: nil, userInfo: nil)
+//        }
+//    }
     private func loadPreviousBook() {
+
         guard let identifier = UserDefaults.standard.string(forKey: UserDefaultsConstants.lastPlayedBook),
-        let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
+              let item = PlayerManager.shared.getbookInLibrary(with: identifier) else {
             return
         }
-        
+
         currentItem = item
-        currentBok = item
-      PlayerManager.shared.load([item]) { (loaded) in
-            guard loaded else {
-                return
-            }
-            
-            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.playerDismissed, object: nil, userInfo: nil)
+
+        // 🔥 STEP 1: Find correct source (playlist OR library)
+        let books: [Book]
+
+        if let playlist = findPlaylistContaining(book: item) {
+            books = (playlist.books?.array as? [Book]) ?? []
+        } else {
+            // fallback → full library
+            books = getAllBooks(from: NewDataMannagerClass.getLibrary())
+        }
+
+        // 🔥 STEP 2: Set queue
+        PlayerManager.shared.playbackQueue = books
+        PlayerManager.shared.currentIndex = books.firstIndex(of: item) ?? 0
+
+        // 🔥 STEP 3: Load correct book
+        PlayerManager.shared.load([item]) { loaded in
+            guard loaded else { return }
+
+            NotificationCenter.default.post(
+                name: Notification.Name.AudiobookPlayer.playerDismissed,
+                object: nil
+            )
         }
     }
-    
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         tipView?.dismiss()
@@ -283,8 +361,12 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
         
         self.coverImageView.image = self.coverImage
+        PlayerManager.shared.chapterArray = (self.book?.chapters?.array as? [Chapter])?.sorted {
+            $0.start < $1.start
+        }
         
-        PlayerManager.shared.chapterArray = self.book?.chapters?.array as? [Chapter]
+       // coment on 18 march 2026
+      //  PlayerManager.shared.chapterArray = self.book?.chapters?.array as? [Chapter]
         //        print(PlayerManager2.shared.chapterArray.count,"log 202")
         
         
@@ -477,7 +559,17 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             self.percentageLabel.text = "\(Int(round(book.progress * 100)))%"
         }
         self.percentageLabel.isHidden = false
-        self.chapter.text = "Chapter \(currentChapter.index) Of \(chapters.count)"
+        
+        //comented on 18 march 2026
+   //   self.chapter.text = "Chapter \(currentChapter.index) Of \(chapters.count)"
+        
+        let realChapters = chapters.filter { ($0 as! Chapter).index != 0 }
+
+        if currentChapter.index == 0 {
+            self.chapter.text = "Intro"
+        } else {
+            self.chapter.text = "Chapter \(currentChapter.index) Of \(realChapters.count)"
+        }
         if !self.sliderView.isTracking {
             self.sliderView.value = Float(book.progress)
             self.sliderView.setNeedsDisplay()
@@ -569,7 +661,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @IBAction func btnSuffle_Action(_ sender: UIButton) {
-        PlayerManager.shared.playbackMode = .shuffleMode
+        PlayerManager.shared.playbackMode = .shuffle
     }
     
     @IBAction func btnReapte_Action(_ sender: UIButton) {
@@ -577,24 +669,45 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 showToast("Please add a book to the library if already added then play")
                 return
             }
-        
         switch PlayerManager.shared.playbackMode {
-        case .shuffleMode :
-            PlayerManager.shared.playbackMode = .linearMode
-            self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
-        case .linearMode:
-            self.repeatOrLeaniearBtn.setTitle(nil, for: .normal)
-            self.repeatOrLeaniearBtn.setImage(UIImage(named: "repeatOnceIcon"), for: .normal)//repeatOnceIcon
-            PlayerManager.shared.playbackMode = .repeatMode
-        case .repeatMode :
-            self.repeatOrLeaniearBtn.setImage(UIImage(named: "noRpeat"), for: .normal)
-            PlayerManager.shared.playbackMode = .off
-        case .off :
-            PlayerManager.shared.playbackMode = .linearMode
-            self.repeatOrLeaniearBtn.setTitle(nil, for: .normal)
-            self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
-       
-        }
+
+           case .linear, .off:
+               // Repeat All
+               PlayerManager.shared.playbackMode = .repeatAll
+               self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
+
+           case .repeatAll:
+               // Repeat One
+               PlayerManager.shared.playbackMode = .repeatOne
+               self.repeatOrLeaniearBtn.setImage(UIImage(named: "repeatOnceIcon"), for: .normal)
+
+           case .repeatOne:
+               //  No Repeat
+               PlayerManager.shared.playbackMode = .linear
+               self.repeatOrLeaniearBtn.setImage(UIImage(named: "noRpeat"), for: .normal)
+
+           case .shuffle:
+              
+               PlayerManager.shared.playbackMode = .repeatAll
+               self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
+           }
+//        switch PlayerManager.shared.playbackMode {
+//        case .shuffleMode :
+//            PlayerManager.shared.playbackMode = .linearMode
+//            self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
+//        case .linearMode:
+//            self.repeatOrLeaniearBtn.setTitle(nil, for: .normal)
+//            self.repeatOrLeaniearBtn.setImage(UIImage(named: "repeatOnceIcon"), for: .normal)//repeatOnceIcon
+//            PlayerManager.shared.playbackMode = .repeatMode
+//        case .repeatMode :
+//            self.repeatOrLeaniearBtn.setImage(UIImage(named: "noRpeat"), for: .normal)
+//            PlayerManager.shared.playbackMode = .off
+//        case .off :
+//            PlayerManager.shared.playbackMode = .linearMode
+//            self.repeatOrLeaniearBtn.setTitle(nil, for: .normal)
+//            self.repeatOrLeaniearBtn.setImage(UIImage(named: "RepeateIcon"), for: .normal)
+//       
+//        }
        
         
     }
@@ -824,10 +937,15 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             // Fallback on earlier versions
         }
         
-        if let currentChapter = self.book?.currentChapter{
-            
-            if let nextChapter = PlayerManager.shared.nextChapter(after: currentChapter){
-                PlayerManager.shared.jumpTo(nextChapter.start + 0.01)
+        if let currentChapter = self.book?.currentChapter {
+
+            if let nextChapter = PlayerManager.shared.nextChapter(after: currentChapter) {
+
+                if nextChapter.start == currentChapter.start {
+                    return // prevent same chapter restart
+                }
+
+                PlayerManager.shared.jumpTo(nextChapter.start + 0.05)
             }
         } else {
             let result = self.nextBookOfPlayList()
@@ -936,71 +1054,87 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
     }
     
+//    func handleNextBookAction() {
+//        
+//        if #available(iOS 10.0, *) {
+//            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+//            
+//        } else {
+//            // Fallback on earlier versions
+//        }
+//        
+//        if let currentItem1 = currentBok{
+//            if let book =  PlayerManager.shared.getNextBookInLibrary(after: currentItem1){
+//                if  Int(book.currentTime) == Int(book.duration){
+//                    book.currentTime = 0.0
+//                }
+//                currentBok = book
+//                 self.setupPlayer(books: [book])
+//            }
+//
+//        }
+//    }
+    
+    
     func handleNextBookAction() {
-        
-        if #available(iOS 10.0, *) {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            
-        } else {
-            // Fallback on earlier versions
-        }
-        
-        if let currentItem1 = currentBok{
-            if let book =  PlayerManager.shared.getNextBookInLibrary(after: currentItem1){
-                if  Int(book.currentTime) == Int(book.duration){
-                    book.currentTime = 0.0
-                }
-                currentBok = book
-                 self.setupPlayer(books: [book])
-            }
 
+        if let next = PlayerManager.shared.nextBookInQueue() {
+            PlayerManager.shared.currentIndex += 1
+            PlayerManager.shared.loadNext(next)
         }
     }
     
     func handlePreviousBookAction() {
-        
-        if #available(iOS 10.0, *) {
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        } else {
-            // Fallback on earlier versions
+
+        if let prev = PlayerManager.shared.previousBookInQueue() {
+            PlayerManager.shared.currentIndex -= 1
+            PlayerManager.shared.loadNext(prev)
         }
-        
-     
-            if let currentItem1 = currentBok{
-                if var book =  PlayerManager.shared.getPreviousBookInLibrary(before: currentItem1){
-                    if  Int(book.currentTime) == Int(book.duration){
-                        book.currentTime = 0.0
-                    }
-                    currentBok = book
-                     self.setupPlayer(books: [book])
-                }
-                
-//            let result = self.previousBook(after: currentItem1)
-//            guard let previousItem = result.0 else{return}
-//            guard let index = result.1 else{return}
-//            currentItem = previousItem
-//            if let book = previousItem as? Book {
-//                self.playlist = nil
-//                self.setupPlayer(books: [book])
-//                
-//            } else if let playlist = previousItem as? Playlist {
-//                
-//                PlayerManager.shared.currentPlayList = playlist
-//                PlayerManager.shared.currentPlayListIndex = index
-//                self.playlist = playlist
-//                self.setupPlayer(books: playlist.getRemainingBooks())
-//                
-//            }
-            
-            
-            
-        } else {
-            
-            
-        }
-        
-        
     }
+//    func handlePreviousBookAction() {
+//        
+//        if #available(iOS 10.0, *) {
+//            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+//        } else {
+//            // Fallback on earlier versions
+//        }
+//        
+//     
+//            if let currentItem1 = currentBok{
+//                if var book =  PlayerManager.shared.getPreviousBookInLibrary(before: currentItem1){
+//                    if  Int(book.currentTime) == Int(book.duration){
+//                        book.currentTime = 0.0
+//                    }
+//                    currentBok = book
+//                     self.setupPlayer(books: [book])
+//                }
+//                
+////            let result = self.previousBook(after: currentItem1)
+////            guard let previousItem = result.0 else{return}
+////            guard let index = result.1 else{return}
+////            currentItem = previousItem
+////            if let book = previousItem as? Book {
+////                self.playlist = nil
+////                self.setupPlayer(books: [book])
+////                
+////            } else if let playlist = previousItem as? Playlist {
+////                
+////                PlayerManager.shared.currentPlayList = playlist
+////                PlayerManager.shared.currentPlayListIndex = index
+////                self.playlist = playlist
+////                self.setupPlayer(books: playlist.getRemainingBooks())
+////                
+////            }
+//            
+//            
+//            
+//        } else {
+//            
+//            
+//        }
+//        
+//        
+//    }
     
     func setupPlayer(books: [Book]) {
         // Make sure player is for a different book
@@ -1018,38 +1152,78 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
     }
     func loadPlayer(books: [Book]) {
+
         guard let book = books.first else { return }
-        
+
         guard NewDataMannagerClass.exists(book) else {
             self.showAlert(
                 "File Missing!",
                 message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
                 style: .alert
             )
-            
             return
         }
-        
-        //  MBProgressHUD.showAdded(to: self.view, animated: true)
-        
-        // Replace player with new one
-        PlayerManager.shared.load(books) { (loaded) in
+
+        var finalQueue: [Book] = books
+
+        // 🔥 FIX: अगर सिर्फ 1 book है → proper queue बनाओ
+        if books.count == 1 {
+
+            if let playlist = findPlaylistContaining(book: book) {
+                finalQueue = (playlist.books?.array as? [Book]) ?? []
+            } else {
+                finalQueue = getLibraryBooksInOrder()
+            }
+        }
+
+        // 🔥 STEP 1: SET PLAYBACK QUEUE
+        PlayerManager.shared.playbackQueue = finalQueue
+
+        // 🔥 STEP 2: SET CURRENT INDEX
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
+
+        // 🔥 STEP 3: LOAD ONLY CURRENT BOOK
+        PlayerManager.shared.load([book]) { loaded in
+
             guard loaded else {
-                //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert(
+                    "File error!",
+                    message: "This Audiobook file couldn't be loaded.",
+                    style: .alert
+                )
                 return
             }
-            //  self.showPlayerView(book: book)
-            
+
+            // 🔥 STEP 4: START / TOGGLE PLAY
             PlayerManager.shared.playPause()
-            if !currentBok.hasChapters {
-                
+
+            // 🔥 STEP 5: UI UPDATE
+            if !(PlayerManager.shared.currentBook?.hasChapters ?? false) {
                 self.chaptersButton.isHidden = true
-            }else{
+            } else {
                 self.chaptersButton.isHidden = false
             }
         }
     }
+    func getLibraryBooksInOrder() -> [Book] {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return []
+        }
+
+        var books: [Book] = []
+
+        for item in items {
+            if let book = item as? Book {
+                books.append(book)
+            }
+        }
+
+        return books
+    }
+    
     func previousBook(after book: LibraryItem) -> (LibraryItem?,Int?) {
         guard !self.items.isEmpty else {
             return (nil,nil)

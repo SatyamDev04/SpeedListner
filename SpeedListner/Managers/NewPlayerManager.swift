@@ -12,14 +12,20 @@ import Foundation
 import AVFoundation
 import MediaPlayer
 
+//enum PlaybackMode {
+//    case repeatMode
+//    case linearMode
+//    case shuffleMode
+//    case off
+//}
+
 enum PlaybackMode {
-    case repeatMode
-    case linearMode
-    case shuffleMode
+    case repeatAll
+    case repeatOne
+    case linear
+    case shuffle
     case off
 }
-
-
 
 class PlayerManager: NSObject {
 
@@ -52,6 +58,10 @@ class PlayerManager: NSObject {
     var email = ""
     var isPaused = true
 
+//    18 march 26
+    var playbackQueue: [Book] = []
+    var currentIndex: Int = 0
+    
     // 599 = 10 mins
     private let smartRewindThreshold = 599.0
     private let maxSmartRewind = 30.0
@@ -74,7 +84,7 @@ class PlayerManager: NSObject {
         }
 
         self.currentBooks = books
-
+        self.currentIndex = self.playbackQueue.firstIndex(of: book) ?? 0
         DispatchQueue.global().async {
 
             guard let audioplayer = try? AVAudioPlayer(contentsOf: book.fileURL) else {
@@ -220,15 +230,21 @@ class PlayerManager: NSObject {
 
         // stop timer if the book is finished
         if Int(audioplayer.currentTime) == Int(audioplayer.duration) {
+
             if self.timer != nil && self.timer.isValid {
                 self.timer.invalidate()
             }
 
-            // Once book a book is finished, ask for a review
             UserDefaults.standard.set(true, forKey: "ask_review")
-            NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookEnd, object: nil)
-        }
 
+            // ❗ Only post bookEnd if NOT repeating forever
+            if playbackMode != .repeatOne {
+                NotificationCenter.default.post(
+                    name: Notification.Name.AudiobookPlayer.bookEnd,
+                    object: nil
+                )
+            }
+        }
         let userInfo = [
             "time": currentTime,
             "fileURL": book.fileURL
@@ -528,16 +544,27 @@ class PlayerManager: NSObject {
             )
         }
     }
-
+//comented on 18 march 2025
+//    public func nextChapter(after chapter: Chapter) -> Chapter? {
+//        guard !self.chapterArray.isEmpty else {
+//            return nil
+//        }
+//
+//        if chapter == self.chapterArray.last { return nil }
+//
+//        return self.chapterArray[Int(chapter.index)]
+//    }
+    
     public func nextChapter(after chapter: Chapter) -> Chapter? {
         guard !self.chapterArray.isEmpty else {
             return nil
         }
-
+        print(chapter.start, "chapter.start",chapter.index)
         if chapter == self.chapterArray.last { return nil }
 
-        return self.chapterArray[Int(chapter.index)]
+        return self.chapterArray[Int(chapter.index + 1)]
     }
+    
     public func previousChapter(after chapter: Chapter) -> Chapter? {
 //        guard !self.chapterArray.isEmpty else {
 //            return nil
@@ -548,7 +575,7 @@ class PlayerManager: NSObject {
 //        return self.chapterArray[Int(chapter.index ) - 2]
 
         guard !self.chapterArray.isEmpty else { return nil }
-            let idx = Int(chapter.index) - 1
+            let idx = Int(chapter.index)
             guard idx > 0 else { return nil }   // no previous if at index 0
             return self.chapterArray[idx - 1]
     }
@@ -577,142 +604,200 @@ extension PlayerManager: AVAudioPlayerDelegate {
             print("No current book available.")
             return
         }
-        autoTranscribeIfNeeded(for: currentBook)
+        switch playbackMode {
 
-            switch playbackMode {
-            case .repeatMode:
-
-                player.stop()
+            case .repeatOne:
                 player.currentTime = 0
+                self.play()
 
-
-                let userInfo = ["books": self.rePlaybooks]
-                NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
-
-                // Start playback again
-                self.audioPlayer?.play()
-
-
-        case .linearMode:
-            guard let currentBook = self.currentBook else {
-                print("No current book available.")
-                return
-            }
-
-            guard var nextBook = getNextBookInLibrary(after: currentBook) else {
-                print("No more books to play in the library.")
-                return
-            }
-                if  Int(nextBook.currentTime) == Int(nextBook.duration){
-                    nextBook.currentTime = 0.0
-                }
-            // Load the next book and update playback
-            self.load([nextBook]) { loaded in
-                // Notify about the next book
-                let userInfo = ["books": [nextBook]]
-                NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
-                self.audioPlayer?.play()
-            }
-
-        case .shuffleMode:
-            guard var randomBook = getRandomBookFromLibrary() else {
-                print("No books available to shuffle.")
-                return
-            }
-                if  Int(randomBook.currentTime) == Int(randomBook.duration){
-                    randomBook.currentTime = 0.0
-                }
-            self.load([randomBook]) { loaded in
-
-                let userInfo = ["books": [randomBook]]
-                NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
-
-                self.audioPlayer?.play()
-            }
-
-        case .off:
-            break
-        }
-    }
-
-
-
-    func getNextBookInLibrary(after currentBook: Book) -> Book? {
-         let library = NewDataMannagerClass.getLibrary()
-
-        var allBooks: [Book] = []
-       if let libraryBooks = library.items?.array as? [LibraryItem] {
-
-            libraryBooks.forEach { item in
-                if let item = item as? Book {
-                    allBooks.append( item)
-                }else{
-                    if let playlist = item as? Playlist {
-
-                        allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
-
+            case .repeatAll:
+                if let next = nextBookInQueue() {
+                    currentIndex += 1
+                    loadNext(next)
+                } else {
+                    // restart from beginning
+                    currentIndex = 0
+                    if let first = playbackQueue.first {
+                        loadNext(first)
                     }
                 }
-            }
 
-        }
-
-
-        guard let currentIndex = allBooks.firstIndex(of: currentBook) else {
-            return nil
-        }
-        let nextIndex = currentIndex + 1
-        return nextIndex < allBooks.count ? allBooks[nextIndex] : nil
-    }
-
-    func getRandomBookFromLibrary() -> Book? {
-
-       let library = NewDataMannagerClass.getLibrary()
-
-        var allBooks: [Book] = []
-        if let libraryBooks = library.items?.array as? [LibraryItem] {
-
-             libraryBooks.forEach { item in
-                 if let item = item as? Book {
-                     allBooks.append( item)
-                 }else{
-                     if let playlist = item as? Playlist {
-
-                         allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
-
-                     }
-                 }
-             }
-
-         }
-
-        guard !allBooks.isEmpty else { return nil }
-        return allBooks.randomElement()
-    }
-
-
-    func getPreviousBookInLibrary(before currentBook: Book) -> Book? {
-        let library = NewDataMannagerClass.getLibrary()
-        var book:Book?
-        var allBooks: [Book] = []
-        if let libraryItems = library.items?.array as? [LibraryItem] {
-
-            libraryItems.forEach { item in
-                if let book = item as? Book {
-                    allBooks.append(book)
-                } else if let playlist = item as? Playlist {
-                    allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
+            case .linear:
+                if let next = nextBookInQueue() {
+                    currentIndex += 1
+                    loadNext(next)
+                } else {
+                    print("Reached end of queue")
                 }
+
+            case .shuffle:
+                guard !playbackQueue.isEmpty else { return }
+                let random = playbackQueue.randomElement()!
+                currentIndex = playbackQueue.firstIndex(of: random) ?? 0
+                loadNext(random)
+
+            case .off:
+                break
             }
-        }
+        autoTranscribeIfNeeded(for: currentBook)
 
-
-        guard let currentIndex = allBooks.firstIndex(of: currentBook) else {
-            return nil
-        }
-        let previousIndex = currentIndex - 1
-        return previousIndex >= 0 ? allBooks[previousIndex] : nil
+            
     }
+    
+    // Added on 18 march 26
+    func nextBookInQueue() -> Book? {
+        let nextIndex = currentIndex + 1
+        return nextIndex < playbackQueue.count ? playbackQueue[nextIndex] : nil
+    }
+
+    func previousBookInQueue() -> Book? {
+        let prevIndex = currentIndex - 1
+        return prevIndex >= 0 ? playbackQueue[prevIndex] : nil
+    }
+
+    func loadNext(_ book: Book) {
+        self.load([book]) { _ in
+            NotificationCenter.default.post(
+                name: Notification.Name.AudiobookPlayer.bookChange,
+                object: nil,
+                userInfo: ["books": [book]]
+            )
+            self.audioPlayer?.play()
+        }
+    }
+// commented on 18 march 26
+    //switch playbackMode {
+   // case .repeatMode:
+
+//                player.stop()
+        //player.currentTime = 0
+
+
+       // let userInfo = ["books": self.rePlaybooks]
+       // NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
+     //   DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
+     //       self.play()
+         //   self.update()
+            // Start playback again
+           
+            
+      //  }
+//case .linearMode:
+//    guard let currentBook = self.currentBook else {
+//        print("No current book available.")
+//        return
+//    }
+//
+//    guard var nextBook = getNextBookInLibrary(after: currentBook) else {
+//        print("No more books to play in the library.")
+//        return
+//    }
+//        if  Int(nextBook.currentTime) == Int(nextBook.duration){
+//            nextBook.currentTime = 0.0
+//        }
+//    // Load the next book and update playback
+//    self.load([nextBook]) { loaded in
+//        // Notify about the next book
+//        let userInfo = ["books": [nextBook]]
+//        NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
+//        self.audioPlayer?.play()
+//    }
+//
+//case .shuffleMode:
+//    guard var randomBook = getRandomBookFromLibrary() else {
+//        print("No books available to shuffle.")
+//        return
+//    }
+//        if  Int(randomBook.currentTime) == Int(randomBook.duration){
+//            randomBook.currentTime = 0.0
+//        }
+//    self.load([randomBook]) { loaded in
+//
+//        let userInfo = ["books": [randomBook]]
+//        NotificationCenter.default.post(name: Notification.Name.AudiobookPlayer.bookChange, object: nil, userInfo: userInfo)
+//
+//        self.audioPlayer?.play()
+//    }
+//
+//case .off:
+//    break
+//}
+//    func getNextBookInLibrary(after currentBook: Book) -> Book? {
+//         let library = NewDataMannagerClass.getLibrary()
+//
+//        var allBooks: [Book] = []
+//       if let libraryBooks = library.items?.array as? [LibraryItem] {
+//
+//            libraryBooks.forEach { item in
+//                if let item = item as? Book {
+//                    allBooks.append( item)
+//                }else{
+//                    if let playlist = item as? Playlist {
+//
+//                        allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
+//
+//                    }
+//                }
+//            }
+//
+//        }
+//
+//
+//        guard let currentIndex = allBooks.firstIndex(of: currentBook) else {
+//            return nil
+//        }
+//        let nextIndex = currentIndex + 1
+//        return nextIndex < allBooks.count ? allBooks[nextIndex] : nil
+//    }
+
+//    func getRandomBookFromLibrary() -> Book? {
+//
+//       let library = NewDataMannagerClass.getLibrary()
+//
+//        var allBooks: [Book] = []
+//        if let libraryBooks = library.items?.array as? [LibraryItem] {
+//
+//             libraryBooks.forEach { item in
+//                 if let item = item as? Book {
+//                     allBooks.append( item)
+//                 }else{
+//                     if let playlist = item as? Playlist {
+//
+//                         allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
+//
+//                     }
+//                 }
+//             }
+//
+//         }
+//
+//        guard !allBooks.isEmpty else { return nil }
+//        return allBooks.randomElement()
+//    }
+
+
+//    func getPreviousBookInLibrary(before currentBook: Book) -> Book? {
+//        let library = NewDataMannagerClass.getLibrary()
+//        var book:Book?
+//        var allBooks: [Book] = []
+//        if let libraryItems = library.items?.array as? [LibraryItem] {
+//
+//            libraryItems.forEach { item in
+//                if let book = item as? Book {
+//                    allBooks.append(book)
+//                } else if let playlist = item as? Playlist {
+//                    allBooks.append(contentsOf: gatherAllBooks(playlist: playlist))
+//                }
+//            }
+//        }
+//
+//
+//        guard let currentIndex = allBooks.firstIndex(of: currentBook) else {
+//            return nil
+//        }
+//        let previousIndex = currentIndex - 1
+//        return previousIndex >= 0 ? allBooks[previousIndex] : nil
+//    }
 
     func gatherAllBooks(playlist:Playlist) -> [Book] {
        var books = playlist.books?.array as? [Book] ?? []

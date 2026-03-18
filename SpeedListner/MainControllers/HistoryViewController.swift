@@ -233,26 +233,52 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         
     
     func loadPlayer(books: [Book]) {
+
         guard let book = books.first else { return }
-        
+
         guard NewDataMannagerClass.exists(book) else {
             self.showAlert(
                 "File Missing!",
-                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+                message: "This Audiobook File Was Removed From Your Device.",
                 style: .alert
             )
-            
             return
         }
-        
-        PlayerManager.shared.load(books) { (loaded) in
+
+        var finalQueue: [Book] = books
+
+        // 🔥 IMPORTANT: अगर सिर्फ 1 book आई है
+        if books.count == 1 {
+
+            // 1️⃣ Try playlist context
+            if let playlist = findPlaylistContaining(book: book) {
+                finalQueue = (playlist.books?.array as? [Book]) ?? []
+            }
+            // 2️⃣ fallback → library items (NOT getAllBooks ❗)
+            else {
+                finalQueue = getLibraryBooksInOrder()
+            }
+        }
+
+        // 🔥 STEP 1: SET QUEUE
+        PlayerManager.shared.playbackQueue = finalQueue
+
+        // 🔥 STEP 2: SET INDEX
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
+
+        // 🔥 STEP 3: LOAD CURRENT BOOK ONLY
+        PlayerManager.shared.load([book]) { loaded in
+
             guard loaded else {
-                //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert(
+                    "File error!",
+                    message: "This Audiobook file couldn't be loaded.",
+                    style: .alert
+                )
                 return
             }
+
             self.showPlayerView(book: book)
-            
             PlayerManager.shared.play()
         }
     }
@@ -264,12 +290,85 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
             playerVC.book = book
             
             PlayerManager.shared.play()
-            if tabBarController?.selectedIndex == 1{
-                self.navigationController?.popToRootViewController(animated: false)
-            }else{
-                self.tabBarController?.selectedIndex = 1}
+            self.tabBarController?.selectedIndex = 1
         }
     }
+    func getLibraryBooksInOrder() -> [Book] {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return []
+        }
+
+        var books: [Book] = []
+
+        for item in items {
+            if let book = item as? Book {
+                books.append(book)
+            }
+        }
+
+        return books
+    }
+    func findPlaylistContaining(book: Book) -> Playlist? {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return nil
+        }
+
+        for item in items {
+
+            if let playlist = item as? Playlist {
+
+                if let books = playlist.books?.array as? [Book],
+                   books.contains(book) {
+                    return playlist
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: playlist) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+    
+    func findInChildPlaylists(book: Book, playlist: Playlist) -> Playlist? {
+
+        if let children = playlist.children?.allObjects as? [Playlist] {
+            for child in children {
+
+                if let books = child.books?.array as? [Book],
+                   books.contains(book) {
+                    return child
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: child) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+    
+//    func showPlayerView(book: Book) {
+//        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+//        
+//        if let playerVC = storyboard.instantiateViewController(withIdentifier: "PlayerViewController") as? PlayerViewController {
+//            playerVC.book = book
+//            
+//            PlayerManager.shared.play()
+//            if tabBarController?.selectedIndex == 1{
+//                self.navigationController?.popToRootViewController(animated: false)
+//            }else{
+//                self.tabBarController?.selectedIndex = 1}
+//        }
+//    }
     
 }
 extension HistoryViewController:UITextFieldDelegate{

@@ -431,7 +431,8 @@ class NewPlaylistViewController: UIViewController {
                 self.sortByTxt.text = "Oldest Upload"
             case 2:
                 sortedBooks = books.sorted {
-                    ($0.recentPlayTime ?? Date.distantFuture) > ($1.recentPlayTime ?? Date.distantPast)
+                    ($0.recentPlayTime ?? .distantPast) >
+                    ($1.recentPlayTime ?? .distantPast)
                 }
                 self.sortByTxt.text = "Recently Played"
             case 3:
@@ -843,34 +844,83 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
         }
     
 }
+//    func loadPlayer(books: [Book]) {
+//        guard let book = books.first else { return }
+//        
+//        guard NewDataMannagerClass.exists(book) else {
+//            self.showAlert(
+//                "File Missing!",
+//                message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
+//                style: .alert
+//            )
+//            
+//            return
+//        }
+//        
+//        //  MBProgressHUD.showAdded(to: self.view, animated: true)
+//        
+//        // Replace player with new one
+//        PlayerManager.shared.load(books) { (loaded) in
+//            guard loaded else {
+//                //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
+//                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+//                return
+//            }
+//            self.showPlayerView(book: book)
+//            
+//            PlayerManager.shared.play()
+//        }
+//    }
+    
+    
     func loadPlayer(books: [Book]) {
+
         guard let book = books.first else { return }
-        
+
         guard NewDataMannagerClass.exists(book) else {
             self.showAlert(
                 "File Missing!",
                 message: "This Audiobook File Was Removed From Your Device. Import The File Again To Play The Audiobook.",
                 style: .alert
             )
-            
             return
         }
-        
-        //  MBProgressHUD.showAdded(to: self.view, animated: true)
-        
-        // Replace player with new one
-        PlayerManager.shared.load(books) { (loaded) in
+
+        var finalQueue: [Book] = books
+
+        // 🔥 FIX: अगर सिर्फ 1 book है → उसका context ढूंढो
+        if books.count == 1 {
+
+            if let playlist = findPlaylistContaining(book: book) {
+                finalQueue = (playlist.books?.array as? [Book]) ?? []
+            } else {
+                // fallback → library
+                finalQueue = getAllBooks(from: NewDataMannagerClass.getLibrary())
+            }
+        }
+
+        // 🔥 STEP 1: SET QUEUE
+        PlayerManager.shared.playbackQueue = finalQueue
+
+        // 🔥 STEP 2: SET INDEX
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
+
+        // 🔥 STEP 3: LOAD CURRENT BOOK
+        PlayerManager.shared.load([book]) { loaded in
+
             guard loaded else {
-                //MBProgressHUD.hideAllHUDs(for: self.view, animated: true)
-                self.showAlert("File error!", message: "This Audiobook file couldn't be loaded. Make sure you're not using files with DRM protection (like .aax files)", style: .alert)
+                self.showAlert(
+                    "File error!",
+                    message: "This Audiobook file couldn't be loaded.",
+                    style: .alert
+                )
                 return
             }
+
             self.showPlayerView(book: book)
-            
             PlayerManager.shared.play()
         }
     }
-    
     func showPlayerView(book: Book) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         
@@ -881,7 +931,50 @@ extension NewPlaylistViewController: UITableViewDataSource, UITableViewDelegate 
             self.tabBarController?.selectedIndex = 1
         }
     }
-    
+    func findPlaylistContaining(book: Book) -> Playlist? {
+
+        let library = NewDataMannagerClass.getLibrary()
+
+        guard let items = library.items?.array as? [LibraryItem] else {
+            return nil
+        }
+
+        for item in items {
+
+            if let playlist = item as? Playlist {
+
+                if let books = playlist.books?.array as? [Book],
+                   books.contains(book) {
+                    return playlist
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: playlist) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
+
+    func findInChildPlaylists(book: Book, playlist: Playlist) -> Playlist? {
+
+        if let children = playlist.children?.allObjects as? [Playlist] {
+            for child in children {
+
+                if let books = child.books?.array as? [Book],
+                   books.contains(book) {
+                    return child
+                }
+
+                if let found = findInChildPlaylists(book: book, playlist: child) {
+                    return found
+                }
+            }
+        }
+
+        return nil
+    }
 }
 
 extension NewPlaylistViewController: PlaylistSelectionDelegate ,UITextFieldDelegate{
@@ -1034,55 +1127,83 @@ extension NewPlaylistViewController{
     }
     
     func filterData(newString: String) {
-        // ---- debounce filtering (1s) ----
+
         debounceWorkItem?.cancel()
+
         let workItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
 
-            if !newString.isEmpty {
-                let searchPrefix = String(newString.prefix(1)).lowercased()
+            let cleanedInput = newString
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .lowercased()
 
-                let filteredArray = t_items.filter { item in
-                    let titleWords = item.title?.lowercased().split(separator: " ") ?? []
-                    let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
-                    let titleMatch = titleWords.contains { $0.hasPrefix(searchPrefix) }
-                    let authorMatch = authorWords.contains { $0.hasPrefix(searchPrefix) }
-                    return titleMatch || authorMatch
-                }
-                self.playlistItems = filteredArray
-            } else {
+            // If empty search → reset
+            if cleanedInput.isEmpty {
                 self.playlistItems = self.t_items
+                self.filteredBooks = []
+                self.searchTblV.isHidden = true
+                self.tableView.reloadData()
+                return
             }
 
-            filteredBooks = getAllBooks(from: library).filter {
-                $0.title?.localizedCaseInsensitiveContains(newString) == true
+            // 🔹 Filter current playlist items
+            let filteredArray = self.t_items.filter { item in
+                let title = item.title?.lowercased() ?? ""
+                let author = (item as? Book)?.author?.lowercased() ?? ""
+
+                return title.contains(cleanedInput) || author.contains(cleanedInput)
             }
 
-//            let rowHeight: CGFloat = 40
-//            let maxHeight: CGFloat = 200
-//            let calculatedHeight = min(CGFloat(filteredBooks.count) * rowHeight, maxHeight)
-//
-//            searchTblVH.constant = calculatedHeight
-//            searchTblV.isHidden = filteredBooks.isEmpty
-//
-//            self.searchTblV.reloadData()
+            let filteredPlaylists = filteredArray.compactMap { $0 as? Playlist }.sorted {
+                ($0.title ?? "").localizedCaseInsensitiveCompare($1.title ?? "") == .orderedAscending
+            }
+
+            let filteredBooks = filteredArray.compactMap { $0 as? Book }
+
+            self.playlistItems = filteredPlaylists + filteredBooks
+
+            // 🔹 Search entire library for dropdown
+            self.filteredBooks = self.getAllBooks(from: self.library).filter { book in
+
+                let title = book.title?.lowercased() ?? ""
+
+                let matchesSearch = title.contains(cleanedInput)
+
+                // Prevent duplicates already visible in playlist
+                let alreadyVisible = self.playlistItems.contains {
+                    if let visibleBook = $0 as? Book {
+                        return visibleBook.identifier == book.identifier
+                    }
+                    return false
+                }
+
+                return matchesSearch && !alreadyVisible
+            }
+
+            // 🔹 Dropdown visibility
+            self.searchTblV.isHidden = self.filteredBooks.isEmpty
+
+            let rowHeight: CGFloat = 40
+            let maxHeight: CGFloat = 200
+            let calculatedHeight = min(CGFloat(self.filteredBooks.count) * rowHeight, maxHeight)
+            self.searchTblVH.constant = calculatedHeight
+
+            self.searchTblV.reloadData()
             self.tableView.reloadData()
         }
-        debounceWorkItem = workItem
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: workItem)
 
-        // ---- debounce keyboard hide (10s idle) ----
+        debounceWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: workItem)
+
         keyboardHideWorkItem?.cancel()
         let hideItem = DispatchWorkItem { [weak self] in
-            guard let self = self else { return }
-            DispatchQueue.main.async {
-                // hides whatever is first responder (your search field)
-                self.view.endEditing(true)
-            }
+            self?.view.endEditing(true)
         }
         keyboardHideWorkItem = hideItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideItem)
     }
+    
+    
     
     func getAllBooks(from library: Library) -> [Book] {
         var result: [Book] = []
@@ -1490,7 +1611,7 @@ extension NewPlaylistViewController {
                     }
                     // confirm delete book
                     let confirm = UIAlertController(
-                        title: "All The Notes Associated With This Book Will Be Deleted!",
+                        title: "All The Notes Associated With This Audiobook Will Be Deleted!",
                         message: "Do You Really Want To Delete :\(book.title ?? "")?",
                         preferredStyle: .alert
                     )

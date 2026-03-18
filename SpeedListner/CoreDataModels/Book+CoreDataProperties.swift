@@ -1,7 +1,6 @@
 //
 //  Book+CoreDataProperties.swift
 //  SpeedListner
-//
 //  Created by YATIN  KALRA on 17/09/24.
 //
 //

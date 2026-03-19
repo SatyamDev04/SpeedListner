@@ -1299,26 +1299,36 @@ extension ListBooksViewController: UITableViewDataSource {
 
         var finalQueue: [Book] = books
 
-        // 🔥 IMPORTANT: अगर सिर्फ 1 book आई है
         if books.count == 1 {
 
-            // 1️⃣ Try playlist context
-            if let playlist = findPlaylistContaining(book: book) {
-                finalQueue = (playlist.books?.array as? [Book]) ?? []
-            }
-            // 2️⃣ fallback → library items (NOT getAllBooks ❗)
-            else {
-                finalQueue = getLibraryBooksInOrder()
-            }
-        }
+               if let playlist = findPlaylistContaining(book: book) {
+                   let playlistBooks = (playlist.books?.array as? [Book]) ?? []
+                   finalQueue = sortBooksAsPerUserPreference(playlistBooks)
+               }
+               else {
+                   let libraryBooks = getAllBooks(from: NewDataMannagerClass.getLibrary())
+                   finalQueue = sortBooksAsPerUserPreference(libraryBooks)
+               }
 
-        // 🔥 STEP 1: SET QUEUE
+           } else {
+               //if multiple books come from UI
+               finalQueue = sortBooksAsPerUserPreference(books)
+           }
+
+
+
+
+        // STEP 1: SET QUEUE
         PlayerManager.shared.playbackQueue = finalQueue
 
-        // 🔥 STEP 2: SET INDEX
+        // STEP 2: SET INDEX
         PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
 
-        // 🔥 STEP 3: LOAD CURRENT BOOK ONLY
+        // STEP 3: LOAD CURRENT BOOK ONLY
+        finalQueue.forEach { item in
+            print("finalQueue items >" ,item.title ?? "")
+        }
+     
         PlayerManager.shared.load([book]) { loaded in
 
             guard loaded else {
@@ -1352,6 +1362,38 @@ extension ListBooksViewController: UITableViewDataSource {
         }
 
         return books
+    }
+    func sortBooksAsPerUserPreference(_ books: [Book]) -> [Book] {
+
+        switch UserDetail.shared.getSortBy() {
+
+        case "0": // Newest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) >
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "1": // Oldest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) <
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "2": // Recently Played
+            return books.sorted {
+                ($0.recentPlayTime ?? Date.distantPast) >
+                ($1.recentPlayTime ?? Date.distantPast)
+            }
+
+        case "3": // Alphabetical
+            return books.sorted {
+                ($0.title ?? "")
+                    .localizedCaseInsensitiveCompare($1.title ?? "") == .orderedAscending
+            }
+
+        default:
+            return books
+        }
     }
     
 //    commented on 18 march 26
@@ -1751,14 +1793,23 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .lowercased()
 
+            let searchWords = cleanedInput.split(separator: " ")
+
+            // 🔥 MAIN FILTER (Library visible list)
             if !cleanedInput.isEmpty {
 
-                let filteredArray = t_items.filter { item in
-                    let titleWords  = item.title?.lowercased().split(separator: " ") ?? []
-                    let authorWords = (item as? Book)?.author?.lowercased().split(separator: " ") ?? []
+                let filteredArray = self.t_items.filter { item in
 
-                    let titleMatch  = titleWords.contains { $0.hasPrefix(cleanedInput) }
-                    let authorMatch = authorWords.contains { $0.hasPrefix(cleanedInput) }
+                    let title = item.title?.lowercased() ?? ""
+                    let author = (item as? Book)?.author?.lowercased() ?? ""
+
+                    let titleMatch = searchWords.allSatisfy { word in
+                        title.contains(word)
+                    }
+
+                    let authorMatch = searchWords.allSatisfy { word in
+                        author.contains(word)
+                    }
 
                     return titleMatch || authorMatch
                 }
@@ -1772,21 +1823,23 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
                 self.items = playlists + books
             }
 
+            // 🔥 अगर input empty है → hide dropdown
             if cleanedInput.isEmpty {
-
                 filteredBooks = []
                 matchedPlaylists = []
                 self.searchTblV.isHidden = true
                 return
-
             }
 
-            filteredBooks = getAllBooks(from: library).filter { book in
+            // 🔥 DROPDOWN BOOKS (NOT IN CURRENT LIST)
+            filteredBooks = self.getAllBooks(from: self.library).filter { book in
 
                 let title = book.title?.lowercased() ?? ""
-                let matchesSearch = title.hasPrefix(cleanedInput)
 
-                // check if already visible in current library list
+                let matchesSearch = searchWords.allSatisfy { word in
+                    title.contains(word)
+                }
+
                 let alreadyVisible = self.items.contains {
                     if let visibleBook = $0 as? Book {
                         return visibleBook.identifier == book.identifier
@@ -1797,34 +1850,41 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
                 return matchesSearch && !alreadyVisible
             }
 
-            matchedPlaylists = getAllPlaylists(from: library).filter { playlist in
-                
+            // 🔥 DROPDOWN PLAYLISTS
+            matchedPlaylists = self.getAllPlaylists(from: self.library).filter { playlist in
+
                 let title = playlist.title?.lowercased() ?? ""
-                
-                let matchesSearch = title.hasPrefix(cleanedInput)
-                
+
+                let matchesSearch = searchWords.allSatisfy { word in
+                    title.contains(word)
+                }
+
                 let alreadyVisible = self.items.contains {
                     if let visiblePlaylist = $0 as? Playlist {
                         return visiblePlaylist.identifier == playlist.identifier
                     }
                     return false
                 }
-                
+
                 return matchesSearch && !alreadyVisible
             }
 
+            // 🔥 HEIGHT CALCULATION
             let rowHeight: CGFloat = 40
             let maxHeight: CGFloat = 200
             let totalResults = filteredBooks.count + matchedPlaylists.count
             let calculatedHeight = min(CGFloat(totalResults) * rowHeight, maxHeight)
+
             self.searchTblVH.constant = calculatedHeight
-            self.searchTblV.isHidden = cleanedInput.isEmpty || filteredBooks.isEmpty
+
+            self.searchTblV.isHidden = totalResults == 0
             self.searchTblV.reloadData()
         }
 
         debounceWorkItem = filterWork
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: filterWork)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: filterWork)
 
+        // 🔥 AUTO KEYBOARD HIDE (optional)
         keyboardHideWorkItem?.cancel()
         let hideWork = DispatchWorkItem { [weak self] in
             self?.view.endEditing(true)

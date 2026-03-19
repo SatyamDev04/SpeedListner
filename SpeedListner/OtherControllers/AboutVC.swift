@@ -11,8 +11,8 @@ class AboutVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     
     @IBOutlet weak var scrollView: UIScrollView!
-    var arrTitle = ["About the company","About the company owner"]
-    var arrDesc = ["Lorem ipsum dolor sit amet, consectetur adipiscing elit. Viverra condimentum eget purus in. Consectetur eget id morbi amet amet,","Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ullamcorper suspendisse aenean leo pharetra in sit semper et. Amet quam placerat sem.Ullamcorper suspendisse aenean leo pharetra in sit semper et."]
+    var arrTitle = ["About SpeedListener"]
+    var arrDesc = [" SpeedListener Is A Listening Performance Training Application For iPhone.It Is Designed To Help You Increase Your Listening Speed, Strengthen Your Focus And Improve How Quickly You Process Information.Most People Listen At One Times (1x) Speed, After All, That’s How We Talk. There Are Over 300,000 New Books Published In The US Every Year And Over 100,000 Of Those Make It To Audiobooks. It’s Impossible To Keep Up, But SpeedListener Trains You To Go Beyond That. Using Structured Speed Progression And Performance Tracking, The App Helps You Gradually Increase Your Listening Ability Over Time.Whether You’re Commenting, Cooking, Cleaning Or Doing Cardio SpeedListener Helps You Be More Productive. SpeedListener Turns Dead Time Into Gold - Those Boring Stretches Like Washing Dishes, Folding Laundry Or When You’re Stuck In Traffic? They’re Now Your Secret Learning Sessions. For A Change Of Pace, Instead of Zoning Out To Your Usual Tunes, Crank Up An Audiobook 2x 0r 3x (Or Higher Once You’ve Trained) And Suddenly You’re Knocking Out The Chapters While The Sink Is Full Or The Traffic Jam Is Stagnant. No Extra Hours Needed. Just Smarter Use Of What You’ve Already Got. People Do This All The Time - Multitasking Pros Swear By It: Chores Fly By, Commutes Feel Shorter, Stress Drops Because Your Brain Is Engaged, Not Idle. And With SpeedEscalation Gently Pushing You Faster, You Finish More Without Forcing It. SpeedListener Isn’t About Speed For Speed Sake - Its Reclaiming Time. Turn “I don’t Have Time To Read” Into “I Just Finished Three Books This Week”. Music Is Great But Books Build You. And You’re Doing It Anyway.SpeedListener Is Not An Audiobook Platform. It Is A Performance Training Tool - That Just Happens To Be An Amazing Audiobook Player.The Goal Is Simple: Process Information Faster.Stay Focused Longer.  Train Your Brain To Operate At A Higher Level."]
     
     @IBOutlet weak var tblV: UITableView!
     var indexRow : NSMutableArray = []
@@ -20,7 +20,7 @@ class AboutVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     var getAboutUsArr = [ModelClass]()
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.apiforGetAboutUs()
+       // self.apiforGetAboutUs()
         self.scrollView.delegate = self
         self.tblV.addCorner5()
         self.tblV.layer.borderColor = UIColor.lightGray.cgColor
@@ -85,20 +85,20 @@ class AboutVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
         self.navigationController?.popViewController(animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return getAboutUsArr.count//arrTitle.count
+        return arrTitle.count
     }
-//    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        return UITableView.automaticDimension
-//    }
-//
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return UITableView.automaticDimension
+    }
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let data = getAboutUsArr[indexPath.row]
+        
         let cell1 = tblV.dequeueReusableCell(withIdentifier: "CellData", for: indexPath) as! CellData
-        cell1.lblDesc.text = data.about_name ?? ""//arrDesc[indexPath.row]
+        cell1.lblDesc.text = arrDesc[indexPath.row]
+        cell1.lblDesc.textAlignment = .justified
         cell1.lblHeader.text = arrTitle[indexPath.row]
         cell1.lblSerialNumber.isHidden = true
-       // tblV.isScrollEnabled = false
         cell1.headerLeadingConstraints.constant = -40
 
         return cell1

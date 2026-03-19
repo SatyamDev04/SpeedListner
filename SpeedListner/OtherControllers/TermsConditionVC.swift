@@ -10,8 +10,27 @@ import UIKit
 class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     @IBOutlet weak var scrollView: UIScrollView!
-    var arrTitle = ["Clause","Clause"]
-   var arrDesc = ["Lorem ipsum dolor sit amet, consectetur adipiscing elit. Viverra condimentum eget purus in. Consectetur eget id morbi amet amet,","Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ullamcorper suspendisse aenean leo pharetra in sit semper et. Amet quam placerat sem.Ullamcorper suspendisse aenean leo pharetra in sit semper et.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ullamcorper suspendisse aenean leo pharetra in sit semper et. Amet quam placerat sem.Ullamcorper suspendisse aenean leo pharetra in sit semper et."]
+    var arrTitle = [
+        "SpeedListener Privacy Policy",
+        "1. Information We Collect",
+        "2. How We Use Your Information",
+        "3. Payments",
+        "4. Data Storage",
+        "5. Data Sharing",
+        "6. Your Choices",
+        "7. Policy Updates"
+    ]
+
+    var arrDesc = [
+        "Your Privacy Matters To Us. This Policy Explains What We Collect And How We Use It.",
+        "We may collect:\n• Email Address\n• Account Details\n• Listening Statistics (hours, streaks, speed data)\n• Device Information\n• Basic Usage Analytics",
+        "We use your information to:\n• Run the application\n• Track your progress\n• Improve performance\n• Fix bugs\n• Communicate updates\n\nWe do NOT sell, trade, or share your personal information.",
+        "Payments are handled by your App Store. We do not store your full payment details.",
+        "Your data may be stored securely using trusted cloud providers. We use reasonable security measures.",
+        "We do NOT sell, share, or trade your data.",
+        "You may:\n• Update your account\n• Cancel subscription\n• Request account deletion\n\nContact support for deletion requests.",
+        "We may update this policy occasionally. Changes will be reflected inside the app."
+    ]
     
     @IBOutlet weak var tblV: UITableView!
     var indexRow : NSMutableArray = []
@@ -19,7 +38,7 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
     var getTermConditionArr = [ModelClass]()
     override func viewDidLoad() {
         super.viewDidLoad()
-        apiforGetTermConditions()
+        // apiforGetTermConditions()
         self.scrollView.delegate = self
         self.tblV.addCorner5()
         self.tblV.layer.borderColor = UIColor.lightGray.cgColor
@@ -36,7 +55,7 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
     }
     
     func apiforGetTermConditions() {
-         
+        /*
         // let userid = UserDetail.shared.getUserId()
         
         var params = [String: Any]()
@@ -76,6 +95,7 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
             }
          //  hideHud()
         })
+        */
     }
 
     
@@ -83,7 +103,7 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
         self.navigationController?.popViewController(animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return getTermConditionArr.count //arrTitle.count
+        return arrTitle.count //getTermConditionArr.count //arrTitle.count
     }
 //    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
 //        return UITableView.automaticDimension
@@ -91,9 +111,9 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
 //
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let data = getTermConditionArr[indexPath.row]
+        // let data = getTermConditionArr[indexPath.row]
         let cell1 = tblV.dequeueReusableCell(withIdentifier: "CellData", for: indexPath) as! CellData
-        cell1.lblDesc.text = data.term_name ?? "" //arrDesc[indexPath.row]
+        cell1.lblDesc.text = arrDesc[indexPath.row] //data.term_name ?? "" //arrDesc[indexPath.row]
         cell1.lblHeader.text = arrTitle[indexPath.row]
         cell1.lblSerialNumber.text =  "\(indexPath.row + 1)" + "."
        // tblV.isScrollEnabled = false

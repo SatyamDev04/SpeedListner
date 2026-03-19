@@ -214,14 +214,25 @@ class SettingVC: UIViewController, Afterpay {
             guard let b = currentBok else {return}
             playerVC.book = b
            
-            tabBarController?.selectedIndex = 1
+            if let tabBar = self.tabBarController {
+                self.navigationController?.popViewController(animated: true)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    tabBar.selectedIndex = 1
+                }
+            }
         }else{
             let storyboard = UIStoryboard(name: "Main", bundle: nil)
             let playerVC = storyboard.instantiateViewController(withIdentifier: "PlayerViewController") as! PlayerViewController
             guard let b = currentBok else {return}
             playerVC.book = b
-           
-            tabBarController?.selectedIndex = 1
+            if let tabBar = self.tabBarController {
+                self.navigationController?.popViewController(animated: true)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    tabBar.selectedIndex = 1
+                }
+            }
         }
         
       

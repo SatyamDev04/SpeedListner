@@ -248,25 +248,32 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         var finalQueue: [Book] = books
 
         // 🔥 IMPORTANT: अगर सिर्फ 1 book आई है
+        finalQueue.forEach { item in
+            print("finalQueue items >" ,item.title ?? "")
+        }
         if books.count == 1 {
 
-            // 1️⃣ Try playlist context
-            if let playlist = findPlaylistContaining(book: book) {
-                finalQueue = (playlist.books?.array as? [Book]) ?? []
-            }
-            // 2️⃣ fallback → library items (NOT getAllBooks ❗)
-            else {
-                finalQueue = getLibraryBooksInOrder()
-            }
-        }
+              if let playlist = findPlaylistContaining(book: book) {
+                  let playlistBooks = (playlist.books?.array as? [Book]) ?? []
+                  finalQueue = sortBooksAsPerUserPreference(playlistBooks)
+              }
+              else {
+                  let libraryBooks = getAllBooks(from: NewDataMannagerClass.getLibrary())
+                  finalQueue = sortBooksAsPerUserPreference(libraryBooks)
+              }
 
-        // 🔥 STEP 1: SET QUEUE
+          } else {
+              // अगर multiple books आए हैं (UI से)
+              finalQueue = sortBooksAsPerUserPreference(books)
+          }
+
+        // STEP 1: SET QUEUE
         PlayerManager.shared.playbackQueue = finalQueue
 
-        // 🔥 STEP 2: SET INDEX
+        //  STEP 2: SET INDEX
         PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
 
-        // 🔥 STEP 3: LOAD CURRENT BOOK ONLY
+        // STEP 3: LOAD CURRENT BOOK ONLY
         PlayerManager.shared.load([book]) { loaded in
 
             guard loaded else {
@@ -283,6 +290,70 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     
+    func getAllBooks(from library: Library) -> [Book] {
+        var result: [Book] = []
+
+        guard let items = library.items  else { return result }
+
+        for item in items {
+            if let book = item as? Book {
+                result.append(book)
+            } else if let playlist = item as? Playlist {
+                result.append(contentsOf: getAllBooks(from: playlist))
+            }
+        }
+
+        return result
+    }
+    
+    func getAllBooks(from playlist: Playlist) -> [Book] {
+        var result: [Book] = []
+
+        if let books = playlist.books?.array as? [Book] {
+            result.append(contentsOf: books)
+        }
+
+        if let children = playlist.children as? Set<Playlist> {
+            for child in children {
+                result.append(contentsOf: getAllBooks(from: child))
+            }
+        }
+
+        return result
+    }
+    
+    func sortBooksAsPerUserPreference(_ books: [Book]) -> [Book] {
+
+        switch UserDetail.shared.getSortBy() {
+
+        case "0": // Newest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) >
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "1": // Oldest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) <
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "2": // Recently Played
+            return books.sorted {
+                ($0.recentPlayTime ?? Date.distantPast) >
+                ($1.recentPlayTime ?? Date.distantPast)
+            }
+
+        case "3": // Alphabetical
+            return books.sorted {
+                ($0.title ?? "")
+                    .localizedCaseInsensitiveCompare($1.title ?? "") == .orderedAscending
+            }
+
+        default:
+            return books
+        }
+    }
     func showPlayerView(book: Book) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         

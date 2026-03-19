@@ -104,9 +104,9 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.loadLibrary()
         setupAudioSession()
         setupRoutePickerView()
-//        if AppOrientationManager.shared.current == .lockHorizontal {
-//            setupCloseButton()
-//        }
+        if AppOrientationManager.shared.current == .lockHorizontal {
+            setupCloseButton()
+        }
     }
 
     deinit {

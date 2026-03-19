@@ -292,6 +292,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
 
         // 🔥 STEP 2: Set queue
+        books.forEach { item in
+            print("finalQueue items >" ,item.title ?? "")
+        }
         PlayerManager.shared.playbackQueue = books
         PlayerManager.shared.currentIndex = books.firstIndex(of: item) ?? 0
 
@@ -1166,23 +1169,34 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
 
         var finalQueue: [Book] = books
 
-        // 🔥 FIX: अगर सिर्फ 1 book है → proper queue बनाओ
+        //  FIX: अगर सिर्फ 1 book है → proper queue बनाओ
+        
         if books.count == 1 {
 
             if let playlist = findPlaylistContaining(book: book) {
-                finalQueue = (playlist.books?.array as? [Book]) ?? []
-            } else {
-                finalQueue = getLibraryBooksInOrder()
+                let playlistBooks = (playlist.books?.array as? [Book]) ?? []
+                finalQueue = sortBooksAsPerUserPreference(playlistBooks)
             }
+            else {
+                let libraryBooks = getAllBooks(from: NewDataMannagerClass.getLibrary())
+                finalQueue = sortBooksAsPerUserPreference(libraryBooks)
+            }
+
+        } else {
+            // अगर multiple books आए हैं (UI से)
+            finalQueue = sortBooksAsPerUserPreference(books)
         }
 
-        // 🔥 STEP 1: SET PLAYBACK QUEUE
+        // STEP 1: SET PLAYBACK QUEUE
         PlayerManager.shared.playbackQueue = finalQueue
 
-        // 🔥 STEP 2: SET CURRENT INDEX
+        // STEP 2: SET CURRENT INDEX
         PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: book) ?? 0
 
-        // 🔥 STEP 3: LOAD ONLY CURRENT BOOK
+        // STEP 3: LOAD ONLY CURRENT BOOK
+        finalQueue.forEach { item in
+            print("finalQueue items >" ,item.title ?? "")
+        }
         PlayerManager.shared.load([book]) { loaded in
 
             guard loaded else {
@@ -1194,15 +1208,47 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 return
             }
 
-            // 🔥 STEP 4: START / TOGGLE PLAY
+            // STEP 4: START / TOGGLE PLAY
             PlayerManager.shared.playPause()
 
-            // 🔥 STEP 5: UI UPDATE
+            // STEP 5: UI UPDATE
             if !(PlayerManager.shared.currentBook?.hasChapters ?? false) {
                 self.chaptersButton.isHidden = true
             } else {
                 self.chaptersButton.isHidden = false
             }
+        }
+    }
+    func sortBooksAsPerUserPreference(_ books: [Book]) -> [Book] {
+
+        switch UserDetail.shared.getSortBy() {
+
+        case "0": // Newest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) >
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "1": // Oldest Upload
+            return books.sorted {
+                ($0.uploadTime ?? Date.distantPast) <
+                ($1.uploadTime ?? Date.distantPast)
+            }
+
+        case "2": // Recently Played
+            return books.sorted {
+                ($0.recentPlayTime ?? Date.distantPast) >
+                ($1.recentPlayTime ?? Date.distantPast)
+            }
+
+        case "3": // Alphabetical
+            return books.sorted {
+                ($0.title ?? "")
+                    .localizedCaseInsensitiveCompare($1.title ?? "") == .orderedAscending
+            }
+
+        default:
+            return books
         }
     }
     func getLibraryBooksInOrder() -> [Book] {

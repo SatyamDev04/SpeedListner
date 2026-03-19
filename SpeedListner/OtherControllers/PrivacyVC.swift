@@ -18,9 +18,20 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     var getPrivacyPolicyArr = [ModelClass]()
     
+    let privacyData: [(title: String, desc: String)] = [
+        ("SpeedListener Privacy Policy", "Your Privacy Matters To Us. This Policy Explains What We Collect And How We Use It."),
+        ("1. Information We Collect", "We may collect:\n• Email Address\n• Account Details\n• Listening Statistics (hours, streaks, speed data)\n• Device Information\n• Basic Usage Analytics"),
+        ("2. How We Use Your Information", "We use your information to:\n• Run the application\n• Track your progress\n• Improve performance\n• Fix bugs\n• Communicate updates\n\nWe do NOT sell, trade, or share your personal information."),
+        ("3. Payments", "Payments are handled by your App Store. We do not store your full payment details."),
+        ("4. Data Storage", "Your data may be stored securely using trusted cloud providers. We use reasonable security measures."),
+        ("5. Data Sharing", "We do NOT sell, share, or trade your data."),
+        ("6. Your Choices", "You may:\n• Update your account\n• Cancel subscription\n• Request account deletion\n\nContact support for deletion requests."),
+        ("7. Policy Updates", "We may update this policy occasionally. Changes will be reflected inside the app.")
+    ]
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.apiforGetPrivacyPolicy()
+        // self.apiforGetPrivacyPolicy()
         self.scrollView.delegate = self
         self.tblV.addCorner5()
         self.tblV.layer.borderColor = UIColor.lightGray.cgColor
@@ -36,7 +47,7 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
 
     }
     func apiforGetPrivacyPolicy() {
-         
+        /*
         // let userid = UserDetail.shared.getUserId()
         
         var params = [String: Any]()
@@ -76,13 +87,14 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
             }
          //  hideHud()
         })
+        */
     }
     
     @IBAction func btnBack_Action(_ sender: Any) {
         self.navigationController?.popViewController(animated: true)
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return getPrivacyPolicyArr.count//10
+        return privacyData.count
     }
 //    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
 //        return UITableView.automaticDimension
@@ -90,10 +102,10 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
 //
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let data = getPrivacyPolicyArr[indexPath.row]
+        let data = privacyData[indexPath.row]
         let cell1 = tblV.dequeueReusableCell(withIdentifier: "CellData", for: indexPath) as! CellData
-        cell1.lblDesc.text =  data.privacy_name ?? ""//"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Viverra condimentum eget purus in. Consectetur eget id morbi amet amet, in. Ipsum viverra pretium tellus neque. Ullamcorper suspendisse aenean leo pharetra in sit semper et. Amet quam placerat sem."//data.faqsQuestion ?? ""
-        cell1.lblHeader.text = "Lorem ipsum dolor sit amet"
+        cell1.lblDesc.text = data.desc
+        cell1.lblHeader.text = data.title
         cell1.lblSerialNumber.isHidden = true
        // tblV.isScrollEnabled = false
         cell1.headerLeadingConstraints.constant = -40

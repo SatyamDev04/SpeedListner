@@ -121,46 +121,32 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
     
     func getBookmarks(){
         guard let book = currentBok else { return }
-           self.book = book
-           self.currentTitleBook.text = book.title
-           
-           let userDefaults = UserDefaults.standard
-           if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
-               do {
-                   let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-                   
-                   // DEBUG: Print count of saved bookmarks
-                   print("Saved bookmarks count: \(savedBookmarks.count)")
-                   
-                   if savedBookmarks.count > 0 {
-                       let validBookmarks = savedBookmarks.filter { bookmark in
-                           if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
-                               return FileManager.default.fileExists(atPath: url.path)
-                           }
-                           return false
-                       }
-                       
-                       // DEBUG: Print count of valid bookmarks
-                       print("Valid bookmarks count: \(validBookmarks.count)")
-                       
-                       self.arrBookmarksNotes = validBookmarks
-                      
-                       
-                       // DEBUG: Check if we have bookmarks to display
-                       if validBookmarks.isEmpty {
-                           print("No valid bookmarks found - audio files might be missing")
-                       } else {
-                           mergeAdjecntBookmarks()
-                       }
-                       updateBookmarkSummary()
-                   }
-                  
-               } catch {
-                   print("Error decoding bookmarks: \(error)")
-               }
-           } else {
-               print("No saved bookmarks data found")
-           }
+        self.book = book
+        self.currentTitleBook.text = book.title
+
+        let savedBookmarks = BookmarkManager.shared.loadBookmarks(for: book)
+        print("Saved bookmarks count: \(savedBookmarks.count)")
+
+        if savedBookmarks.count > 0 {
+            let validBookmarks = savedBookmarks.filter { bookmark in
+                if let url = AudioClipUtils.resolveClipURL(for: bookmark) {
+                    return FileManager.default.fileExists(atPath: url.path)
+                }
+                return false
+            }
+
+            print("Valid bookmarks count: \(validBookmarks.count)")
+            self.arrBookmarksNotes = validBookmarks
+
+            if validBookmarks.isEmpty {
+                print("No valid bookmarks found - audio files might be missing")
+            } else {
+                mergeAdjecntBookmarks()
+            }
+            updateBookmarkSummary()
+        } else {
+            print("No saved bookmarks data found")
+        }
       
         UserDefaults.standard.set("ByTime", forKey: "BookmarkSorting")
         if let sort = UserDefaults.standard.object(forKey: "BookmarkSorting") as? String,sort == "ByDate"{
@@ -222,7 +208,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         
         for bookmark in arrBookmarksNotes {
            
-            if let _ = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
+            if let _ = AudioClipUtils.resolveClipURL(for: bookmark) {
                 displayItems.append(.bookmark(bookmark))
                 print("Added bookmark: \(bookmark.timeStamp)")
             } else {
@@ -366,8 +352,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             var timestamp: TimeInterval
             let  ts = model.timeStamp
                    timestamp = ts
-            let start = max(0, timestamp - 5.0)
-            let end   = timestamp + 15.0
+            let start = model.startTime ?? max(0, timestamp - 5.0)
+            let end = model.endTime ?? (timestamp + 15.0)
             
         cell.bookmarkTimelbl.text = "\(formatTime(from: start)) ➔ \(formatTime(from: end)) on \(model.date)"
                
@@ -380,7 +366,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             cell.playBtn.addTarget(self, action: #selector(playBookmarkClip(_:)), for: .touchUpInside)
             cell.transcriptionBtn.tag = indexPath.row
             cell.transcriptionBtn.addTarget(self, action: #selector(openCombinedTranscriptionSummary(_:)), for: .touchUpInside)
-            configureTranscriptionSummary(for: cell.transSumryLable, id: "\(Int(model.timeStamp))")
+            let bookmarkIdentifier = model.bookmarkId ?? "\(Int(model.timeStamp))"
+            configureTranscriptionSummary(for: cell.transSumryLable, id: bookmarkIdentifier)
             return cell
 
         case .segment(let segment):
@@ -530,7 +517,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         for item in displayItems {
             switch item {
             case .bookmark(let model):
-                if let clipURL = AudioClipUtils.getClipURL(for: model.timeStamp) {
+                if let clipURL = AudioClipUtils.resolveClipURL(for: model) {
                     urls.append(clipURL)
                 }
             case .segment(let segment):
@@ -570,7 +557,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             print("Bookmark: \(model.audioClipPath)")
           
             let playerVC = BottomSheetAudioPlayerVC()
-            playerVC.url = AudioClipUtils.getClipURL(for: model.timeStamp)
+            playerVC.url = AudioClipUtils.resolveClipURL(for: model)
  //model.audioClipPath
             playerVC.modalPresentationStyle = .pageSheet
             if let sheet = playerVC.sheetPresentationController {
@@ -607,8 +594,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         }
 
         let unprocessed = bookmarks.filter { bookmark in
-                let hasTranscript = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
-                let hasSummary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                let id = bookmark.bookmarkId ?? "\(Int(bookmark.timeStamp))"
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: id)?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: id)?.isEmpty == false
                 return !hasTranscript || !hasSummary
             }
 
@@ -621,8 +609,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         let group = DispatchGroup()
         
         for var bookmark in unprocessed {
-            let id = "\(Int(bookmark.timeStamp))"
-            guard let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) else { continue }
+            let id = bookmark.bookmarkId ?? "\(Int(bookmark.timeStamp))"
+            guard let url = AudioClipUtils.resolveClipURL(for: bookmark) else { continue }
            
             group.enter()
             TranscriptionAI.processAudio(fileURL: url) { result in
@@ -706,8 +694,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
         switch displayItems[index] {
         case .bookmark(let model):
-            let id = "\(Int(model.timeStamp))"
-            guard let url = AudioClipUtils.getClipURL(for: model.timeStamp) else { return }
+            let id = model.bookmarkId ?? "\(Int(model.timeStamp))"
+            guard let url = AudioClipUtils.resolveClipURL(for: model) else { return }
             let timeRange = "\(model.time) - \(model.date)"
 
             handleTranscription(for: id, audioURL: url, fallbackTranscription: model.transcription, fallbackSummary: model.summary, timeRange: timeRange)

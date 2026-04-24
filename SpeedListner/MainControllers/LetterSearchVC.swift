@@ -742,6 +742,7 @@ extension LetterSearchVC: UITableViewDataSource, UITableViewDelegate {
        let item = self.filteredBooks[sender.tag]
         currentItem = item
         if let book = item as? Book {
+            PlayerManager.shared.currentPlayList = self.playlist
             print(book.currentTime,book.duration,"duratin matching")
             if Int( book.currentTime) == Int(book.duration) {
                 book.currentTime = 0.0
@@ -1642,4 +1643,3 @@ extension LetterSearchVC {
     }
     
 }
-

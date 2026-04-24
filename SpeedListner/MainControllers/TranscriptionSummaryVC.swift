@@ -19,6 +19,12 @@ class TranscriptionSummaryVC: UIViewController {
     private let scrollView = UIScrollView()
     private let contentView = UIView()
 
+    private let baseTitleFontSize: CGFloat = 16
+    private let baseBodyFontSize: CGFloat = 14
+    private var currentZoomScale: CGFloat = 1.0
+    private let minZoomScale: CGFloat = 0.8
+    private let maxZoomScale: CGFloat = 2.4
+
     // Custom handle (pill + chevron)
     private let handleContainer: UIView = {
         let v = UIView()
@@ -90,6 +96,7 @@ class TranscriptionSummaryVC: UIViewController {
         super.viewDidLoad()
         setupViews()
         applyData()
+        setupPinchToZoom()
 
         // Optionally enable system grabber if presented as .pageSheet
         if let sheet = sheetPresentationController {
@@ -191,11 +198,39 @@ class TranscriptionSummaryVC: UIViewController {
         transcriptionLabel.text = transcriptionText
     }
 
+    private func setupPinchToZoom() {
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(handlePinch(_:)))
+        pinch.cancelsTouchesInView = false
+        view.addGestureRecognizer(pinch)
+    }
+
+    private func applyZoomScale(_ scale: CGFloat) {
+        let clampedScale = min(max(scale, minZoomScale), maxZoomScale)
+        currentZoomScale = clampedScale
+
+        transcriptionTitleLabel.font = .boldSystemFont(ofSize: baseTitleFontSize * clampedScale)
+        summaryTitleLabel.font = .boldSystemFont(ofSize: baseTitleFontSize * clampedScale)
+        transcriptionLabel.font = .systemFont(ofSize: baseBodyFontSize * clampedScale)
+        summaryLabel.font = .systemFont(ofSize: baseBodyFontSize * clampedScale)
+        view.layoutIfNeeded()
+    }
+
     // MARK: - Actions
 
     @objc private func handleTapped(_ sender: UITapGestureRecognizer) {
         // Common behavior: dismiss the sheet when handle is tapped.
         // Customize: collapse, animate, or notify delegate instead.
         dismiss(animated: true, completion: nil)
+    }
+
+    @objc private func handlePinch(_ gesture: UIPinchGestureRecognizer) {
+        switch gesture.state {
+        case .began, .changed:
+            let proposedScale = currentZoomScale * gesture.scale
+            applyZoomScale(proposedScale)
+            gesture.scale = 1.0
+        default:
+            break
+        }
     }
 }

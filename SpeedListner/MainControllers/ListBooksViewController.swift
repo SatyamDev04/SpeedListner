@@ -90,7 +90,7 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
 
         let playlists = self.items.compactMap { $0 as? Playlist }
 
-        // 🔴 FILTER BOOKS WITH MISSING FILES HERE
+        //  FILTER BOOKS WITH MISSING FILES HERE
         let books = self.items
             .compactMap { $0 as? Book }
             .filter { isAudioFileAvailable(book: $0) }
@@ -876,15 +876,18 @@ extension ListBooksViewController {
         let books: [Book]
 
         if let playlist = findPlaylistContaining(book: item) {
+            PlayerManager.shared.currentPlayList = playlist
             books = (playlist.books?.array as? [Book]) ?? []
         } else {
+            PlayerManager.shared.currentPlayList = nil
             // fallback → full library
             books = getAllBooks(from: NewDataMannagerClass.getLibrary())
         }
 
         // 🔥 STEP 2: Set queue
-        PlayerManager.shared.playbackQueue = books
-        PlayerManager.shared.currentIndex = books.firstIndex(of: item) ?? 0
+        let finalQueue = sortBooksAsPerUserPreference(books)
+        PlayerManager.shared.playbackQueue = finalQueue
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: item) ?? 0
 
         // 🔥 STEP 3: Load correct book
         PlayerManager.shared.load([item]) { loaded in
@@ -1363,6 +1366,8 @@ extension ListBooksViewController: UITableViewDataSource {
 
         return books
     }
+    
+    
     func sortBooksAsPerUserPreference(_ books: [Book]) -> [Book] {
 
         switch UserDetail.shared.getSortBy() {

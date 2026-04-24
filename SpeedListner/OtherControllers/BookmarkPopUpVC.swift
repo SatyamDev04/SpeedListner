@@ -107,46 +107,38 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
         txt_notes.delegate = self
         guard let book = currentBok else {return}
         self.book = book
-        
-        
-        let userDefaults = UserDefaults.standard
-        if let savedData = userDefaults.object(forKey: (self.book.identifier ?? "")+"_bookmarks") as? Data {
-            
-            do{
-                let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-                if savedBookmarks.count > 0 {
-                    self.arrBookmarksNotes = savedBookmarks
-                    if let index = self.index{
-                        let item = displayItems[index]
-                        switch item {
-                        case .bookmark(let bookmark):
-                            
-                            self.starStatus = bookmark.isStar ?? false
-                            if self.starStatus == false{
-                                
-                                staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
-                            }else{
-                               
-                                staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
-                            }
-                            
-                        case .segment(let segment):
-                            let isStar =  BookmarkCacheManager.getIsStar(for: segment.identifiers) ?? false
-                            self.starStatus = isStar
-                            if self.starStatus == false{
-                                
-                                staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
-                            }else{
-                                staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
-                            }
-                            
-                        }
+
+        let savedBookmarks = BookmarkManager.shared.loadBookmarks(for: self.book)
+        if savedBookmarks.count > 0 {
+            self.arrBookmarksNotes = savedBookmarks
+            if let index = self.index{
+                let item = displayItems[index]
+                switch item {
+                case .bookmark(let bookmark):
+                    
+                    self.starStatus = bookmark.isStar ?? false
+                    if self.starStatus == false{
+                        
+                        staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
+                    }else{
                        
+                        staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
+                    }
+                    
+                case .segment(let segment):
+                    let isStar =  BookmarkCacheManager.getIsStar(for: segment.identifiers) ?? false
+                    self.starStatus = isStar
+                    if self.starStatus == false{
+                        
+                        staredBookMark.setBackgroundImage(UIImage(named: "blank_star"), for: .normal)
+                    }else{
+                        staredBookMark.setBackgroundImage(UIImage(named: "filled_star"), for: .normal)
                     }
                     
                 }
-            } catch {
+               
             }
+            
         }
         guard let index = self.index else {return}
         self.i = String(index)
@@ -240,37 +232,28 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
                     arrBookmark.timeStamp == bookmark.timeStamp
                     
                 }) else {return}
-                
-                let t = self.arrBookmarksNotes[index].timeStamp
-                let identifier = "\(Int(self.arrBookmarksNotes[index].timeStamp))"
 
-                let time = self.arrBookmarksNotes[index].time
-                let date = self.arrBookmarksNotes[index].date
-                let start = max(0, t - 5.0)
-                let end = min(book.duration, t + 15.0)
-                
-                AudioClipUtils.extractClip(
-                    from: book.fileURL,
-                    startTime: start,
-                    endTime: end,
-                    identifier: identifier
-                ) { [self] url in
-                    if let clipURL = url {
-                        self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus, audioClipPath: clipURL)
-                        print(clipURL, "aya kya url",starStatus)
-                        DispatchQueue.main.async{
-                            self.saveBookMarksNotes()
-                        }
-                    }else{
-                        self.arrBookmarksNotes[index] = BookmarksModel(indentifier: self.book.identifier ?? "" , bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus)
-                        DispatchQueue.main.async{
-                            print("aya kya url",self.starStatus)
-                            self.saveBookMarksNotes()
+                BookmarkManager.shared.updateBookmark(
+                    book: self.book,
+                    index: index,
+                    note: self.txt_notes.text ?? "",
+                    starStatus: starStatus
+                ) { [weak self] success in
+                    guard let self = self, success else { return }
+                    DispatchQueue.main.async {
+                        self.dismiss(animated: true) {
+                            self.delegateBookmarkVC?.MethodforPop(string: self.txt_notes.text ?? "")
+                            self.showToast("saved succefully")
+                            if self.playerstaus == true {
+                                PlayerManager.shared.play()
+                            } else {
+                                PlayerManager.shared.pause()
+                            }
+                            self.view.removeFromSuperview()
                         }
                     }
                 }
-                
-                
+
             case .segment(let segment):
                 let identifier = segment.identifiers.replacingOccurrences(of: " ", with: "")
                 BookmarkCacheManager.saveNotes(self.txt_notes.text, for: identifier)
@@ -290,45 +273,28 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             }
             
         }else{
-            
-           
-            let time = formatTime(Int(self.book.currentTime))
-            let date = Date.getCurrentDate()
-            
-            
-           
-            let t = PlayerManager.shared.currentTime
-            let start = max(0, t - 5.0)
-            let end = min(book.duration, t + 15.0)
-
-            print("📌 Bookmark pressed at:", t)
-            print("📌 Calculated start:", start)
-            print("📌 Calculated end:", end)
-            AudioClipUtils.extractClip(
-                from: book.fileURL,
-                startTime: start,
-                endTime: end,
-                identifier: "\(Int(t))"
-            ) { [self] url in
-                if let clipURL = url {
-                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
-                    print(clipURL, "aya kya url")
-                    DispatchQueue.main.async{
-                        self.saveBookMarksNotes()
-                        print("AVAudioPlayer time:", self.formatTime2(PlayerManager.shared.audioPlayer?.currentTime ?? 0))
-                        print("Book time:",  self.formatTime2(self.book.currentTime))
-                    }
-                } else {
-                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: self.txt_notes.text ?? "", timeStamp: t, time: time, date: date, isStar: starStatus))
-                    DispatchQueue.main.async{
-                        self.saveBookMarksNotes()
-                        print("AVAudioPlayer time:", self.formatTime2(PlayerManager.shared.audioPlayer?.currentTime ?? 0))
-                        print("Book time:", self.formatTime2(self.book.currentTime))
+            let note = self.txt_notes.text ?? ""
+            let completion: (Bool) -> Void = { [weak self] success in
+                guard let self = self, success else { return }
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true) {
+                        self.delegateBookmarkVC?.MethodforPop(string: self.txt_notes.text ?? "")
+                        self.showToast("saved succefully")
+                        if self.playerstaus == true {
+                            PlayerManager.shared.play()
+                        } else {
+                            PlayerManager.shared.pause()
+                        }
+                        self.view.removeFromSuperview()
                     }
                 }
             }
-            
-           
+
+            if note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                BookmarkManager.shared.saveWithoutNote(book: self.book, starStatus: self.starStatus, completion: completion)
+            } else {
+                BookmarkManager.shared.saveBookmarkWithNote(book: self.book, note: note, starStatus: self.starStatus, completion: completion)
+            }
         }
             
     }
@@ -342,36 +308,21 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             return
         }
         if displayItems.count <= 0 {
-            let t = self.book.currentTime
-            let time = formatTime(Int(self.book.currentTime))
-            let date = Date.getCurrentDate()
-           
-            
-            let start = max(0, t - 5.0)
-            let end = min(book.duration, t + 15.0)
-            
-            AudioClipUtils.extractClip(
-                from: book.fileURL,
-                startTime: start,
-                endTime: end,
-                identifier: "\(Int(t))"
-            ){ url in
-                if let clipURL = url {
-                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: self.starStatus,audioClipPath: clipURL))
-                    print(clipURL, "aya kya url")
-                    DispatchQueue.main.async{
-                        self.saveBookMarksNotes()
-                    }
-                    
-                } else {
-                    self.arrBookmarksNotes.append(BookmarksModel(indentifier: self.book.identifier ?? "", bookmarksTxt: "", timeStamp: t, time: time, date: date, isStar: self.starStatus))
-                    DispatchQueue.main.async{
-                        self.saveBookMarksNotes()
+            BookmarkManager.shared.saveWithoutNote(book: self.book, starStatus: self.starStatus) { [weak self] success in
+                guard let self = self, success else { return }
+                DispatchQueue.main.async {
+                    self.dismiss(animated: true) {
+                        AudioMonitorManager.shared.startTranscribeAllBookmarksInBackground(book: self.book)
+                        self.delegateBookmarkVC?.MethodforPop(string: self.txt_notes.text ?? "")
+                        if self.playerstaus == true{
+                            PlayerManager.shared.play()
+                        }else{
+                            PlayerManager.shared.pause()
+                        }
+                        self.view.removeFromSuperview()
                     }
                 }
             }
-           
-            
         }
         
         

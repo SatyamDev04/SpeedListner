@@ -20,4 +20,8 @@ struct UserDefaultsConstants {
     static let forwardInterval = "userSettingsForwardInterval"
 
     static let artworkJumpControlsUsed = "userSettingsArtworkJumpControlsUsed"
+
+    // Player screen toggles
+    static let speedEscalationEnabled = "userSettingsSpeedEscalationEnabled"
+    static let showRemainingTime = "userSettingsShowRemainingTime"
 }

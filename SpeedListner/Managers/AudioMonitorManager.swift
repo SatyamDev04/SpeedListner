@@ -37,7 +37,7 @@ final class AudioMonitorManager: NSObject {
         do {
             let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
             let validBookmarks = savedBookmarks.filter { bookmark in
-                if let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) {
+                if let url = AudioClipUtils.resolveClipURL(for: bookmark) {
                     return FileManager.default.fileExists(atPath: url.path)
                 }
                 return false
@@ -82,8 +82,9 @@ final class AudioMonitorManager: NSObject {
     private func transcribeMissingBookmark(_ bookmarks: [BookmarksModel]) async{
    
         let unprocessed = bookmarks.filter { bookmark in
-                let hasTranscript = BookmarkCacheManager.getTranscription(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
-                let hasSummary = BookmarkCacheManager.getSummary(for: "\(Int(bookmark.timeStamp))")?.isEmpty == false
+                let identifier = bookmark.bookmarkId ?? "\(Int(bookmark.timeStamp))"
+                let hasTranscript = BookmarkCacheManager.getTranscription(for: identifier)?.isEmpty == false
+                let hasSummary = BookmarkCacheManager.getSummary(for: identifier)?.isEmpty == false
                 return !hasTranscript || !hasSummary
             }
 
@@ -98,8 +99,8 @@ final class AudioMonitorManager: NSObject {
         let group = DispatchGroup()
         
         for var bookmark in unprocessed {
-            let identifier = "\(Int(bookmark.timeStamp))"
-            guard let url = AudioClipUtils.getClipURL(for: bookmark.timeStamp) else { continue }
+            let identifier = bookmark.bookmarkId ?? "\(Int(bookmark.timeStamp))"
+            guard let url = AudioClipUtils.resolveClipURL(for: bookmark) else { continue }
             
             group.enter()
             

@@ -11,12 +11,44 @@ import AVFoundation
 
 class AudioClipUtils {
 
+    static func makeClipId(bookIdentifier: String, timestamp: TimeInterval) -> String {
+        let safeBookId = bookIdentifier.replacingOccurrences(of: " ", with: "_")
+        let millis = Int((timestamp * 1000.0).rounded())
+        return "\(safeBookId)_\(millis)_\(UUID().uuidString)"
+    }
+
+    static func buildClipURL(clipId: String) -> URL {
+        let fileManager = FileManager.default
+        let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let clipsFolderURL = documentsURL.appendingPathComponent("Clips", isDirectory: true)
+
+        if !fileManager.fileExists(atPath: clipsFolderURL.path) {
+            try? fileManager.createDirectory(at: clipsFolderURL, withIntermediateDirectories: true)
+        }
+        return clipsFolderURL.appendingPathComponent("clip_\(clipId).m4a")
+    }
+
+    static func resolveClipURL(for bookmark: BookmarksModel) -> URL? {
+        if let directPath = bookmark.audioClipPath,
+           FileManager.default.fileExists(atPath: directPath.path) {
+            return directPath
+        }
+
+        if let clipId = bookmark.clipId {
+            let clipURL = buildClipURL(clipId: clipId)
+            if FileManager.default.fileExists(atPath: clipURL.path) {
+                return clipURL
+            }
+        }
+
+        return getClipURL(for: bookmark.timeStamp)
+    }
   
     static func extractClip(
         from inputURL: URL,
         startTime: TimeInterval,
         endTime: TimeInterval,
-        identifier: String,
+        clipId: String,
         completion: @escaping (URL?) -> Void
     ) {
 
@@ -36,7 +68,7 @@ class AudioClipUtils {
         let safeStart = max(0, startTime)
         let safeEnd = min(duration, endTime)
 
-        let outputURL = clipsFolderURL.appendingPathComponent("clip_\(identifier).m4a")
+        let outputURL = clipsFolderURL.appendingPathComponent("clip_\(clipId).m4a")
 
         let composition = AVMutableComposition()
 
@@ -89,6 +121,22 @@ class AudioClipUtils {
         }
     }
 
+    static func extractClip(
+        from inputURL: URL,
+        startTime: TimeInterval,
+        endTime: TimeInterval,
+        identifier: String,
+        completion: @escaping (URL?) -> Void
+    ) {
+        extractClip(
+            from: inputURL,
+            startTime: startTime,
+            endTime: endTime,
+            clipId: identifier,
+            completion: completion
+        )
+    }
+
     /// Deletes the saved 15-second clip at given path
     static func deleteClip(at path: String?) {
         guard let path = path else { return }
@@ -110,4 +158,3 @@ class AudioClipUtils {
         return FileManager.default.fileExists(atPath: clipPath.path) ? clipPath : nil
     }
 }
-

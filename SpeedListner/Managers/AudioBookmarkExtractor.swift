@@ -13,6 +13,9 @@ enum BookmarkDisplayItem {
 }
 
 struct BookmarksModel: Codable {
+    var bookmarkId: String?
+    var clipId: String?
+    var clipVersion: Int?
     let indentifier: String
     let bookmarksTxt: String
     let timeStamp: TimeInterval

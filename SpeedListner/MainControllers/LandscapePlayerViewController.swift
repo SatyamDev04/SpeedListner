@@ -200,14 +200,14 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         
         PlayerManager.shared.currentSpeed = PlayerManager.shared.speed
         self.currentValue = PlayerManager.shared.speed
-        print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount")
+  //      print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount")
         let speedEscTime = UserDefaults.standard.object(forKey: "speedEscTime") as? Int ?? 1
         let t = speedEscTime*60
         
         if PlayerManager.shared.speedEsalbutton == true {
             if  PlayerManager.shared.currentSpeed < 10.1 {
                 //print(Int(self.currentTimeInContext),t)
-                print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount",t)
+       //         print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount",t)
                 if Int(PlayerManager.shared.incresedSpeed) % t == 0 {
                     
                     PlayerManager.shared.currentSpeed += 0.1
@@ -219,9 +219,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
                 
             }
               
-        }else{
-            
-        }
+        }else{ }
         setProgress()
        
     }

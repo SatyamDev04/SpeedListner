@@ -1,7 +1,6 @@
 //
 //  PlayerViewController.swift
 //  SpeedListner
-//
 //  Created by satyam on 8/6/23.
 //
 
@@ -208,6 +207,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
 
         }
     }
+    
+    
     func findPlaylistContaining(book: Book) -> Playlist? {
 
         let library = NewDataMannagerClass.getLibrary()
@@ -285,8 +286,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         let books: [Book]
 
         if let playlist = findPlaylistContaining(book: item) {
+            PlayerManager.shared.currentPlayList = playlist
             books = (playlist.books?.array as? [Book]) ?? []
         } else {
+            PlayerManager.shared.currentPlayList = nil
             // fallback → full library
             books = getAllBooks(from: NewDataMannagerClass.getLibrary())
         }
@@ -295,8 +298,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         books.forEach { item in
             print("finalQueue items >" ,item.title ?? "")
         }
-        PlayerManager.shared.playbackQueue = books
-        PlayerManager.shared.currentIndex = books.firstIndex(of: item) ?? 0
+        let finalQueue = sortBooksAsPerUserPreference(books)
+        PlayerManager.shared.playbackQueue = finalQueue
+        PlayerManager.shared.currentIndex = finalQueue.firstIndex(of: item) ?? 0
 
         // 🔥 STEP 3: Load correct book
         PlayerManager.shared.load([item]) { loaded in
@@ -350,6 +354,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 speedEscalationButton.setBackgroundImage(nil, for: .normal)
                 speedEscalationButton.setImage(UIImage(named: "fontisto_toggle-off"), for: .normal)
             }
+            PlayerManager.shared.speedEscalationStart()
             
         }else{
             self.speedEscalationButton.tag = 0
@@ -360,6 +365,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 speedEscalationButton.setBackgroundImage(nil, for: .normal)
                 speedEscalationButton.setImage(UIImage(named: "Group-7"), for: .normal)
             }
+            PlayerManager.shared.speedEscalationStop()
             
         }
         
@@ -1621,13 +1627,13 @@ extension PlayerViewController: AVAudioPlayerDelegate {
     @objc func updateTimer() {
         PlayerManager.shared.currentSpeed = PlayerManager.shared.speed
         self.currentValue = PlayerManager.shared.speed
-        print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount")
+       // print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount")
         let speedEscTime = UserDefaults.standard.object(forKey: "speedEscTime") as? Int ?? 1
         let t = speedEscTime*60
         if PlayerManager.shared.speedEsalbutton == true {
             if  PlayerManager.shared.currentSpeed < 10.1 {
                 //print(Int(self.currentTimeInContext),t)
-                print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount",t)
+            //    print(PlayerManager.shared.incresedSpeed,"cureenESCTimeCount",t)
                 if Int(PlayerManager.shared.incresedSpeed) % t == 0 {
                     
                     PlayerManager.shared.currentSpeed += 0.1
@@ -1686,20 +1692,20 @@ extension PlayerViewController: AVAudioPlayerDelegate {
         
         let uid = PlayerManager.shared.currentUserID
         if let avg = SpeedAnalyticsManager.shared.averageAllTime(userID: uid) {
-          print(String(format: "Avg Speed: %.2fx", avg))
+         // print(String(format: "Avg Speed: %.2fx", avg))
             mRALable.text = "3MRA ≈\(String(format: "%.2fx", avg))"
         }
 
         // 3-month rolling
          let avg3m = SpeedAnalyticsManager.shared.monthlySeries(userID: uid, months: 3)
-            print(String(format: "3-Month Avg: %.2fx", avg3m))
+           // print(String(format: "3-Month Avg: %.2fx", avg3m))
         
 
         // Daily/Monthly series for charts
         let last30 = SpeedAnalyticsManager.shared.dailySeries(userID: uid, days: 30)
-        print(String(format: "last30 Avg: %.2fx", last30))
+        //print(String(format: "last30 Avg: %.2fx", last30))
         let last12m = SpeedAnalyticsManager.shared.monthlySeries(userID: uid, months: 12)
-        print(String(format: "last12m Avg: %.2fx", last12m))
+       // print(String(format: "last12m Avg: %.2fx", last12m))
         
        
         

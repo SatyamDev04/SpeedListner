@@ -28,8 +28,6 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>SupportsLiveActivities</key>
 	<true/>
-	<key>OpenAIKey</key>
-	<string>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</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string></string>

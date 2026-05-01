@@ -17,6 +17,8 @@ class BookmarkManager {
     
     let COMMENTS_LIMIT = 255
     private let clipVersion = 2
+    private let migrationVersion = 2
+    private let migrationQueue = DispatchQueue(label: "bookmark.migration.queue", qos: .utility)
     
     // MARK: - Save Bookmark Without Note
     func saveWithoutNote(book: Book, starStatus: Bool = false, completion: ((Bool) -> Void)? = nil) {
@@ -42,6 +44,7 @@ class BookmarkManager {
             clipId: clipId
         ) { url in
             if let clipURL = url {
+                print("[Bookmark] saveWithoutNote ts=\(t) start=\(start) end=\(end) clipId=\(clipId) path=\(clipURL.path)")
                 arrBookmarksNotes.append(self.makeBookmarkModel(
                     bookmarkId: bookmarkId,
                     clipId: clipId,
@@ -100,6 +103,7 @@ class BookmarkManager {
             clipId: clipId
         ){ url in
             if let clipURL = url {
+                print("[Bookmark] saveWithNote ts=\(t) start=\(start) end=\(end) clipId=\(clipId) path=\(clipURL.path)")
                 arrBookmarksNotes.append(self.makeBookmarkModel(
                     bookmarkId: bookmarkId,
                     clipId: clipId,
@@ -161,6 +165,7 @@ class BookmarkManager {
             clipId: clipId
         ){ url in
             if let clipURL = url {
+                print("[Bookmark] update ts=\(t) start=\(start) end=\(end) clipId=\(clipId) path=\(clipURL.path)")
                 arrBookmarksNotes[index] = self.makeBookmarkModel(
                     bookmarkId: bookmarkId,
                     clipId: clipId,
@@ -244,6 +249,46 @@ class BookmarkManager {
         saveBookmarks(arrBookmarksNotes, for: book)
         completion?(true)
     }
+
+    func migrateLegacyBookmarksIfNeeded(
+        for book: Book,
+        forceReclip: Bool = false,
+        completion: (([BookmarksModel]) -> Void)? = nil
+    ) {
+        guard let bookIdentifier = book.identifier else {
+            completion?([])
+            return
+        }
+
+        let migrationKey = "bookmarkMigrationV\(migrationVersion)_\(bookIdentifier)"
+        if !forceReclip && UserDefaults.standard.bool(forKey: migrationKey) {
+            completion?(loadBookmarks(for: book))
+            return
+        }
+
+        migrationQueue.async {
+            let bookmarks = self.loadBookmarks(for: book)
+            guard !bookmarks.isEmpty else {
+                UserDefaults.standard.set(true, forKey: migrationKey)
+                DispatchQueue.main.async { completion?([]) }
+                return
+            }
+
+            self.migrateBookmarksSequentially(
+                bookmarks,
+                book: book,
+                index: 0,
+                forceReclip: forceReclip,
+                migrated: []
+            ) { migrated in
+                self.saveBookmarks(migrated, for: book)
+                UserDefaults.standard.set(true, forKey: migrationKey)
+                DispatchQueue.main.async {
+                    completion?(migrated)
+                }
+            }
+        }
+    }
     
     // MARK: - Format Time
     private func formatTime(_ seconds: Int) -> String {
@@ -312,6 +357,65 @@ class BookmarkManager {
             }
         }
         return normalized
+    }
+
+    private func migrateBookmarksSequentially(
+        _ bookmarks: [BookmarksModel],
+        book: Book,
+        index: Int,
+        forceReclip: Bool,
+        migrated: [BookmarksModel],
+        completion: @escaping ([BookmarksModel]) -> Void
+    ) {
+        if index >= bookmarks.count {
+            completion(migrated)
+            return
+        }
+
+        var normalized = normalizeBookmark(bookmarks[index], book: book)
+        let start = normalized.startTime ?? max(0, normalized.timeStamp - 5.0)
+        let end = normalized.endTime ?? min(book.duration, normalized.timeStamp + 15.0)
+
+        if normalized.clipId == nil {
+            normalized.clipId = AudioClipUtils.makeClipId(bookIdentifier: normalized.indentifier, timestamp: normalized.timeStamp)
+        }
+        if normalized.bookmarkId == nil {
+            normalized.bookmarkId = UUID().uuidString
+        }
+
+        let hasValidClip = AudioClipUtils.resolveClipURL(for: normalized).map { FileManager.default.fileExists(atPath: $0.path) } ?? false
+        let needsReclip = forceReclip || !hasValidClip || (normalized.clipVersion ?? 0) < clipVersion
+
+        if !needsReclip {
+            var next = normalized
+            next.clipVersion = clipVersion
+            var result = migrated
+            result.append(next)
+            migrateBookmarksSequentially(bookmarks, book: book, index: index + 1, forceReclip: forceReclip, migrated: result, completion: completion)
+            return
+        }
+
+        let clipId = normalized.clipId ?? AudioClipUtils.makeClipId(bookIdentifier: normalized.indentifier, timestamp: normalized.timeStamp)
+        AudioClipUtils.extractClip(
+            from: book.fileURL,
+            startTime: start,
+            endTime: end,
+            clipId: clipId
+        ) { url in
+            var recoded = normalized
+            recoded.clipId = clipId
+            recoded.startTime = start
+            recoded.endTime = end
+            recoded.clipVersion = self.clipVersion
+            if let url = url {
+                recoded.audioClipPath = url
+                print("[BookmarkMigration] ts=\(recoded.timeStamp) start=\(start) end=\(end) clipId=\(clipId) path=\(url.path)")
+            }
+
+            var result = migrated
+            result.append(recoded)
+            self.migrateBookmarksSequentially(bookmarks, book: book, index: index + 1, forceReclip: forceReclip, migrated: result, completion: completion)
+        }
     }
     
     // MARK: - Setup Remote Command Center

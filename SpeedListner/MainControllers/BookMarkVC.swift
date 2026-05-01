@@ -123,12 +123,29 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         guard let book = currentBok else { return }
         self.book = book
         self.currentTitleBook.text = book.title
-
         let savedBookmarks = BookmarkManager.shared.loadBookmarks(for: book)
-        print("Saved bookmarks count: \(savedBookmarks.count)")
+        applyBookmarks(savedBookmarks)
 
-        if savedBookmarks.count > 0 {
-            let validBookmarks = savedBookmarks.filter { bookmark in
+        BookmarkManager.shared.migrateLegacyBookmarksIfNeeded(for: book) { [weak self] migrated in
+            guard let self = self else { return }
+            self.applyBookmarks(migrated)
+        }
+      
+        UserDefaults.standard.set("ByTime", forKey: "BookmarkSorting")
+        if let sort = UserDefaults.standard.object(forKey: "BookmarkSorting") as? String,sort == "ByDate"{
+            self.currentSortType = .byDate
+            self.sortBookmarks()
+        }else{
+            self.currentSortType = .byTime
+            self.sortBookmarks()
+        }
+    }
+
+    private func applyBookmarks(_ bookmarks: [BookmarksModel]) {
+        print("Saved bookmarks count: \(bookmarks.count)")
+
+        if bookmarks.count > 0 {
+            let validBookmarks = bookmarks.filter { bookmark in
                 if let url = AudioClipUtils.resolveClipURL(for: bookmark) {
                     return FileManager.default.fileExists(atPath: url.path)
                 }
@@ -140,21 +157,17 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
             if validBookmarks.isEmpty {
                 print("No valid bookmarks found - audio files might be missing")
+                self.displayItems = []
+                self.tblV.reloadData()
             } else {
                 mergeAdjecntBookmarks()
             }
             updateBookmarkSummary()
         } else {
             print("No saved bookmarks data found")
-        }
-      
-        UserDefaults.standard.set("ByTime", forKey: "BookmarkSorting")
-        if let sort = UserDefaults.standard.object(forKey: "BookmarkSorting") as? String,sort == "ByDate"{
-            self.currentSortType = .byDate
-            self.sortBookmarks()
-        }else{
-            self.currentSortType = .byTime
-            self.sortBookmarks()
+            self.arrBookmarksNotes = []
+            self.displayItems = []
+            self.tblV.reloadData()
         }
     }
     

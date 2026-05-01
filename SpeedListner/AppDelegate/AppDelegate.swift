@@ -42,7 +42,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     
         UIApplication.shared.statusBarStyle = .lightContent
-        
         UIApplication.shared.beginReceivingRemoteControlEvents()
         
         try? AVAudioSession.sharedInstance().setCategory(AVAudioSession.Category.playback, mode: AVAudioSession.Mode.spokenAudio, options: [.allowAirPlay, .allowBluetooth])

@@ -27,28 +27,21 @@ final class AudioMonitorManager: NSObject {
     
     private func fetchAndTranscribeBookmarks() {
         guard let book = currentBook else { return }
-        
-        let key = (book.identifier ?? "") + "_bookmarks"
-        guard let savedData = UserDefaults.standard.data(forKey: key) else {
+        let bookmarks = BookmarkManager.shared.loadBookmarks(for: book)
+        guard !bookmarks.isEmpty else {
             print("No bookmarks found for book:", book.title ?? "")
             return
         }
-        
-        do {
-            let savedBookmarks = try JSONDecoder().decode([BookmarksModel].self, from: savedData)
-            let validBookmarks = savedBookmarks.filter { bookmark in
-                if let url = AudioClipUtils.resolveClipURL(for: bookmark) {
-                    return FileManager.default.fileExists(atPath: url.path)
-                }
-                return false
+
+        let validBookmarks = bookmarks.filter { bookmark in
+            if let url = AudioClipUtils.resolveClipURL(for: bookmark) {
+                return FileManager.default.fileExists(atPath: url.path)
             }
-            guard !validBookmarks.isEmpty else { return }
-            
-            mergeAdjacentBookmarks(bookmarks: validBookmarks, book: book)
-            
-        } catch {
-            print("Failed to decode bookmarks:", error)
+            return false
         }
+        guard !validBookmarks.isEmpty else { return }
+
+        mergeAdjacentBookmarks(bookmarks: validBookmarks, book: book)
     }
     
     private func mergeAdjacentBookmarks(bookmarks: [BookmarksModel], book: Book) {

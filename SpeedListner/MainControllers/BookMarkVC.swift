@@ -77,6 +77,7 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.showSpeedTrackTopBadge()
         if PlayerManager.shared.isPlaying {
             footerView.isHidden = false
         }

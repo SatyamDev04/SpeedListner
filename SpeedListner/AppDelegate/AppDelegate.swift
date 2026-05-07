@@ -31,8 +31,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
                 UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { (granted, error) in
                     if granted {
                         print("User gave permissions for local notifications")
+                        SpeedDailyReminderManager.shared.scheduleDailyReminder(hour: 20, minute: 0)
                     }
                 }
+        SpeedAnalyticsManager.shared.migrateIfNeeded(activeUserID: UserDetail.shared.getUserId())
   
         if !defaults.bool(forKey: UserDefaultsConstants.completedFirstLaunch) {
            
@@ -260,4 +262,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         }
     }
 }
-

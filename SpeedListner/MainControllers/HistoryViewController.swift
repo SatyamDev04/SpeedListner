@@ -54,6 +54,7 @@ class HistoryViewController:UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.showSpeedTrackTopBadge()
         self.checked = UserDefaults.standard.object(forKey: "checked") as? Bool ?? false
         if PlayerManager.shared.isPlaying {
             if comeFrom != ""{
@@ -285,8 +286,10 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
                 return
             }
 
-            self.showPlayerView(book: book)
-            PlayerManager.shared.play()
+            self.ensureCategoryAssigned(for: book) {
+                self.showPlayerView(book: book)
+                PlayerManager.shared.play()
+            }
         }
     }
     

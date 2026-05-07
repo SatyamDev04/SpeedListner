@@ -317,6 +317,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         tipView?.dismiss()
     }
     override func viewWillAppear(_ animated: Bool){
+        super.viewWillAppear(animated)
+        self.showSpeedTrackTopBadge()
         guard let c = currentBok else{return}
         book = c
         self.currentValue = PlayerManager.shared.speed
@@ -1214,8 +1216,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 return
             }
 
-            // STEP 4: START / TOGGLE PLAY
-            PlayerManager.shared.playPause()
+            self.ensureCategoryAssigned(for: book) {
+                // STEP 4: START / TOGGLE PLAY
+                PlayerManager.shared.playPause()
+            }
 
             // STEP 5: UI UPDATE
             if !(PlayerManager.shared.currentBook?.hasChapters ?? false) {
@@ -1376,6 +1380,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.topMenu.dataSource.append(contentsOf: [
             "Bookmarks",
             "History",
+            "SpeedTrack",
             "Settings",
             "Help",
             "Feedback",
@@ -1384,6 +1389,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         let imagesArr = [
             "bi_bookmark-fill",
             "history",
+            "speedtrack",
             "Settings",
             "question",
             "fluent_person-1x",
@@ -1415,18 +1421,22 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
                 self.navigationController?.pushViewController(vc, animated: true)
                 
             case 2:
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SpeedTrackViewController") as! SpeedTrackViewController
+                self.navigationController?.pushViewController(vc, animated: true)
+
+            case 3:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 3:
+
+            case 4:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 4:
+
+            case 5:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 5:
+
+            case 6:
                 let aboutVC = AboutViewController()
                 aboutVC.modalPresentationStyle = .formSheet
                 self.present(aboutVC, animated: true)

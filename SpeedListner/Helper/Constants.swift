@@ -164,5 +164,8 @@ enum UserKeys:String {
     case LoginBy = "Loginby"
     case previousUserId = "previousUserId"
     case savedSort = "savedSort"
+    case categoryPrimaryLabel = "categoryPrimaryLabel"
+    case categorySecondaryLabel = "categorySecondaryLabel"
+    case categoryMap = "bookCategoryMap"
 }
  

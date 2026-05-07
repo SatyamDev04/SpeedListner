@@ -140,6 +140,7 @@
 		DDAC5AF12F3B0F1E002F0CAF /* EngineAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAC5AF02F3B0F1E002F0CAF /* EngineAudioPlayer.swift */; };
 		DDAF7AAF2E2E698500D02458 /* AudioClipUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDAF7AAE2E2E698500D02458 /* AudioClipUtils.swift */; };
 		DDB5DED02E5C764C00C70DB0 /* Extention_URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB5DECF2E5C764400C70DB0 /* Extention_URL.swift */; };
+		DDB6FBC02FACA58800B17739 /* SpeedDailyReminderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDB6FBBF2FACA58800B17739 /* SpeedDailyReminderManager.swift */; };
 		DDBD627E2C9988C3007A6067 /* Library+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */; };
 		DDBD62802C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */; };
 		DDBD62822C9988C3007A6067 /* Playlist+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */; };
@@ -147,6 +148,8 @@
 		DDBD62862C9988C3007A6067 /* Chapter+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD627C2C9988C3007A6067 /* Chapter+CoreDataProperties.swift */; };
 		DDBD62882C99AE3C007A6067 /* PlaylistTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDBD62872C99AE3C007A6067 /* PlaylistTableViewController.swift */; };
 		DDC04B1D2CF6F4E5000745F9 /* BottomSheetViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */; };
+		DDC265242FA87C7E00EA0CF1 /* SpeedTrackViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC265232FA87C7E00EA0CF1 /* SpeedTrackViewController.swift */; };
+		DDC265262FA8853400EA0CF1 /* SpeedTrackCategoryManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC265252FA8853400EA0CF1 /* SpeedTrackCategoryManager.swift */; };
 		DDDE116E2DA3E514007C0CDD /* BookDetailCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */; };
 		DDDE116F2DA3E514007C0CDD /* BookDetailCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */; };
 		DDE86F072F3DB7DA000C9284 /* MainNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDE86F062F3DB7DA000C9284 /* MainNavigationController.swift */; };
@@ -325,6 +328,7 @@
 		DDAC5AF02F3B0F1E002F0CAF /* EngineAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EngineAudioPlayer.swift; sourceTree = "<group>"; };
 		DDAF7AAE2E2E698500D02458 /* AudioClipUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioClipUtils.swift; sourceTree = "<group>"; };
 		DDB5DECF2E5C764400C70DB0 /* Extention_URL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extention_URL.swift; sourceTree = "<group>"; };
+		DDB6FBBF2FACA58800B17739 /* SpeedDailyReminderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedDailyReminderManager.swift; sourceTree = "<group>"; };
 		DDBD62742C9988C3007A6067 /* Library+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Library+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62762C9988C3007A6067 /* LibraryItem+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "LibraryItem+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62782C9988C3007A6067 /* Playlist+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Playlist+CoreDataProperties.swift"; sourceTree = "<group>"; };
@@ -332,6 +336,8 @@
 		DDBD627C2C9988C3007A6067 /* Chapter+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Chapter+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		DDBD62872C99AE3C007A6067 /* PlaylistTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaylistTableViewController.swift; sourceTree = "<group>"; };
 		DDC04B1C2CF6F4E5000745F9 /* BottomSheetViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetViewController.swift; sourceTree = "<group>"; };
+		DDC265232FA87C7E00EA0CF1 /* SpeedTrackViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedTrackViewController.swift; sourceTree = "<group>"; };
+		DDC265252FA8853400EA0CF1 /* SpeedTrackCategoryManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeedTrackCategoryManager.swift; sourceTree = "<group>"; };
 		DDDE116C2DA3E514007C0CDD /* BookDetailCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailCell.swift; sourceTree = "<group>"; };
 		DDDE116D2DA3E514007C0CDD /* BookDetailCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = BookDetailCell.xib; sourceTree = "<group>"; };
 		DDE86F062F3DB7DA000C9284 /* MainNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainNavigationController.swift; sourceTree = "<group>"; };
@@ -496,8 +502,11 @@
 			isa = PBXGroup;
 			children = (
 				DD0EEFA92C8F2EC2004F2863 /* NewDataMannagerClass.swift */,
+				DDC265232FA87C7E00EA0CF1 /* SpeedTrackViewController.swift */,
 				DD0EEFAA2C8F2EC2004F2863 /* NewPlayerManager.swift */,
+				DDB6FBBF2FACA58800B17739 /* SpeedDailyReminderManager.swift */,
 				DD632EEF2F3C661800A3122B /* NewPlayerManagerEngine.swift */,
+				DDC265252FA8853400EA0CF1 /* SpeedTrackCategoryManager.swift */,
 				DDAC5AF02F3B0F1E002F0CAF /* EngineAudioPlayer.swift */,
 				DD9D3EBE2DC8B76600E72CBB /* AudioBookmarkExtractor.swift */,
 				DD8E537E2E16B5B900DF31C2 /* AudioMonitorManager.swift */,
@@ -954,6 +963,7 @@
 				DD0EEE492C8F269F004F2863 /* Book+CoreDataClass.swift in Sources */,
 				DD0EF0592C8F320F004F2863 /* BookMarkCellPopUPVC.swift in Sources */,
 				DD0EF0472C8F320F004F2863 /* ResetPasswordVC.swift in Sources */,
+				DDC265262FA8853400EA0CF1 /* SpeedTrackCategoryManager.swift in Sources */,
 				DD0EEFC12C8F2F5B004F2863 /* UIViewController+Extension.swift in Sources */,
 				DD6795722E6066B7003DEA49 /* SpeedAnalyticsManager.swift in Sources */,
 				DD0EF04F2C8F320F004F2863 /* ListeningSpeedVC.swift in Sources */,
@@ -1018,10 +1028,12 @@
 				DD0EF0562C8F320F004F2863 /* LoginVC.swift in Sources */,
 				DDA453882E17E62F000A3196 /* HistoryViewController.swift in Sources */,
 				DD0EF0552C8F320F004F2863 /* AboutVC.swift in Sources */,
+				DDB6FBC02FACA58800B17739 /* SpeedDailyReminderManager.swift in Sources */,
 				DD0EF04E2C8F320F004F2863 /* LogoutPopup2VC.swift in Sources */,
 				DD0EEFC32C8F2F5B004F2863 /* EndPoints.swift in Sources */,
 				DD0EF00F2C8F31BD004F2863 /* HoursMinutesCell.swift in Sources */,
 				DD6795762E606BFA003DEA49 /* SpeedStatsViewController.swift in Sources */,
+				DDC265242FA87C7E00EA0CF1 /* SpeedTrackViewController.swift in Sources */,
 				DD0EF0042C8F31BD004F2863 /* SubsPlanCell.swift in Sources */,
 				DD0EEE4A2C8F269F004F2863 /* ArtworkColors+CoreDataClass.swift in Sources */,
 				DD0EEE452C8F269F004F2863 /* Chapter+CoreDataClass.swift in Sources */,

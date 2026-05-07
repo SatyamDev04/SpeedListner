@@ -75,6 +75,7 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.showSpeedTrackTopBadge()
         
 
         if PlayerManager.shared.isPlaying {
@@ -161,6 +162,7 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         self.topMenu.dataSource.append(contentsOf: [
             "Bookmarks",
             "History",
+            "SpeedTrack",
             "Settings",
             "Help",
             "Feedback",
@@ -169,6 +171,7 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         let imagesArr = [
             "bi_bookmark-fill",
             "history",
+            "speedtrack",
             "Settings",
             "question",
             "fluent_person-1x",
@@ -200,18 +203,22 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
                 self.navigationController?.pushViewController(vc, animated: true)
                 
             case 2:
+                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SpeedTrackViewController") as! SpeedTrackViewController
+                self.navigationController?.pushViewController(vc, animated: true)
+
+            case 3:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "SettingVC") as! SettingVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 3:
+
+            case 4:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FAQVC") as! FAQVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 4:
+
+            case 5:
                 let vc = self.storyboard?.instantiateViewController(withIdentifier: "FeedbackVC") as! FeedbackVC
                 self.navigationController?.pushViewController(vc, animated: true)
-                
-            case 5:
+
+            case 6:
                 let aboutVC = AboutViewController()
                 aboutVC.modalPresentationStyle = .formSheet
                 self.present(aboutVC, animated: true)

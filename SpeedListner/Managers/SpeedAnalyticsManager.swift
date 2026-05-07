@@ -16,6 +16,10 @@ final class SpeedAnalyticsManager {
     struct Totals: Codable {
         var totalSeconds: TimeInterval = 0         // Σ Δt while playing
         var weightedRateSeconds: Double = 0        // Σ (rate * Δt)
+        var longestStreakDays: Int = 0
+        var currentStreakDays: Int = 0
+        var lastQualifiedDayKey: String?
+        var first3MRAS: Double?
         var updatedAt: Date = Date()
     }
 
@@ -23,6 +27,11 @@ final class SpeedAnalyticsManager {
     struct DailyBucket: Codable {
         var totalSeconds: TimeInterval = 0
         var weightedRateSeconds: Double = 0
+        var fictionSeconds: TimeInterval = 0
+        var nonFictionSeconds: TimeInterval = 0
+        var fictionWeightedRateSeconds: Double = 0
+        var nonFictionWeightedRateSeconds: Double = 0
+        var qualifiedForStreak: Bool = false
     }
 
     private func keyAllTime(userID: String) -> String { "speed_totals_alltime_\(userID)" }
@@ -30,6 +39,31 @@ final class SpeedAnalyticsManager {
 
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+
+
+    private let schemaVersionKey = "speed_analytics_schema_version"
+    private let currentSchemaVersion = 1
+
+    func migrateIfNeeded(activeUserID: String) {
+        let defaults = UserDefaults.standard
+        let installed = defaults.integer(forKey: schemaVersionKey)
+        guard installed < currentSchemaVersion else { return }
+
+        if !activeUserID.isEmpty {
+            let oldAllTime = "speed_totals_alltime_"
+            let oldDaily = "speed_totals_daily_"
+            if defaults.data(forKey: keyAllTime(userID: activeUserID)) == nil,
+               let legacy = defaults.data(forKey: oldAllTime) {
+                defaults.set(legacy, forKey: keyAllTime(userID: activeUserID))
+            }
+            if defaults.data(forKey: keyDaily(userID: activeUserID)) == nil,
+               let legacy = defaults.data(forKey: oldDaily) {
+                defaults.set(legacy, forKey: keyDaily(userID: activeUserID))
+            }
+        }
+
+        defaults.set(currentSchemaVersion, forKey: schemaVersionKey)
+    }
 
     // MARK: - Public API
 
@@ -50,6 +84,31 @@ final class SpeedAnalyticsManager {
         var today = daily[dayKey] ?? DailyBucket()
         today.totalSeconds += delta
         today.weightedRateSeconds += Double(rate) * delta
+        today.qualifiedForStreak = today.totalSeconds >= 300
+        daily[dayKey] = today
+        saveDaily(userID: userID, daily: daily)
+
+        // Keep streak state in all-time totals.
+        updateStreak(userID: userID, totals: &totals, daily: daily, todayKey: dayKey)
+        saveTotals(userID: userID, totals: totals)
+    }
+
+    func recordTick(userID: String, rate: Float, delta: TimeInterval, category: String?) {
+        guard delta > 0, rate > 0 else { return }
+        recordTick(userID: userID, rate: rate, delta: delta)
+
+        var daily = loadDaily(userID: userID)
+        let dayKey = Self.dayKey(for: Date())
+        var today = daily[dayKey] ?? DailyBucket()
+        let weighted = Double(rate) * delta
+        if (category ?? "").lowercased() == "fiction" {
+            today.fictionSeconds += delta
+            today.fictionWeightedRateSeconds += weighted
+        } else if (category ?? "").lowercased() == "non-fiction" || (category ?? "").lowercased() == "nonfiction" {
+            today.nonFictionSeconds += delta
+            today.nonFictionWeightedRateSeconds += weighted
+        }
+        today.qualifiedForStreak = today.totalSeconds >= 300
         daily[dayKey] = today
         saveDaily(userID: userID, daily: daily)
     }
@@ -65,6 +124,123 @@ final class SpeedAnalyticsManager {
         let totals = loadTotals(userID: userID)
         guard totals.totalSeconds > 0 else { return nil }
         return totals.weightedRateSeconds / totals.totalSeconds
+    }
+
+    // THL = Total Hours Listened (real-time)
+    func totalHoursListened(userID: String) -> Double {
+        let totals = loadTotals(userID: userID)
+        return totals.totalSeconds / 3600.0
+    }
+
+    // Material Hours = speed-adjusted covered hours
+    func materialHoursCovered(userID: String) -> Double {
+        let totals = loadTotals(userID: userID)
+        return totals.weightedRateSeconds / 3600.0
+    }
+
+    func categoryHours(userID: String) -> (fiction: Double, nonFiction: Double) {
+        let daily = loadDaily(userID: userID)
+        let fiction = daily.values.reduce(0.0) { $0 + $1.fictionSeconds } / 3600.0
+        let nonFiction = daily.values.reduce(0.0) { $0 + $1.nonFictionSeconds } / 3600.0
+        return (fiction, nonFiction)
+    }
+
+    func currentStreak(userID: String) -> Int {
+        let daily = loadDaily(userID: userID)
+        let totals = loadTotals(userID: userID)
+        let cal = Calendar(identifier: .gregorian)
+        let today = cal.startOfDay(for: Date())
+
+        let todayKey = Self.dayKey(for: today)
+        var anchorDate: Date = today
+        if daily[todayKey]?.qualifiedForStreak != true {
+            guard let yesterday = cal.date(byAdding: .day, value: -1, to: today) else {
+                return fallbackStreakFromTotalsIfRecent(totals: totals, calendar: cal, today: today)
+            }
+            let yesterdayKey = Self.dayKey(for: yesterday)
+            guard daily[yesterdayKey]?.qualifiedForStreak == true else {
+                return fallbackStreakFromTotalsIfRecent(totals: totals, calendar: cal, today: today)
+            }
+            anchorDate = yesterday
+        }
+
+        var streak = 1
+        var cursor = anchorDate
+        while let prev = cal.date(byAdding: .day, value: -1, to: cursor) {
+            let key = Self.dayKey(for: prev)
+            guard daily[key]?.qualifiedForStreak == true else { break }
+            streak += 1
+            cursor = prev
+        }
+
+        return streak
+    }
+
+    private func fallbackStreakFromTotalsIfRecent(totals: Totals, calendar: Calendar, today: Date) -> Int {
+        guard totals.currentStreakDays > 0,
+              let lastKey = totals.lastQualifiedDayKey else { return 0 }
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = .init(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        guard let lastDate = formatter.date(from: lastKey) else { return 0 }
+        let lastStart = calendar.startOfDay(for: lastDate)
+        let diff = calendar.dateComponents([.day], from: lastStart, to: today).day ?? Int.max
+        return diff <= 1 ? totals.currentStreakDays : 0
+    }
+
+    func longestStreak(userID: String) -> Int {
+        let daily = loadDaily(userID: userID)
+        let cal = Calendar(identifier: .gregorian)
+
+        let formatter = DateFormatter()
+        formatter.calendar = cal
+        formatter.locale = .init(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+
+        let qualifiedDates: [Date] = daily.compactMap { key, bucket in
+            guard bucket.qualifiedForStreak, let date = formatter.date(from: key) else { return nil }
+            return cal.startOfDay(for: date)
+        }.sorted()
+
+        var longest = 0
+        var running = 0
+        var previous: Date?
+        for date in qualifiedDates {
+            if let prev = previous {
+                let diff = cal.dateComponents([.day], from: prev, to: date).day ?? 0
+                running = (diff == 1) ? (running + 1) : 1
+            } else {
+                running = 1
+            }
+            longest = max(longest, running)
+            previous = date
+        }
+        return longest
+    }
+
+    func first3MonthRollingAverage(userID: String) -> Double? {
+        loadTotals(userID: userID).first3MRAS
+    }
+
+    func current3MonthRollingAverage(userID: String) -> Double? {
+        averageForLastDays(userID: userID, days: 90)
+    }
+
+    func current3MonthRollingAverageTimePerDay(userID: String) -> TimeInterval {
+        let daily = loadDaily(userID: userID)
+        let cal = Calendar(identifier: .gregorian)
+        let today = cal.startOfDay(for: Date())
+        var total: TimeInterval = 0
+        var countedDays = 0
+
+        for offset in 0..<90 {
+            guard let date = cal.date(byAdding: .day, value: -offset, to: today) else { continue }
+            let key = Self.dayKey(for: date)
+            total += daily[key]?.totalSeconds ?? 0
+            countedDays += 1
+        }
+        return countedDays > 0 ? total / Double(countedDays) : 0
     }
 
     /// Average speed for the last N days (inclusive of today). Returns nil if no data.
@@ -122,6 +298,66 @@ final class SpeedAnalyticsManager {
         f.locale = .init(identifier: "en_US_POSIX")
         f.dateFormat = "yyyy-MM-dd"
         return f.string(from: date)
+    }
+
+    private func updateStreak(
+        userID: String,
+        totals: inout Totals,
+        daily: [String: DailyBucket],
+        todayKey: String
+    ) {
+        let cal = Calendar(identifier: .gregorian)
+        let formatter = DateFormatter()
+        formatter.calendar = cal
+        formatter.locale = .init(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        
+        let qualifiedDates: [Date] = daily.compactMap { key, bucket in
+            guard bucket.qualifiedForStreak, let date = formatter.date(from: key) else { return nil }
+            return cal.startOfDay(for: date)
+        }.sorted()
+
+        var longest = 0
+        var running = 0
+        var previous: Date?
+        for date in qualifiedDates {
+            if let prev = previous {
+                let diff = cal.dateComponents([.day], from: prev, to: date).day ?? 0
+                running = (diff == 1) ? (running + 1) : 1
+            } else {
+                running = 1
+            }
+            longest = max(longest, running)
+            previous = date
+        }
+
+        totals.longestStreakDays = max(totals.longestStreakDays, longest)
+
+        if let todayDate = formatter.date(from: todayKey),
+           daily[todayKey]?.qualifiedForStreak == true {
+            var current = 1
+            var cursor = cal.startOfDay(for: todayDate)
+            while true {
+                guard let prev = cal.date(byAdding: .day, value: -1, to: cursor) else { break }
+                let prevKey = Self.dayKey(for: prev)
+                if daily[prevKey]?.qualifiedForStreak == true {
+                    current += 1
+                    cursor = prev
+                } else {
+                    break
+                }
+            }
+            totals.currentStreakDays = current
+            totals.lastQualifiedDayKey = todayKey
+        } else {
+            totals.currentStreakDays = 0
+        }
+
+        // Capture first 3MRAS once after enough usage window.
+        if totals.first3MRAS == nil,
+           let avg90 = averageForLastDays(userID: userID, days: 90) {
+            totals.first3MRAS = avg90
+        }
     }
 }
 extension SpeedAnalyticsManager {

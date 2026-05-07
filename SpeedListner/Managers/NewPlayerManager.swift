@@ -215,14 +215,16 @@ class PlayerManager: NSObject {
         
         // Only count time while actually playing
         if audioPlayer?.isPlaying == true {
-            // Ensure AVAudioPlayer can change rate
-            // (somewhere during setup: audioPlayer?.enableRate = true)
-            
             let rateToRecord = Double(speed)
+            let category: String? = {
+                guard let bookId = currentBook?.identifier else { return nil }
+                return SpeedTrackCategoryManager.shared.category(forBookId: bookId)
+            }()
             SpeedAnalyticsManager.shared.recordTick(
                 userID: currentUserID,
                 rate: Float(rateToRecord),
-                delta: delta
+                delta: delta,
+                category: category
             )
         }
     }
@@ -484,6 +486,7 @@ class PlayerManager: NSObject {
         
         
         audioplayer.play()
+        startAnalyticsTimer()
         
         
         MPNowPlayingInfoCenter.default().nowPlayingInfo![MPNowPlayingInfoPropertyPlaybackRate] = 1.0

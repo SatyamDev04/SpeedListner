@@ -98,6 +98,70 @@ extension UIViewController {
               })
           })
       }
+
+    func showSpeedTrackTopBadge() {
+        let badgeTag = 909001
+        view.viewWithTag(badgeTag)?.removeFromSuperview()
+
+        let currentUID = UserDetail.shared.getUserId()
+        let uid = currentUID.isEmpty ? UserDetail.shared.getPreviousUserId() : currentUID
+        guard !uid.isEmpty else { return }
+
+        let thl = SpeedAnalyticsManager.shared.totalHoursListened(userID: uid)
+        let streak = SpeedAnalyticsManager.shared.currentStreak(userID: uid)
+
+        let badge = UILabel()
+        badge.tag = badgeTag
+        badge.numberOfLines = 2
+        badge.textAlignment = .left
+        badge.font = .systemFont(ofSize: 11, weight: .bold)
+        badge.textColor = .white
+        badge.backgroundColor = UIColor.black.withAlphaComponent(0.25)
+        badge.layer.cornerRadius = 8
+        badge.clipsToBounds = true
+        badge.text = String(format: "🔥 %d\nTHL: %.2f", streak, thl)
+        badge.translatesAutoresizingMaskIntoConstraints = false
+
+        view.addSubview(badge)
+        NSLayoutConstraint.activate([
+            badge.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+            badge.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
+            badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 68)
+        ])
+    }
+
+    func ensureCategoryAssigned(for book: Book, completion: @escaping () -> Void) {
+        guard let identifier = book.identifier, !identifier.isEmpty else {
+            completion()
+            return
+        }
+
+        if SpeedTrackCategoryManager.shared.category(forBookId: identifier) != nil {
+            completion()
+            return
+        }
+
+        let primary = SpeedTrackCategoryManager.shared.primaryLabel()
+        let secondary = SpeedTrackCategoryManager.shared.secondaryLabel()
+
+        let alert = UIAlertController(
+            title: "Categorize Audiobook",
+            message: "Choose a category for \"\(book.title ?? "this book")\".",
+            preferredStyle: .alert
+        )
+        alert.addAction(UIAlertAction(title: primary, style: .default, handler: { _ in
+            SpeedTrackCategoryManager.shared.setCategory("fiction", forBookId: identifier)
+            completion()
+        }))
+        alert.addAction(UIAlertAction(title: secondary, style: .default, handler: { _ in
+            SpeedTrackCategoryManager.shared.setCategory("non-fiction", forBookId: identifier)
+            completion()
+        }))
+        alert.addAction(UIAlertAction(title: "Skip", style: .cancel, handler: { _ in
+            completion()
+        }))
+        present(alert, animated: true)
+    }
 }
 
 class ToastLabel: UILabel {

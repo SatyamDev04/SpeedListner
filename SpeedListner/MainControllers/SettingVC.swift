@@ -110,6 +110,7 @@ class SettingVC: UIViewController, Afterpay {
         }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        self.showSpeedTrackTopBadge()
         if let d = UserDefaults.standard.object(forKey: "desable") as? Bool{
             if d == true{
              
@@ -274,7 +275,9 @@ class SettingVC: UIViewController, Afterpay {
 //        guard let m = self.modalVC else { return }
 //        self.present(m, animated: true, completion: nil)
     }
-    
+    @IBAction func editSpeedTrackLabelsBtnTapped(_ sender: Any) {
+        self.presentSpeedTrackLabelEditor()
+    }
     @IBAction func btnLogout_Action(_ sender: Any) {
         
         let vc = self.storyboard?.instantiateViewController(withIdentifier: "LogoutPop1VC") as! LogoutPop1VC
@@ -295,6 +298,7 @@ class SettingVC: UIViewController, Afterpay {
         
        
     }
+    
     func updateVolumeBoostUI() {
         
         let isEnabled = UserDefaults.standard.bool(forKey: "volumeBoostEnabled")
@@ -435,9 +439,9 @@ class SettingVC: UIViewController, Afterpay {
         self.topMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
         self.topMenu.dataSource.removeAll()
         
-       self.topMenu.dataSource.append(contentsOf: ["Profile","Settings"])
+       self.topMenu.dataSource.append(contentsOf: ["Profile","SpeedTrack Labels","Settings"])
         
-        let imgArr = ["Vector","Settings"]
+        let imgArr = ["Vector","Settings","Settings"]
         
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
@@ -455,7 +459,9 @@ class SettingVC: UIViewController, Afterpay {
 //                let vc = self.storyboard?.instantiateViewController(withIdentifier: "GetProfileVC") as! GetProfileVC
 //                self.navigationController?.pushViewController(vc, animated: true)
       
-            }else{
+            } else if index == 1 {
+                self.presentSpeedTrackLabelEditor()
+            } else {
 //                let vc = self.storyboard?.instantiateViewController(withIdentifier: "SignUpVC") as! SignUpVC
 //                self.navigationController?.pushViewController(vc, animated: true)
             }
@@ -466,6 +472,36 @@ class SettingVC: UIViewController, Afterpay {
        
     }
     
+}
+
+private extension SettingVC {
+    func presentSpeedTrackLabelEditor() {
+        let alert = UIAlertController(
+            title: "SpeedTrack Labels",
+            message: "Rename category labels used for book classification.",
+            preferredStyle: .alert
+        )
+        alert.addTextField { textField in
+            textField.placeholder = "Primary Label"
+            textField.text = SpeedTrackCategoryManager.shared.primaryLabel()
+            textField.clearButtonMode = .whileEditing
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Secondary Label"
+            textField.text = SpeedTrackCategoryManager.shared.secondaryLabel()
+            textField.clearButtonMode = .whileEditing
+        }
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        alert.addAction(UIAlertAction(title: "Save", style: .default, handler: { _ in
+            let primary = (alert.textFields?[0].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let secondary = (alert.textFields?[1].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let finalPrimary = primary.isEmpty ? "Fiction" : primary
+            let finalSecondary = secondary.isEmpty ? "Non-Fiction" : secondary
+            SpeedTrackCategoryManager.shared.setLabels(primary: finalPrimary, secondary: finalSecondary)
+            self.showToast("SpeedTrack labels updated")
+        }))
+        present(alert, animated: true)
+    }
 }
 
 

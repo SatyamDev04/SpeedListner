@@ -107,7 +107,7 @@ final class SpeedTrackViewController: UIViewController {
         let mratSeconds = SpeedAnalyticsManager.shared.current3MonthRollingAverageTimePerDay(userID: uid)
 
         let titleText = "Total Hours Listened (THL):\n"
-        let valueText = String(format: "%.2f", thl)
+        let valueText = formatTHL(thl)
 
         let attributedString = NSMutableAttributedString(
             string: titleText,
@@ -127,10 +127,29 @@ final class SpeedTrackViewController: UIViewController {
 
         attributedString.append(valueAttributed)
         thlLabel.attributedText = attributedString
-        categoryLabel.text = String(format: "Fiction: %.2f      Non-Fiction: %.2f", cat.fiction, cat.nonFiction)
-        materialLabel.text = String(format: "Material Hours Covered: %.2f", covered)
+        categoryLabel.text = "Fiction: \(formatTHL(cat.fiction))      Non-Fiction: \(formatTHL(cat.nonFiction))"
+        materialLabel.text = "Material Hours Covered: \(formatTHL(covered))"
 
-        streakLabel.text = "SpeedDaily(🎧🔥):\nCurrent Streak: \(currentStreak) Days\nLongest Streak: \(longestStreak) Days"
+        let speedDailyPrefix = NSMutableAttributedString(
+            string: "SpeedDaily",
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .bold),
+                .foregroundColor: UIColor.black
+            ]
+        )
+
+        let iconAttachment = NSTextAttachment()
+        iconAttachment.image = UIImage(named: "speeddaily")
+        iconAttachment.bounds = CGRect(x: 0, y: -2, width: 18, height: 18)
+        speedDailyPrefix.append(NSAttributedString(attachment: iconAttachment))
+        speedDailyPrefix.append(NSAttributedString(
+            string: ":\nCurrent Streak: \(currentStreak) Days\nLongest Streak: \(longestStreak) Days",
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .bold),
+                .foregroundColor: UIColor.black
+            ]
+        ))
+        streakLabel.attributedText = speedDailyPrefix
 
         mrasLabel.text = String(format: "3 Month Rolling Average Speed (3MRAS):\nFirst 3 Months: %@x\nMost Recent 3 Months: %@x",
                                 firstMras != nil ? String(format: "%.2f", firstMras!) : "Pending",
@@ -146,5 +165,10 @@ final class SpeedTrackViewController: UIViewController {
         let m = (total % 3600) / 60
         let s = total % 60
         return String(format: "%d:%02d:%02d", h, m, s)
+    }
+
+    private func formatTHL(_ hours: Double) -> String {
+        let wholeHours = max(0, Int(hours.rounded(.down)))
+        return "\(wholeHours) THL"
     }
 }

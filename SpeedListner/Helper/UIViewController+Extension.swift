@@ -102,7 +102,6 @@ extension UIViewController {
     func showSpeedTrackTopBadge() {
         let badgeTag = 909001
         view.viewWithTag(badgeTag)?.removeFromSuperview()
-
         let currentUID = UserDetail.shared.getUserId()
         let uid = currentUID.isEmpty ? UserDetail.shared.getPreviousUserId() : currentUID
         guard !uid.isEmpty else { return }
@@ -110,24 +109,67 @@ extension UIViewController {
         let thl = SpeedAnalyticsManager.shared.totalHoursListened(userID: uid)
         let streak = SpeedAnalyticsManager.shared.currentStreak(userID: uid)
 
-        let badge = UILabel()
+        let badge = UIView()
         badge.tag = badgeTag
-        badge.numberOfLines = 2
-        badge.textAlignment = .left
-        badge.font = .systemFont(ofSize: 11, weight: .bold)
-        badge.textColor = .white
         badge.backgroundColor = UIColor.black.withAlphaComponent(0.25)
         badge.layer.cornerRadius = 8
         badge.clipsToBounds = true
-        badge.text = String(format: "🔥 %d\nTHL: %.2f", streak, thl)
         badge.translatesAutoresizingMaskIntoConstraints = false
 
+        let iconView = UIImageView()
+        iconView.contentMode = .scaleAspectFit
+        iconView.image = UIImage(named: "streak") ?? UIImage(systemName: "flame.fill")
+        iconView.tintColor = .white
+        iconView.setContentHuggingPriority(.required, for: .horizontal)
+        iconView.setContentCompressionResistancePriority(.required, for: .horizontal)
+        iconView.widthAnchor.constraint(equalToConstant: 14).isActive = true
+        iconView.heightAnchor.constraint(equalToConstant: 14).isActive = true
+
+        let streakLabel = UILabel()
+        streakLabel.numberOfLines = 1
+        streakLabel.textAlignment = .left
+        streakLabel.font = .systemFont(ofSize: 11, weight: .bold)
+        streakLabel.textColor = .white
+        streakLabel.text = "\(streak)"
+
+        let thlLabel = UILabel()
+        thlLabel.numberOfLines = 1
+        thlLabel.textAlignment = .left
+        thlLabel.font = .systemFont(ofSize: 11, weight: .bold)
+        thlLabel.textColor = .white
+        thlLabel.text = "THL: \(formatTHL(thl))"
+
+        let streakRow = UIStackView(arrangedSubviews: [iconView, streakLabel])
+        streakRow.axis = .horizontal
+        streakRow.alignment = .center
+        streakRow.spacing = 4
+
+        let mainStack = UIStackView(arrangedSubviews: [streakRow, thlLabel])
+        mainStack.translatesAutoresizingMaskIntoConstraints = false
+        mainStack.axis = .vertical
+        mainStack.alignment = .leading
+        mainStack.spacing = 1
+
+        badge.addSubview(mainStack)
         view.addSubview(badge)
+
+        let hasBackButton = (navigationItem.leftBarButtonItem != nil) || (navigationController?.viewControllers.first != self)
+        let leadingOffset: CGFloat = hasBackButton ? 44 : 8
+
         NSLayoutConstraint.activate([
-            badge.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 8),
+            badge.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: leadingOffset),
             badge.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 6),
-            badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 68)
+            badge.widthAnchor.constraint(greaterThanOrEqualToConstant: 88),
+            mainStack.leadingAnchor.constraint(equalTo: badge.leadingAnchor, constant: 6),
+            mainStack.trailingAnchor.constraint(equalTo: badge.trailingAnchor, constant: -6),
+            mainStack.topAnchor.constraint(equalTo: badge.topAnchor, constant: 4),
+            mainStack.bottomAnchor.constraint(equalTo: badge.bottomAnchor, constant: -4)
         ])
+    }
+
+    private func formatTHL(_ hours: Double) -> String {
+        let wholeHours = max(0, Int(hours.rounded(.down)))
+        return "\(wholeHours) THL"
     }
 
     func ensureCategoryAssigned(for book: Book, completion: @escaping () -> Void) {

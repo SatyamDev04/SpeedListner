@@ -113,7 +113,7 @@ class FAQVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     • Stay consistent
     """,
 
-    "Your brain needs time to warm up. After consistent listening, it adapts to higher speeds again."
+    "Your brain needs time to warm up. Start your first 5 to 10 minutes at a slightly lower speed, then step up gradually. Morning focus is usually lower at first, but after a short ramp-up your brain adapts and higher speeds feel normal again."
     ]
     
    
@@ -136,9 +136,47 @@ class FAQVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
        self.tblV.layer.shadowOpacity = 10.0
        self.tblV.layer.shadowOffset = .zero
        self.tblV.layer.masksToBounds = true
+       configureFAQSupportHeader()
        self.tblV.reloadData()
        self.tblV.register(UINib(nibName: "CellData", bundle: nil), forCellReuseIdentifier: "CellData")
 
+   }
+
+   private func configureFAQSupportHeader() {
+       let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: tblV.bounds.width, height: 64))
+
+       let supportTextView = UITextView(frame: CGRect(x: 12, y: 8, width: max(0, tblV.bounds.width - 24), height: 48))
+       supportTextView.backgroundColor = .clear
+       supportTextView.isEditable = false
+       supportTextView.isScrollEnabled = false
+       supportTextView.textContainerInset = .zero
+       supportTextView.textContainer.lineFragmentPadding = 0
+       supportTextView.textAlignment = .center
+       supportTextView.font = .systemFont(ofSize: 14, weight: .semibold)
+       supportTextView.linkTextAttributes = [
+           .foregroundColor: UIColor.systemBlue,
+           .underlineStyle: NSUnderlineStyle.single.rawValue
+       ]
+
+       let text = "Please Visit Us As SpeedListener.com For More Support."
+       let attributed = NSMutableAttributedString(
+           string: text,
+           attributes: [
+               .font: UIFont.systemFont(ofSize: 14, weight: .semibold),
+               .foregroundColor: UIColor.black
+           ]
+       )
+
+       let linkText = "SpeedListener.com"
+       let nsText = text as NSString
+       let linkRange = nsText.range(of: linkText)
+       if linkRange.location != NSNotFound {
+           attributed.addAttribute(.link, value: "https://speedlistener.com", range: linkRange)
+       }
+
+       supportTextView.attributedText = attributed
+       headerContainer.addSubview(supportTextView)
+       tblV.tableHeaderView = headerContainer
    }
     
     func apiforGetAllFAQ() {

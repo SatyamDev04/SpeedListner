@@ -20,13 +20,13 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
     
     let privacyData: [(title: String, desc: String)] = [
         ("SpeedListener Privacy Policy", "Your Privacy Matters To Us. This Policy Explains What We Collect And How We Use It."),
-        ("1. Information We Collect", "We may collect:\n• Email Address\n• Account Details\n• Listening Statistics (hours, streaks, speed data)\n• Device Information\n• Basic Usage Analytics"),
-        ("2. How We Use Your Information", "We use your information to:\n• Run the application\n• Track your progress\n• Improve performance\n• Fix bugs\n• Communicate updates\n\nWe do NOT sell, trade, or share your personal information."),
-        ("3. Payments", "Payments are handled by your App Store. We do not store your full payment details."),
-        ("4. Data Storage", "Your data may be stored securely using trusted cloud providers. We use reasonable security measures."),
-        ("5. Data Sharing", "We do NOT sell, share, or trade your data."),
-        ("6. Your Choices", "You may:\n• Update your account\n• Cancel subscription\n• Request account deletion\n\nContact support for deletion requests."),
-        ("7. Policy Updates", "We may update this policy occasionally. Changes will be reflected inside the app.")
+        ("Information We Collect", "We may collect:\n• Email Address\n• Account Details\n• Listening Statistics (hours, streaks, speed data)\n• Device Information\n• Basic Usage Analytics"),
+        ("How We Use Your Information", "We use your information to:\n• Run the application\n• Track your progress\n• Improve performance\n• Fix bugs\n• Communicate updates\n\nWe do NOT sell, trade, or share your personal information."),
+        ("Payments", "Payments are handled by your App Store. We do not store your full payment details."),
+        ("Data Storage", "Your data may be stored securely using trusted cloud providers. We use reasonable security measures."),
+        ("Data Sharing", "We do NOT sell, share, or trade your data."),
+        ("Your Choices", "You may:\n• Update your account\n• Cancel subscription\n• Request account deletion\n\nContact support for deletion requests."),
+        ("Policy Updates", "We may update this policy occasionally. Changes will be reflected inside the app.")
     ]
     
     override func viewDidLoad() {
@@ -106,7 +106,12 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
         let cell1 = tblV.dequeueReusableCell(withIdentifier: "CellData", for: indexPath) as! CellData
         cell1.lblDesc.text = data.desc
         cell1.lblHeader.text = data.title
-        cell1.lblSerialNumber.isHidden = true
+        if indexPath.row == 0 {
+            cell1.lblSerialNumber.isHidden = true
+        } else {
+            cell1.lblSerialNumber.isHidden = false
+            cell1.lblSerialNumber.text = "\(indexPath.row)."
+        }
        // tblV.isScrollEnabled = false
         cell1.headerLeadingConstraints.constant = -40
 //         if indexRow.contains(indexPath.row) {

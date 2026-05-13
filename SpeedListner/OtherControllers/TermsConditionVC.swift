@@ -12,13 +12,13 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
     @IBOutlet weak var scrollView: UIScrollView!
     var arrTitle = [
         "SpeedListener Privacy Policy",
-        "1. Information We Collect",
-        "2. How We Use Your Information",
-        "3. Payments",
-        "4. Data Storage",
-        "5. Data Sharing",
-        "6. Your Choices",
-        "7. Policy Updates"
+        "Information We Collect",
+        "How We Use Your Information",
+        "Payments",
+        "Data Storage",
+        "Data Sharing",
+        "Your Choices",
+        "Policy Updates"
     ]
 
     var arrDesc = [
@@ -115,7 +115,12 @@ class TermsConditionVC: UIViewController,UITableViewDelegate,UITableViewDataSour
         let cell1 = tblV.dequeueReusableCell(withIdentifier: "CellData", for: indexPath) as! CellData
         cell1.lblDesc.text = arrDesc[indexPath.row] //data.term_name ?? "" //arrDesc[indexPath.row]
         cell1.lblHeader.text = arrTitle[indexPath.row]
-        cell1.lblSerialNumber.text =  "\(indexPath.row + 1)" + "."
+        if indexPath.row == 0 {
+            cell1.lblSerialNumber.isHidden = true
+        } else {
+            cell1.lblSerialNumber.isHidden = false
+            cell1.lblSerialNumber.text = "\(indexPath.row)."
+        }
        // tblV.isScrollEnabled = false
        cell1.headerLeadingConstraints.constant = -25
 //         if indexRow.contains(indexPath.row) {

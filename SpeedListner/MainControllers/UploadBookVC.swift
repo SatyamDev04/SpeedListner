@@ -171,13 +171,13 @@ class UploadBookVC: UIViewController, UITableViewDelegate, UITableViewDataSource
         let imagesArr = [
             "bi_bookmark-fill",
             "history",
-            "speedtrack",
+            "speeddaily",
             "Settings",
             "question",
             "fluent_person-1x",
-            "ep_info-filled 1" // 🔁 add your About icon asset name
+            "ep_info-filled 2"
         ]
-       
+
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         topMenu.customCellConfiguration = { index, title, cell in
             

@@ -22,6 +22,9 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
         ("SpeedListener Privacy Policy", "Your Privacy Matters To Us. This Policy Explains What We Collect And How We Use It."),
         ("Information We Collect", "We may collect:\n• Email Address\n• Account Details\n• Listening Statistics (hours, streaks, speed data)\n• Device Information\n• Basic Usage Analytics"),
         ("How We Use Your Information", "We use your information to:\n• Run the application\n• Track your progress\n• Improve performance\n• Fix bugs\n• Communicate updates\n\nWe do NOT sell, trade, or share your personal information."),
+        ("AI Processing Disclosure", "SpeedListener uses AI for bookmark transcription and summary features. This processing is cloud-based and may use trusted AI service providers."),
+        ("AI Data Sent For Processing", "When you request transcription/summary, SpeedListener may send:\n• Short bookmarked audio clips\n• Related transcription text for summarization\n\nSpeedListener does not need to upload your full library for this feature."),
+        ("AI Storage, Retention, And Deletion", "AI outputs (transcription and summary) are stored locally on your device for usability. You can remove related data by deleting associated bookmarks/books in SpeedListener. Account deletion requests are also supported through app support flows."),
         ("Payments", "Payments are handled by your App Store. We do not store your full payment details."),
         ("Data Storage", "Your data may be stored securely using trusted cloud providers. We use reasonable security measures."),
         ("Data Sharing", "We do NOT sell, share, or trade your data."),
@@ -108,12 +111,13 @@ class PrivacyVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
         cell1.lblHeader.text = data.title
         if indexPath.row == 0 {
             cell1.lblSerialNumber.isHidden = true
+            cell1.headerLeadingConstraints.constant = -40
         } else {
             cell1.lblSerialNumber.isHidden = false
             cell1.lblSerialNumber.text = "\(indexPath.row)."
+            cell1.headerLeadingConstraints.constant = 8
         }
        // tblV.isScrollEnabled = false
-        cell1.headerLeadingConstraints.constant = -40
 //         if indexRow.contains(indexPath.row) {
 //                   cell1.img.image = #imageLiteral(resourceName: "akar-icons_circle-minus-fill")
 //            // cell1.btnFaqQuestion.setTitle(data.faqsQuestion, for: .normal)

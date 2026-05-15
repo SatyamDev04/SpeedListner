@@ -64,7 +64,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     @IBOutlet weak var timeSavedMinute: UILabel!
     @IBOutlet weak var mRALable: UILabel!
-    
+    @IBOutlet weak var mRATLable: UILabel!
     var currentValue: Float = 0.1
     weak var delegate: TabBarDataDelegate?
     private let playImage = UIImage(systemName:"play.fill")
@@ -200,7 +200,10 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         self.loadPreviousBook()
         mRALable.isUserInteractionEnabled = true
         let gestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.handleMraValueTap))
+        mRATLable.isUserInteractionEnabled = true
+        let gestureRecognizer2 = UITapGestureRecognizer(target: self, action: #selector(self.handleMraValueTap))
         mRALable.addGestureRecognizer(gestureRecognizer)
+        mRATLable.addGestureRecognizer(gestureRecognizer2)
         playButton.tintColor = UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? .black : .white
             
@@ -633,6 +636,23 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
     }
     
+    @IBAction func infoMraTBtnTap(_ sender:UIButton){
+        if sender.tag == 1 {
+            tipView?.dismiss()
+            sender.tag = 0
+        } else {
+            var preferences = EasyTipView.Preferences()
+            preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
+            preferences.drawing.foregroundColor = UIColor.white
+            preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+            preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
+
+            tipView = EasyTipView(text: "3MRAT Stands For Three-Month-Rolling-Average-Time. This Is The Average Time You Spent Listening To SpeedListener Per Day Over The Last 3-Months.", preferences: preferences)
+            tipView?.show(forView: sender, withinSuperview: self.view)
+            sender.tag = 1
+        }
+    }
+    
     @IBAction func infoMraBtnTap(_ sender:UIButton){
         if sender.tag == 1 {
               
@@ -645,7 +665,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
             preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
             preferences.drawing.arrowPosition = EasyTipView.ArrowPosition.top
 
-            tipView = EasyTipView(text: "3MRA Stands For Three-Month-Rolling-Average. This Is Your Average Listening Speed Over The Last 3 Months, Refreshed Daily. A Great Way To Track Progress Over Time.", preferences: preferences)
+            tipView = EasyTipView(text: "3MRAS Stands For Three-Month-Rolling-Average-Speed. This Is Your Average Listening Speed Over The Last 3-Months. Refreshed Daily. A Great Way To Track Progress Over Time.", preferences: preferences)
             tipView?.show(forView: sender, withinSuperview: self.view)
             sender.tag = 1
         }
@@ -1389,11 +1409,11 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         let imagesArr = [
             "bi_bookmark-fill",
             "history",
-            "speedtrack",
+            "speeddaily",
             "Settings",
             "question",
             "fluent_person-1x",
-            "ep_info-filled 1"
+            "ep_info-filled 2"
         ]
        
         topMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
@@ -1701,10 +1721,14 @@ extension PlayerViewController: AVAudioPlayerDelegate {
        
         
         let uid = PlayerManager.shared.currentUserID
-        if let avg = SpeedAnalyticsManager.shared.averageAllTime(userID: uid) {
-         // print(String(format: "Avg Speed: %.2fx", avg))
-            mRALable.text = "3MRA ≈\(String(format: "%.2fx", avg))"
+        if let avg3mSpeed = SpeedAnalyticsManager.shared.current3MonthRollingAverage(userID: uid) {
+            mRALable.text = "3MRAS ≈\(String(format: "%.2fx", avg3mSpeed))"
+        } else {
+            mRALable.text = "3MRAS ≈Pending"
         }
+
+        let avg3mTimePerDay = SpeedAnalyticsManager.shared.current3MonthRollingAverageTimePerDay(userID: uid)
+        mRATLable.text = "3MRAT ≈\(formatHourMinute(avg3mTimePerDay))"
 
         // 3-month rolling
          let avg3m = SpeedAnalyticsManager.shared.monthlySeries(userID: uid, months: 3)
@@ -1719,6 +1743,13 @@ extension PlayerViewController: AVAudioPlayerDelegate {
         
        
         
+    }
+
+    private func formatHourMinute(_ seconds: TimeInterval) -> String {
+        let total = max(0, Int(seconds.rounded()))
+        let h = total / 3600
+        let m = (total % 3600) / 60
+        return String(format: "%d:%02d", h, m)
     }
     
     @objc func handleMraValueTap(){

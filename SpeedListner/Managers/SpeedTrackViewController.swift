@@ -1,8 +1,11 @@
 import UIKit
+import EasyTipView
 
-final class SpeedTrackViewController: UIViewController {
+final class SpeedTrackViewController: UIViewController, UITabBarControllerDelegate {
     
     @IBOutlet weak var cardBGView:UIView!
+    @IBOutlet weak var titleLabel: UILabel!
+    @IBOutlet weak var backButton: UIButton!
     private let scrollView = UIScrollView()
     private let cardView = UIView()
 
@@ -13,17 +16,24 @@ final class SpeedTrackViewController: UIViewController {
     private let mrasLabel = UILabel()
     private let mratLabel = UILabel()
     private let pledgeLabel = UILabel()
+    private let pledgeInfoButton = UIButton(type: .system)
+    private let pledgeRow = UIStackView()
+    private var tipView: EasyTipView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "SpeedTrack"
         view.backgroundColor = UIColor(red: 0.32, green: 0.13, blue: 0.47, alpha: 1.0)
+        tabBarController?.delegate = self
+        setupTopBar()
         setupUI()
         renderStats()
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        navigationController?.navigationBar.tintColor = .white
+        showSpeedTrackTopBadge()
         renderStats()
     }
 
@@ -51,6 +61,19 @@ final class SpeedTrackViewController: UIViewController {
         mrasLabel.font = .systemFont(ofSize: 17, weight: .bold)
         mratLabel.font = .systemFont(ofSize: 17, weight: .bold)
         pledgeLabel.font = .systemFont(ofSize: 18, weight: .bold)
+        pledgeInfoButton.setTitle("ℹ️", for: .normal)
+        pledgeInfoButton.titleLabel?.font = .systemFont(ofSize: 28, weight: .regular)
+        pledgeInfoButton.addTarget(self, action: #selector(showPledgeInfo), for: .touchUpInside)
+        pledgeInfoButton.setContentHuggingPriority(.required, for: .horizontal)
+        pledgeInfoButton.setContentCompressionResistancePriority(.required, for: .horizontal)
+
+        pledgeRow.translatesAutoresizingMaskIntoConstraints = false
+        pledgeRow.axis = .horizontal
+        pledgeRow.alignment = .center
+        pledgeRow.spacing = 4
+        pledgeRow.addArrangedSubview(pledgeLabel)
+        pledgeRow.addArrangedSubview(pledgeInfoButton)
+        cardView.addSubview(pledgeRow)
 
         cardBGView.addSubview(cardView)
         
@@ -88,11 +111,48 @@ final class SpeedTrackViewController: UIViewController {
             mratLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             mratLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
 
-            pledgeLabel.topAnchor.constraint(equalTo: mratLabel.bottomAnchor, constant: 36),
-            pledgeLabel.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
-            pledgeLabel.trailingAnchor.constraint(equalTo: cardView.trailingAnchor, constant: -12),
-            pledgeLabel.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20)
+            pledgeRow.topAnchor.constraint(equalTo: mratLabel.bottomAnchor, constant: 36),
+            pledgeRow.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
+            pledgeRow.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20)
         ])
+    }
+
+    private func setupTopBar() {
+        titleLabel?.text = "SpeedTrack"
+        backButton?.titleLabel?.font = .systemFont(ofSize: 17, weight: .semibold)
+        backButton?.isHidden = false
+    }
+
+    @objc private func backTapped() {
+        navigationController?.popViewController(animated: true)
+    }
+
+    @objc private func showPledgeInfo() {
+        if tipView != nil {
+            tipView?.dismiss()
+            tipView = nil
+            return
+        }
+        var preferences = EasyTipView.Preferences()
+        preferences.drawing.font = UIFont(name: "Futura-Medium", size: 13)!
+        preferences.drawing.foregroundColor = .white
+        preferences.drawing.backgroundColor = #colorLiteral(red: 0.3098039216, green: 0, blue: 0.3921568627, alpha: 1)
+        preferences.drawing.arrowPosition = .bottom
+
+        let message = """
+        The 10,000 Hour Rule: Consistent, Deliberate Practice Compounds. Spend 10,000 Focused Hours On A Skill And You Will Be A Master! Pledge: I Commit To Showing Up Consistently, Training My Mind Through Focused Listening, And Building My Knowledge One Hour At A Time. Every Session Counts. Every Hour Compounds. 10,000 Hours To Excellence
+        """
+        tipView = EasyTipView(text: message, preferences: preferences)
+        tipView?.show(forView: pledgeInfoButton, withinSuperview: view)
+    }
+
+    @IBAction func backButtonTapped(_ sender: UIButton) {
+        backTapped()
+    }
+
+    func tabBarController(_ tabBarController: UITabBarController, shouldSelect viewController: UIViewController) -> Bool {
+        navigationController?.popToRootViewController(animated: false)
+        return true
     }
 
     private func renderStats() {
@@ -127,7 +187,9 @@ final class SpeedTrackViewController: UIViewController {
 
         attributedString.append(valueAttributed)
         thlLabel.attributedText = attributedString
-        categoryLabel.text = "Fiction: \(formatTHL(cat.fiction))      Non-Fiction: \(formatTHL(cat.nonFiction))"
+        let primary = SpeedTrackCategoryManager.shared.primaryLabel()
+        let secondary = SpeedTrackCategoryManager.shared.secondaryLabel()
+        categoryLabel.text = "\(primary): \(formatTHL(cat.fiction))      \(secondary): \(formatTHL(cat.nonFiction))"
         materialLabel.text = "Material Hours Covered: \(formatTHL(covered))"
 
         let speedDailyPrefix = NSMutableAttributedString(
@@ -156,7 +218,7 @@ final class SpeedTrackViewController: UIViewController {
                                 currentMras != nil ? String(format: "%.2f", currentMras!) : "0.00")
 
         mratLabel.text = "3 Month Rolling Average Time (3MRAT):\n\(formatDuration(mratSeconds))/Day"
-        pledgeLabel.text = "10,000ℹ️"
+        pledgeLabel.text = "10,000"
     }
 
     private func formatDuration(_ seconds: TimeInterval) -> String {

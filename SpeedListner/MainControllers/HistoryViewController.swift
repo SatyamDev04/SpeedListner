@@ -358,13 +358,21 @@ extension HistoryViewController: UITableViewDataSource, UITableViewDelegate {
         }
     }
     func showPlayerView(book: Book) {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        
-        if let playerVC = storyboard.instantiateViewController(withIdentifier: "PlayerViewController") as? PlayerViewController {
-            playerVC.book = book
-            
+        DispatchQueue.main.async {
+            guard let tabBarController = self.tabBarController,
+                  let tabViewControllers = tabBarController.viewControllers,
+                  tabViewControllers.indices.contains(1),
+                  let nowPlayingNavigationController = tabViewControllers[1] as? UINavigationController else {
+                return
+            }
+
+            if let playerVC = nowPlayingNavigationController.viewControllers.first as? PlayerViewController {
+                playerVC.book = book
+            }
+
+            nowPlayingNavigationController.popToRootViewController(animated: false)
+            tabBarController.selectedIndex = 1
             PlayerManager.shared.play()
-            self.tabBarController?.selectedIndex = 1
         }
     }
     func getLibraryBooksInOrder() -> [Book] {
@@ -641,7 +649,9 @@ extension HistoryViewController {
         currentBok = currentBook
         
         setupMiniPlayer(book: currentBook)
-        PlayerManager.shared.play()
+        ensureCategoryAssigned(for: currentBook) {
+            PlayerManager.shared.play()
+        }
     }
     
     func setupMiniPlayer(book:Book){

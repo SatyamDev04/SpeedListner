@@ -621,6 +621,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             return
         }
         let group = DispatchGroup()
+        let errorLock = NSLock()
+        var firstError: Error?
         
         for var bookmark in unprocessed {
             let id = bookmark.bookmarkId ?? "\(Int(bookmark.timeStamp))"
@@ -628,12 +630,19 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
            
             group.enter()
             TranscriptionAI.processAudio(fileURL: url) { result in
-                if let result = result {
+                switch result {
+                case .success(let result):
                     bookmark.transcription = result.transcription
                     bookmark.summary = result.summary
                     
                     BookmarkCacheManager.saveTranscription(result.transcription, for: id)
                     BookmarkCacheManager.saveSummary(result.summary, for: id)
+                case .failure(let error):
+                    errorLock.lock()
+                    if firstError == nil {
+                        firstError = error
+                    }
+                    errorLock.unlock()
                 }
                 group.leave()
             }
@@ -643,6 +652,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             self.aiLoader.dismiss()
             self.tblV.reloadData()
             print("All bookmarks processed.")
+            if let firstError {
+                self.showAlert(title: "OpenAI Error", message: firstError.localizedDescription)
+            }
         //    self.showAlert(title: "Done", message: "All bookmarks processed.")
         }
     }
@@ -671,6 +683,8 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             return
         }
         let group = DispatchGroup()
+        let errorLock = NSLock()
+        var firstError: Error?
         
         for var segment in unprocessed {
             let id = segment.identifiers
@@ -678,12 +692,19 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
            
             group.enter()
             TranscriptionAI.processAudio(fileURL: url) { result in
-                if let result = result {
+                switch result {
+                case .success(let result):
                     segment.transcription = result.transcription
                     segment.summary = result.summary
                     
                     BookmarkCacheManager.saveTranscription(result.transcription, for: id)
                     BookmarkCacheManager.saveSummary(result.summary, for: id)
+                case .failure(let error):
+                    errorLock.lock()
+                    if firstError == nil {
+                        firstError = error
+                    }
+                    errorLock.unlock()
                 }
                 group.leave()
             }
@@ -693,6 +714,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
             self.aiLoader.dismiss()
             self.tblV.reloadData()
             print("All bookmarks processed.")
+            if let firstError {
+                self.showAlert(title: "OpenAI Error", message: firstError.localizedDescription)
+            }
         //    self.showAlert(title: "Done", message: "All bookmarks processed.")
         }
     }
@@ -735,16 +759,22 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         TranscriptionAI.processAudio(fileURL: audioURL) { [weak self] result in
             DispatchQueue.main.async {
                 self?.aiLoader.dismiss()
-                guard let self = self, let result = result else {
-                    self?.showAlert(title: "Error", message: "Failed to process audio.")
-                    return
+                guard let self else { return }
+
+                switch result {
+                case .success(let result):
+                    BookmarkCacheManager.saveTranscription(result.transcription, for: id)
+                    BookmarkCacheManager.saveSummary(result.summary, for: id)
+
+                    self.presentCombinedSheet(
+                        transcription: result.transcription,
+                        summary: result.summary,
+                        timeRange: timeRange
+                    )
+                    self.tblV.reloadData()
+                case .failure(let error):
+                    self.showAlert(title: "OpenAI Error", message: error.localizedDescription)
                 }
-
-                BookmarkCacheManager.saveTranscription(result.transcription, for: id)
-                BookmarkCacheManager.saveSummary(result.summary, for: id)
-
-                self.presentCombinedSheet(transcription: result.transcription, summary: result.summary, timeRange: timeRange)
-                self.tblV.reloadData()
             }
         }
     }
@@ -823,9 +853,17 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         self.DownMenu.separatorColor = .clear
         self.DownMenu.selectionBackgroundColor = .clear
         self.DownMenu.backgroundColor = #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
-        self.DownMenu.dataSource = ["Add/Edit Note", "Delete", "Cancel"]
+        let isBookmarkItem: Bool
+        switch item {
+        case .bookmark:
+            isBookmarkItem = true
+            self.DownMenu.dataSource = ["Add/Edit Note", "Forward Note", "Delete", "Cancel"]
+        case .segment:
+            isBookmarkItem = false
+            self.DownMenu.dataSource = ["Add/Edit Note", "Delete", "Cancel"]
+        }
         
-        let imagesArr = ["Editicon", "Deleteicon", "Cancelicon"]
+        let imagesArr = isBookmarkItem ? ["Editicon", "forward", "Deleteicon", "Cancelicon"] : ["Editicon", "Deleteicon", "Cancelicon"]
         
         DownMenu.cellNib = UINib(nibName: "DropDownCell", bundle: nil)
         DownMenu.customCellConfiguration = { index, title, cell in
@@ -852,6 +890,9 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
                     vc.didMove(toParent: self)
 
                 case 1:
+                    self.forwardSingleNote(bookmarkModel)
+
+                case 2:
                     
                     showDeleteBookmarkAlert { confirmed in
                         if confirmed {
@@ -1025,6 +1066,28 @@ class BookMarkVC: UIViewController,UITableViewDelegate, UITableViewDataSource,Bo
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default))
         present(alert, animated: true)
+    }
+
+    private func forwardSingleNote(_ bookmark: BookmarksModel) {
+        var parts: [String] = []
+        let note = bookmark.bookmarksTxt.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty{
+            parts.append(note)
+        }
+        if let transcription = bookmark.transcription?.trimmingCharacters(in: .whitespacesAndNewlines), !transcription.isEmpty {
+            parts.append("Transcription:\n\(transcription)")
+        }
+        if let summary = bookmark.summary?.trimmingCharacters(in: .whitespacesAndNewlines), !summary.isEmpty {
+            parts.append("Summary:\n\(summary)")
+        }
+        let text = parts.isEmpty ? "Bookmark from \(book.title ?? "audio")" : parts.joined(separator: "\n\n")
+        let activity = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        if let pop = activity.popoverPresentationController {
+            pop.sourceView = self.view
+            pop.sourceRect = CGRect(x: self.view.bounds.midX, y: self.view.bounds.midY, width: 1, height: 1)
+            pop.permittedArrowDirections = []
+        }
+        present(activity, animated: true)
     }
 }
 

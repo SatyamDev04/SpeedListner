@@ -1,0 +1,15 @@
+{
+  "originHash" : "220d1502b8c84dbdcb45ab4a34dc459989bec793d1dc387a26f19e8be51d83b0",
+  "pins" : [
+    {
+      "identity" : "easytipview",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/teodorpatras/EasyTipView",
+      "state" : {
+        "revision" : "1cba0e75f745da03773cd7092480c5fa8cde4a72",
+        "version" : "2.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}

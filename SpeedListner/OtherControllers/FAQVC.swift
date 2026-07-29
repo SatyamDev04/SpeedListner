@@ -144,6 +144,7 @@ class FAQVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
 
    private func configureFAQSupportHeader() {
        let headerContainer = UIView(frame: CGRect(x: 0, y: 0, width: tblV.bounds.width, height: 64))
+       headerContainer.backgroundColor = .systemBackground
 
        let supportTextView = UITextView(frame: CGRect(x: 12, y: 8, width: max(0, tblV.bounds.width - 24), height: 48))
        supportTextView.backgroundColor = .clear
@@ -163,7 +164,7 @@ class FAQVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
            string: text,
            attributes: [
                .font: UIFont.systemFont(ofSize: 14, weight: .semibold),
-               .foregroundColor: UIColor.black
+               .foregroundColor: UIColor.label
            ]
        )
 
@@ -177,6 +178,14 @@ class FAQVC: UIViewController,UITableViewDelegate,UITableViewDataSource {
        supportTextView.attributedText = attributed
        headerContainer.addSubview(supportTextView)
        tblV.tableHeaderView = headerContainer
+   }
+
+   override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+       super.traitCollectionDidChange(previousTraitCollection)
+
+       if previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle {
+           configureFAQSupportHeader()
+       }
    }
     
     func apiforGetAllFAQ() {

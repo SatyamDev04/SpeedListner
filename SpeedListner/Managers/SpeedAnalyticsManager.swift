@@ -31,7 +31,18 @@ final class SpeedAnalyticsManager {
         var nonFictionSeconds: TimeInterval = 0
         var fictionWeightedRateSeconds: Double = 0
         var nonFictionWeightedRateSeconds: Double = 0
+        var misc1Seconds: TimeInterval?
+        var misc2Seconds: TimeInterval?
+        var misc1WeightedRateSeconds: Double?
+        var misc2WeightedRateSeconds: Double?
         var qualifiedForStreak: Bool = false
+    }
+
+    struct CategoryHours {
+        let fiction: Double
+        let nonFiction: Double
+        let misc1: Double
+        let misc2: Double
     }
 
     private func keyAllTime(userID: String) -> String { "speed_totals_alltime_\(userID)" }
@@ -101,12 +112,20 @@ final class SpeedAnalyticsManager {
         let dayKey = Self.dayKey(for: Date())
         var today = daily[dayKey] ?? DailyBucket()
         let weighted = Double(rate) * delta
-        if (category ?? "").lowercased() == "fiction" {
+        switch (category ?? "").lowercased() {
+        case "fiction":
             today.fictionSeconds += delta
             today.fictionWeightedRateSeconds += weighted
-        } else if (category ?? "").lowercased() == "non-fiction" || (category ?? "").lowercased() == "nonfiction" {
+        case "non-fiction", "nonfiction":
             today.nonFictionSeconds += delta
             today.nonFictionWeightedRateSeconds += weighted
+        case "misc-2", "misc2":
+            today.misc2Seconds = (today.misc2Seconds ?? 0) + delta
+            today.misc2WeightedRateSeconds = (today.misc2WeightedRateSeconds ?? 0) + weighted
+        default:
+            // Legacy and uncategorized listening is reconciled into Misc 1.
+            today.misc1Seconds = (today.misc1Seconds ?? 0) + delta
+            today.misc1WeightedRateSeconds = (today.misc1WeightedRateSeconds ?? 0) + weighted
         }
         today.qualifiedForStreak = today.totalSeconds >= 300
         daily[dayKey] = today
@@ -138,11 +157,30 @@ final class SpeedAnalyticsManager {
         return totals.weightedRateSeconds / 3600.0
     }
 
-    func categoryHours(userID: String) -> (fiction: Double, nonFiction: Double) {
+    func categoryHours(userID: String) -> CategoryHours {
         let daily = loadDaily(userID: userID)
-        let fiction = daily.values.reduce(0.0) { $0 + $1.fictionSeconds } / 3600.0
-        let nonFiction = daily.values.reduce(0.0) { $0 + $1.nonFictionSeconds } / 3600.0
-        return (fiction, nonFiction)
+        let totalSeconds = loadTotals(userID: userID).totalSeconds
+        var values = [
+            daily.values.reduce(0.0) { $0 + $1.fictionSeconds },
+            daily.values.reduce(0.0) { $0 + $1.nonFictionSeconds },
+            daily.values.reduce(0.0) { $0 + ($1.misc1Seconds ?? 0) },
+            daily.values.reduce(0.0) { $0 + ($1.misc2Seconds ?? 0) }
+        ]
+
+        let recordedCategorySeconds = values.reduce(0, +)
+        if recordedCategorySeconds < totalSeconds {
+            values[2] += totalSeconds - recordedCategorySeconds
+        } else if recordedCategorySeconds > totalSeconds, recordedCategorySeconds > 0 {
+            let scale = totalSeconds / recordedCategorySeconds
+            values = values.map { $0 * scale }
+        }
+
+        return CategoryHours(
+            fiction: values[0] / 3600,
+            nonFiction: values[1] / 3600,
+            misc1: values[2] / 3600,
+            misc2: values[3] / 3600
+        )
     }
 
     func currentStreak(userID: String) -> Int {
@@ -220,7 +258,27 @@ final class SpeedAnalyticsManager {
     }
 
     func first3MonthRollingAverage(userID: String) -> Double? {
-        loadTotals(userID: userID).first3MRAS
+        let daily = loadDaily(userID: userID)
+        guard let firstDate = firstTrackedDate(in: daily) else { return nil }
+        let cal = Calendar(identifier: .gregorian)
+        let today = cal.startOfDay(for: Date())
+        let trackedDays = (cal.dateComponents([.day], from: firstDate, to: today).day ?? 0) + 1
+
+        if trackedDays < 90 {
+            return current3MonthRollingAverage(userID: userID)
+        }
+
+        guard let endDate = cal.date(byAdding: .day, value: 89, to: firstDate),
+              let firstAverage = average(userID: userID, from: firstDate, through: endDate) else {
+            return nil
+        }
+
+        var totals = loadTotals(userID: userID)
+        if totals.first3MRAS != firstAverage {
+            totals.first3MRAS = firstAverage
+            saveTotals(userID: userID, totals: totals)
+        }
+        return firstAverage
     }
 
     func current3MonthRollingAverage(userID: String) -> Double? {
@@ -231,16 +289,21 @@ final class SpeedAnalyticsManager {
         let daily = loadDaily(userID: userID)
         let cal = Calendar(identifier: .gregorian)
         let today = cal.startOfDay(for: Date())
-        var total: TimeInterval = 0
-        var countedDays = 0
+        guard let firstTracked = firstTrackedDate(in: daily) else { return 0 }
+        let rollingStart = cal.date(byAdding: .day, value: -89, to: today) ?? today
+        let startDate = max(firstTracked, rollingStart)
+        let countedDays = (cal.dateComponents([.day], from: startDate, to: today).day ?? 0) + 1
+        guard countedDays > 0 else { return 0 }
 
-        for offset in 0..<90 {
-            guard let date = cal.date(byAdding: .day, value: -offset, to: today) else { continue }
+        var total: TimeInterval = 0
+        var date = startDate
+        while date <= today {
             let key = Self.dayKey(for: date)
             total += daily[key]?.totalSeconds ?? 0
-            countedDays += 1
+            guard let next = cal.date(byAdding: .day, value: 1, to: date) else { break }
+            date = next
         }
-        return countedDays > 0 ? total / Double(countedDays) : 0
+        return total / Double(countedDays)
     }
 
     /// Average speed for the last N days (inclusive of today). Returns nil if no data.
@@ -261,6 +324,34 @@ final class SpeedAnalyticsManager {
         }
         guard total > 0 else { return nil }
         return weighted / total
+    }
+
+    private func firstTrackedDate(in daily: [String: DailyBucket]) -> Date? {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar(identifier: .gregorian)
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd"
+        return daily.keys.compactMap(formatter.date(from:)).min()
+    }
+
+    private func average(userID: String, from startDate: Date, through endDate: Date) -> Double? {
+        let daily = loadDaily(userID: userID)
+        let cal = Calendar(identifier: .gregorian)
+        var total: TimeInterval = 0
+        var weighted = 0.0
+        var date = cal.startOfDay(for: startDate)
+        let end = cal.startOfDay(for: endDate)
+
+        while date <= end {
+            if let bucket = daily[Self.dayKey(for: date)] {
+                total += bucket.totalSeconds
+                weighted += bucket.weightedRateSeconds
+            }
+            guard let next = cal.date(byAdding: .day, value: 1, to: date) else { break }
+            date = next
+        }
+
+        return total > 0 ? weighted / total : nil
     }
 
     // MARK: - Persistence
@@ -353,11 +444,6 @@ final class SpeedAnalyticsManager {
             totals.currentStreakDays = 0
         }
 
-        // Capture first 3MRAS once after enough usage window.
-        if totals.first3MRAS == nil,
-           let avg90 = averageForLastDays(userID: userID, days: 90) {
-            totals.first3MRAS = avg90
-        }
     }
 }
 extension SpeedAnalyticsManager {

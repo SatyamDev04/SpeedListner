@@ -98,7 +98,8 @@ final class AudioMonitorManager: NSObject {
             group.enter()
             
             TranscriptionAI.processAudio(fileURL: url) { result in
-                if let result = result {
+                switch result {
+                case .success(let result):
                     bookmark.transcription = result.transcription
                     bookmark.summary = result.summary
                     
@@ -106,8 +107,8 @@ final class AudioMonitorManager: NSObject {
                     BookmarkCacheManager.saveSummary(result.summary, for: identifier)
                     
                     print("Transcribed segment:", identifier)
-                } else {
-                    print("Failed transcription for:", identifier)
+                case .failure(let error):
+                    print("Failed transcription for \(identifier):", error.localizedDescription)
                 }
                 group.leave()
             }
@@ -144,7 +145,8 @@ final class AudioMonitorManager: NSObject {
             group.enter()
             
             TranscriptionAI.processAudio(fileURL: url) { result in
-                if let result = result {
+                switch result {
+                case .success(let result):
                     segment.transcription = result.transcription
                     segment.summary = result.summary
                     
@@ -152,8 +154,8 @@ final class AudioMonitorManager: NSObject {
                     BookmarkCacheManager.saveSummary(result.summary, for: identifier)
                     
                     print("Transcribed segment:", identifier)
-                } else {
-                    print("Failed transcription for:", identifier)
+                case .failure(let error):
+                    print("Failed transcription for \(identifier):", error.localizedDescription)
                 }
                 group.leave()
             }

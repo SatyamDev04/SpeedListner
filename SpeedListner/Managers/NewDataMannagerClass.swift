@@ -12,10 +12,10 @@ import CoreData
 import CryptoKit
 
 class NewDataMannagerClass {
-    
+
     static let processedFolderName = "AllFiles"
     static let mergeFolderName = "MergeBookMark"
-    
+
     // MARK: - Folder URLs
     
     class func getDocumentsFolderURL() -> URL {
@@ -33,7 +33,7 @@ class NewDataMannagerClass {
                 fatalError("Couldn't create Processed folder")
             }
         }
-        
+
         return processedFolderURL
     }
     class func getMergedBookmarkFolderURL() -> URL {
@@ -98,7 +98,8 @@ class NewDataMannagerClass {
         }
         return filterFiles(urls)
     }
-    
+
+
     internal class func filterFiles(_ urls: [URL]) -> [URL] {
         return urls.filter({ !$0.hasDirectoryPath })
     }
@@ -144,6 +145,102 @@ class NewDataMannagerClass {
             return playlist.getBook(with: identifier)
         }
         return item as? Book
+    }
+
+    class func findDuplicateBook(
+        processedURL: URL,
+        originalURL: URL,
+        in library: Library
+    ) -> Book? {
+        let asset = AVAsset(url: processedURL)
+        let incomingDuration = CMTimeGetSeconds(asset.duration)
+        let metadataTitle = AVMetadataItem.metadataItems(
+            from: asset.metadata,
+            withKey: AVMetadataKey.commonKeyTitle,
+            keySpace: AVMetadataKeySpace.common
+        ).first?.stringValue
+
+        let incomingTitles = [
+            metadataTitle,
+            originalURL.deletingPathExtension().lastPathComponent,
+            processedURL.deletingPathExtension().lastPathComponent
+        ]
+        .compactMap { $0 }
+        .map(normalizedDuplicateText)
+        .filter { !$0.isEmpty }
+
+        let incomingFileName = normalizedDuplicateText(
+            originalURL.deletingPathExtension().lastPathComponent
+        )
+
+        return allBooks(in: library).first { book in
+            let existingTitles = [
+                book.title,
+                book.identifier.map {
+                    URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent
+                }
+            ]
+            .compactMap { $0 }
+            .map(normalizedDuplicateText)
+            .filter { !$0.isEmpty }
+
+            let existingFileName = book.identifier.map {
+                normalizedDuplicateText(
+                    URL(fileURLWithPath: $0).deletingPathExtension().lastPathComponent
+                )
+            } ?? ""
+
+            let sameFileName = !incomingFileName.isEmpty &&
+                incomingFileName == existingFileName
+
+            let sameTitle = incomingTitles.contains { incoming in
+                existingTitles.contains { existing in
+                    incoming == existing ||
+                        incoming.contains(existing) ||
+                        existing.contains(incoming)
+                }
+            }
+
+            let durationIsAvailable = incomingDuration.isFinite &&
+                incomingDuration > 0 &&
+                book.duration.isFinite &&
+                book.duration > 0
+            let sameDuration = durationIsAvailable &&
+                abs(book.duration - incomingDuration) < 3
+
+            return sameFileName || (sameTitle && sameDuration)
+        }
+    }
+
+    private class func allBooks(in library: Library) -> [Book] {
+        let rootItems = library.items?.array as? [LibraryItem] ?? []
+        return rootItems.flatMap { item -> [Book] in
+            if let book = item as? Book {
+                return [book]
+            }
+            if let playlist = item as? Playlist {
+                return allBooks(in: playlist)
+            }
+            return []
+        }
+    }
+
+    private class func allBooks(in playlist: Playlist) -> [Book] {
+        var books = playlist.books?.array as? [Book] ?? []
+        let children = playlist.children?.allObjects as? [Playlist] ?? []
+        for child in children {
+            books.append(contentsOf: allBooks(in: child))
+        }
+        return books
+    }
+
+    private class func normalizedDuplicateText(_ value: String) -> String {
+        value
+            .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+            .lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
     }
     
     class func insertBooks(from bookUrls: [BookURL], into playlist: Playlist?, or library: Library, completion:@escaping () -> Void) {

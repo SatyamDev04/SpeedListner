@@ -714,22 +714,101 @@ extension PlayerManager: AVAudioPlayerDelegate {
         let prevIndex = currentIndex - 1
         return prevIndex >= 0 ? playbackQueue[prevIndex] : nil
     }
+
+    static func randomCandidateIndices(
+        queueCount: Int,
+        excluding currentIndex: Int
+    ) -> [Int] {
+        guard queueCount > 1 else { return [] }
+        return (0..<queueCount).filter { $0 != currentIndex }
+    }
+
+    /// Immediately starts a different random book. The current queue is preferred;
+    /// when it only contains the current book, the full library becomes the queue.
+    func playRandomBook(completion: ((Bool) -> Void)? = nil) {
+        guard !isSwitchingTrack else {
+            completion?(false)
+            return
+        }
+
+        playbackMode = .shuffle
+        prepareQueueForRandomPlayback()
+
+        guard !playbackQueue.isEmpty else {
+            completion?(false)
+            return
+        }
+
+        if let currentBook,
+           let queueIndex = playbackQueue.firstIndex(of: currentBook) {
+            currentIndex = queueIndex
+        } else {
+            currentIndex = min(max(currentIndex, 0), playbackQueue.count - 1)
+        }
+
+        let candidateIndices = Self.randomCandidateIndices(
+            queueCount: playbackQueue.count,
+            excluding: currentIndex
+        ).filter {
+            FileManager.default.fileExists(atPath: playbackQueue[$0].fileURL.path)
+        }
+
+        guard let randomIndex = candidateIndices.randomElement() else {
+            completion?(false)
+            return
+        }
+
+        isSwitchingTrack = true
+        currentIndex = randomIndex
+        loadNext(playbackQueue[randomIndex], completion: completion)
+    }
+
+    private func prepareQueueForRandomPlayback() {
+        guard playbackQueue.count <= 1 else { return }
+
+        let library = NewDataMannagerClass.getLibrary()
+        let libraryItems = library.items?.array as? [LibraryItem] ?? []
+        var books: [Book] = []
+
+        for item in libraryItems {
+            if let book = item as? Book {
+                books.append(book)
+            } else if let playlist = item as? Playlist {
+                books.append(contentsOf: getAllBooks(from: playlist))
+            }
+        }
+
+        var seenPaths = Set<String>()
+        let uniqueBooks = books.filter { book in
+            seenPaths.insert(book.fileURL.standardizedFileURL.path).inserted
+        }
+
+        if !uniqueBooks.isEmpty {
+            playbackQueue = sortBooksAsPerUserPreference(uniqueBooks)
+        }
+    }
     
-    func loadNext(_ book: Book) {
+    func loadNext(_ book: Book, completion: ((Bool) -> Void)? = nil) {
         self.audioPlayer?.stop()
         self.audioPlayer = nil
         resetIfCompleted(book)
         self.load([book]) { loaded in
+            guard loaded else {
+                self.isSwitchingTrack = false
+                completion?(false)
+                return
+            }
+
             NotificationCenter.default.post(
                 name: Notification.Name.AudiobookPlayer.bookChange,
                 object: nil,
                 userInfo: ["books": [book]]
             )
-            guard loaded else { return }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 self.audioPlayer?.currentTime = book.currentTime
-                self.audioPlayer?.play()
+                self.play()
                 self.isSwitchingTrack = false
+                completion?(true)
             }
         }
     }

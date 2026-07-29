@@ -71,6 +71,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     private let pauseImage = UIImage(systemName:"pause.fill")
     private var coverImage = UIImage()
     private var routePickerView: AVRoutePickerView!
+    private var isRoutePickerPresented = false
+    private var isClosingRoutePicker = false
     private var tipView: EasyTipView?
     private let topMenu = DropDown()
     var taponMini = false
@@ -439,6 +441,7 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
        // Set up AVRoutePickerView (Hidden)
        private func setupRoutePickerView() {
            routePickerView = AVRoutePickerView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+           routePickerView.delegate = self
            routePickerView.isHidden = true
            self.view.addSubview(routePickerView)
        }
@@ -692,7 +695,24 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     
     
     @IBAction func btnSuffle_Action(_ sender: UIButton) {
-        PlayerManager.shared.playbackMode = .shuffle
+        guard !isLibraryEmpty() else {
+            showToast("Please add a book to the library if already added then play")
+            return
+        }
+
+        sender.isEnabled = false
+        PlayerManager.shared.playRandomBook { [weak self, weak sender] success in
+            DispatchQueue.main.async {
+                sender?.isEnabled = true
+                guard let self else { return }
+
+                if success {
+                    self.showToast("Playing a random audiobook")
+                } else {
+                    self.showToast("No other audiobook is available")
+                }
+            }
+        }
     }
     
     @IBAction func btnReapte_Action(_ sender: UIButton) {
@@ -1531,13 +1551,8 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
     }
     
     @IBAction func didPressroutePicker(_ sender: UIButton) {
-        for subview in routePickerView.subviews {
-                  if let button = subview as? UIButton {
-                      button.sendActions(for: .touchUpInside)
-                      break
-                  }
-              }
-    
+        isClosingRoutePicker = false
+        triggerRoutePickerButton()
     }
     
     override var preferredStatusBarUpdateAnimation : UIStatusBarAnimation {
@@ -1610,7 +1625,9 @@ class PlayerViewController: UIViewController,TabBarDataDelegate {
         }
         currentBok = currentBook
         
-        PlayerManager.shared.play()
+        ensureCategoryAssigned(for: currentBook) {
+            PlayerManager.shared.play()
+        }
         self.viewWillAppear(true)
     }
     deinit {
@@ -1960,88 +1977,47 @@ extension PlayerViewController{
     }
     
     @objc private func handleAudioRouteChanged(_ notification: Notification) {
-        // Inspect reason (optional)
-        if let info = notification.userInfo,
-           let reasonValue = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
-           let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) {
-            switch reason {
-            case .newDeviceAvailable, .oldDeviceUnavailable, .categoryChange:
-                DispatchQueue.main.async { [weak self] in
-                    self?.dismissRoutePickerIfNeeded()
-                }
-            default:
-                break
-            }
-        } else {
-            DispatchQueue.main.async { [weak self] in
-                self?.dismissRoutePickerIfNeeded()
-            }
-        }
+        closeRoutePickerAfterSelection()
     }
-    
-    // Improved dismissal: search all windows and their presented view controllers
-    private func dismissRoutePickerIfNeeded() {
-        DispatchQueue.main.async { [weak self] in
+
+    @discardableResult
+    private func triggerRoutePickerButton() -> Bool {
+        guard let routeButton = routePickerView.subviews.compactMap({ $0 as? UIButton }).first else {
+            return false
+        }
+        routeButton.sendActions(for: .touchUpInside)
+        return true
+    }
+
+    private func closeRoutePickerAfterSelection() {
+        guard isRoutePickerPresented, !isClosingRoutePicker else { return }
+        isClosingRoutePicker = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
             guard let self = self else { return }
-            
-            // Search across all windows to find a presented view controller that looks like the route picker.
-            let windows: [UIWindow]
-            if #available(iOS 13.0, *) {
-                windows = UIApplication.shared.connectedScenes
-                    .compactMap { $0 as? UIWindowScene }
-                    .flatMap { $0.windows }
-            } else {
-                windows = [UIApplication.shared.keyWindow].compactMap { $0 }
+            guard self.isRoutePickerPresented else {
+                self.isClosingRoutePicker = false
+                return
             }
-            
-            for window in windows {
-                if let candidate = self.topMostPresentedViewController(startingAt: window.rootViewController) {
-                    let className = NSStringFromClass(type(of: candidate))
-                    print(className)
-                    let likelyRoutePicker = className.contains("AVRoute") ||
-                    className.contains("AirPlay") ||
-                    className.contains("AVSystem") ||
-                    candidate is UIAlertController
-                    
-                    if likelyRoutePicker {
-                        candidate.dismiss(animated: true, completion: nil)
-                        return
-                    }
-                    
-                    // Also sometimes the system uses a UISheetPresentation or private container — try dismissing
-                    // any UIAlertController or any controller with "AV" in name as a fallback:
-                    if className.contains("AV") || className.contains("Route") || className.contains("AirPlay") {
-                        candidate.dismiss(animated: true, completion: nil)
-                        return
-                    }
-                }
+
+            self.triggerRoutePickerButton()
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.isClosingRoutePicker = false
             }
         }
     }
     
-    // Walk presented view controllers starting from a given root
-    private func topMostPresentedViewController(startingAt root: UIViewController?) -> UIViewController? {
-        var top = root
-        while let presented = top?.presentedViewController {
-            top = presented
-        }
-        return top
+}
+
+extension PlayerViewController: AVRoutePickerViewDelegate {
+    func routePickerViewWillBeginPresentingRoutes(_ routePickerView: AVRoutePickerView) {
+        isRoutePickerPresented = true
+        isClosingRoutePicker = false
     }
-    
-    // Call this when you programmatically tap the hidden route picker button
-    private func attemptDismissAfterDelay(_ delay: TimeInterval = 0.35) {
-        // First quick attempt after short delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
-            self?.dismissRoutePickerIfNeeded()
-        }
-        
-        // And try again a bit later as a fallback (covers race conditions)
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.35) { [weak self] in
-            self?.dismissRoutePickerIfNeeded()
-        }
-        
-        
-        
+
+    func routePickerViewDidEndPresentingRoutes(_ routePickerView: AVRoutePickerView) {
+        isRoutePickerPresented = false
+        isClosingRoutePicker = false
     }
-    
 }

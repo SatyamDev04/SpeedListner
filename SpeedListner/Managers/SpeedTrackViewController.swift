@@ -8,7 +8,6 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
     @IBOutlet weak var backButton: UIButton!
     private let scrollView = UIScrollView()
     private let cardView = UIView()
-
     private let thlLabel = UILabel()
     private let categoryLabel = UILabel()
     private let materialLabel = UILabel()
@@ -16,17 +15,17 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
     private let mrasLabel = UILabel()
     private let mratLabel = UILabel()
     private let pledgeLabel = UILabel()
-    private let pledgeInfoButton = UIButton(type: .system)
+    private let pledgeInfoButton = UIButton()
     private let pledgeRow = UIStackView()
     private var tipView: EasyTipView?
 
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "SpeedTrack"
-        view.backgroundColor = UIColor(red: 0.32, green: 0.13, blue: 0.47, alpha: 1.0)
         tabBarController?.delegate = self
         setupTopBar()
         setupUI()
+        applyAppearance()
         renderStats()
     }
 
@@ -34,35 +33,49 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
         super.viewWillAppear(animated)
         navigationController?.navigationBar.tintColor = .white
         showSpeedTrackTopBadge()
+        applyAppearance()
         renderStats()
+    }
+
+    override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        super.traitCollectionDidChange(previousTraitCollection)
+
+        if previousTraitCollection?.userInterfaceStyle != traitCollection.userInterfaceStyle {
+            applyAppearance()
+            renderStats()
+        }
     }
 
     private func setupUI() {
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         cardView.translatesAutoresizingMaskIntoConstraints = false
-        cardView.backgroundColor = .white
         cardView.layer.cornerRadius = 18
         cardView.clipsToBounds = true
 
         [thlLabel, categoryLabel, materialLabel, streakLabel, mrasLabel, mratLabel, pledgeLabel].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             $0.numberOfLines = 0
-            $0.textColor = .black
+            $0.textColor = .label
             cardView.addSubview($0)
         }
 
-        thlLabel.font = .systemFont(ofSize: 40, weight: .bold)
+        thlLabel.font = .systemFont(ofSize: 40, weight: .semibold)
         thlLabel.textAlignment = .center
-        categoryLabel.font = .systemFont(ofSize: 16, weight: .bold)
+        categoryLabel.font = .systemFont(ofSize: 16, weight: .regular)
         categoryLabel.textAlignment = .center
-        materialLabel.font = .systemFont(ofSize: 16, weight: .bold)
+        materialLabel.font = .systemFont(ofSize: 16, weight: .regular)
         materialLabel.textAlignment = .center
-        streakLabel.font = .systemFont(ofSize: 17, weight: .bold)
-        mrasLabel.font = .systemFont(ofSize: 17, weight: .bold)
-        mratLabel.font = .systemFont(ofSize: 17, weight: .bold)
-        pledgeLabel.font = .systemFont(ofSize: 18, weight: .bold)
-        pledgeInfoButton.setTitle("ℹ️", for: .normal)
-        pledgeInfoButton.titleLabel?.font = .systemFont(ofSize: 28, weight: .regular)
+        streakLabel.font = .systemFont(ofSize: 17, weight: .regular)
+        mrasLabel.font = .systemFont(ofSize: 17, weight: .regular)
+        mratLabel.font = .systemFont(ofSize: 17, weight: .regular)
+        pledgeLabel.font = .systemFont(ofSize: 18, weight: .regular)
+        let infoImage = UIImage(named: "ep_info-filled 2")?.withRenderingMode(.alwaysTemplate)
+        pledgeInfoButton.setImage(infoImage, for: .normal)
+        pledgeInfoButton.imageView?.contentMode = .scaleAspectFit
+        pledgeInfoButton.contentHorizontalAlignment = .fill
+        pledgeInfoButton.contentVerticalAlignment = .fill
+        pledgeInfoButton.widthAnchor.constraint(equalToConstant: 20).isActive = true
+        pledgeInfoButton.heightAnchor.constraint(equalToConstant: 20).isActive = true
         pledgeInfoButton.addTarget(self, action: #selector(showPledgeInfo), for: .touchUpInside)
         pledgeInfoButton.setContentHuggingPriority(.required, for: .horizontal)
         pledgeInfoButton.setContentCompressionResistancePriority(.required, for: .horizontal)
@@ -115,6 +128,26 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
             pledgeRow.leadingAnchor.constraint(equalTo: cardView.leadingAnchor, constant: 12),
             pledgeRow.bottomAnchor.constraint(equalTo: cardView.bottomAnchor, constant: -20)
         ])
+    }
+
+    private func applyAppearance() {
+        let isDarkMode = traitCollection.userInterfaceStyle == .dark
+
+        view.backgroundColor = isDarkMode
+            ? UIColor(red: 0.055, green: 0.035, blue: 0.075, alpha: 1)
+            : UIColor(red: 0.32, green: 0.13, blue: 0.47, alpha: 1)
+        cardBGView.backgroundColor = isDarkMode
+            ? UIColor(red: 0.055, green: 0.035, blue: 0.075, alpha: 1)
+            : .clear
+        cardView.backgroundColor = isDarkMode
+            ? UIColor(red: 0.12, green: 0.085, blue: 0.15, alpha: 1)
+            : .white
+
+        [thlLabel, categoryLabel, materialLabel, streakLabel, mrasLabel, mratLabel, pledgeLabel].forEach {
+            $0.textColor = .label
+        }
+
+        pledgeInfoButton.tintColor = .secondaryLabel
     }
 
     private func setupTopBar() {
@@ -172,16 +205,16 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
         let attributedString = NSMutableAttributedString(
             string: titleText,
             attributes: [
-                .font: UIFont.systemFont(ofSize: 16, weight: .bold),
-                .foregroundColor: UIColor.black
+                .font: UIFont.systemFont(ofSize: 16, weight: .semibold),
+                .foregroundColor: UIColor.label
             ]
         )
 
         let valueAttributed = NSAttributedString(
             string: valueText,
             attributes: [
-                .font: UIFont.systemFont(ofSize: 40, weight: .bold),
-                .foregroundColor: UIColor.black
+                .font: UIFont.systemFont(ofSize: 40, weight: .semibold),
+                .foregroundColor: UIColor.label
             ]
         )
 
@@ -189,14 +222,23 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
         thlLabel.attributedText = attributedString
         let primary = SpeedTrackCategoryManager.shared.primaryLabel()
         let secondary = SpeedTrackCategoryManager.shared.secondaryLabel()
-        categoryLabel.text = "\(primary): \(formatTHL(cat.fiction))      \(secondary): \(formatTHL(cat.nonFiction))"
+        let tertiary = SpeedTrackCategoryManager.shared.tertiaryLabel()
+        let quaternary = SpeedTrackCategoryManager.shared.quaternaryLabel()
+        let categoryValues = reconciledWholeCategoryHours(
+            totalHours: thl,
+            categoryHours: [cat.fiction, cat.nonFiction, cat.misc1, cat.misc2]
+        )
+        categoryLabel.text = """
+        \(primary): \(categoryValues[0])      \(secondary): \(categoryValues[1])
+        \(tertiary): \(categoryValues[2])      \(quaternary): \(categoryValues[3])
+        """
         materialLabel.text = "Material Hours Covered: \(formatTHL(covered))"
 
         let speedDailyPrefix = NSMutableAttributedString(
-            string: "SpeedDaily",
+            string: "SpeedDaily ",
             attributes: [
-                .font: UIFont.systemFont(ofSize: 17, weight: .bold),
-                .foregroundColor: UIColor.black
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+                .foregroundColor: UIColor.label
             ]
         )
 
@@ -205,19 +247,33 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
         iconAttachment.bounds = CGRect(x: 0, y: -2, width: 18, height: 18)
         speedDailyPrefix.append(NSAttributedString(attachment: iconAttachment))
         speedDailyPrefix.append(NSAttributedString(
-            string: ":\nCurrent Streak: \(currentStreak) Days\nLongest Streak: \(longestStreak) Days",
+            string: " :\nCurrent Streak: \(currentStreak) Days\nLongest Streak: \(longestStreak) Days",
             attributes: [
-                .font: UIFont.systemFont(ofSize: 17, weight: .bold),
-                .foregroundColor: UIColor.black
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+                .foregroundColor: UIColor.label
             ]
         ))
         streakLabel.attributedText = speedDailyPrefix
 
-        mrasLabel.text = String(format: "3 Month Rolling Average Speed (3MRAS):\nFirst 3 Months: %@x\nMost Recent 3 Months: %@x",
-                                firstMras != nil ? String(format: "%.2f", firstMras!) : "Pending",
-                                currentMras != nil ? String(format: "%.2f", currentMras!) : "0.00")
+        let mrasText = String(format: "3 Month Rolling Average Speed (3MRAS):\nFirst 3 Months: %@x\nMost Recent 3 Months: %@x",
+                              firstMras != nil ? String(format: "%.2f", firstMras!) : "Pending",
+                              currentMras != nil ? String(format: "%.2f", currentMras!) : "0.00")
+        let mratText = "3 Month Rolling Average Time (3MRAT):\n\(formatDuration(mratSeconds))/Day"
 
-        mratLabel.text = "3 Month Rolling Average Time (3MRAT):\n\(formatDuration(mratSeconds))/Day"
+        mrasLabel.attributedText = NSAttributedString(
+            string: mrasText,
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+                .foregroundColor: UIColor.label
+            ]
+        )
+        mratLabel.attributedText = NSAttributedString(
+            string: mratText,
+            attributes: [
+                .font: UIFont.systemFont(ofSize: 17, weight: .regular),
+                .foregroundColor: UIColor.label
+            ]
+        )
         pledgeLabel.text = "10,000"
     }
 
@@ -226,11 +282,35 @@ final class SpeedTrackViewController: UIViewController, UITabBarControllerDelega
         let h = total / 3600
         let m = (total % 3600) / 60
         let s = total % 60
+        if h == 0 {
+            return String(format: "%d:%02d", m, s)
+        }
         return String(format: "%d:%02d:%02d", h, m, s)
+    }
+
+    private func reconciledWholeCategoryHours(
+        totalHours: Double,
+        categoryHours: [Double]
+    ) -> [Int] {
+        let target = max(0, Int(totalHours.rounded(.down)))
+        var values = categoryHours.map { max(0, Int($0.rounded(.down))) }
+        let difference = target - values.reduce(0, +)
+
+        if difference > 0 {
+            values[2] += difference
+        } else if difference < 0 {
+            var overflow = -difference
+            for index in [2, 3, 1, 0] where overflow > 0 {
+                let reduction = min(values[index], overflow)
+                values[index] -= reduction
+                overflow -= reduction
+            }
+        }
+        return values
     }
 
     private func formatTHL(_ hours: Double) -> String {
         let wholeHours = max(0, Int(hours.rounded(.down)))
-        return "\(wholeHours) THL"
+        return "\(wholeHours)"
     }
 }

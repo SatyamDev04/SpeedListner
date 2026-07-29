@@ -16,24 +16,29 @@ class BookmarkManager {
     private init() {}
     
     let COMMENTS_LIMIT = 255
-    private let clipVersion = 2
-    private let migrationVersion = 2
+    private let clipVersion = 3
+    private let migrationVersion = 3
     private let migrationQueue = DispatchQueue(label: "bookmark.migration.queue", qos: .utility)
     
     // MARK: - Save Bookmark Without Note
-    func saveWithoutNote(book: Book, starStatus: Bool = false, completion: ((Bool) -> Void)? = nil) {
+    func saveWithoutNote(
+        book: Book,
+        starStatus: Bool = false,
+        timestamp: TimeInterval? = nil,
+        completion: ((Bool) -> Void)? = nil
+    ) {
         guard book.identifier != nil else {
             completion?(false)
             return
         }
         
         var arrBookmarksNotes = loadBookmarks(for: book)
-        let t = book.currentTime
-        let time = formatTime(Int(book.currentTime))
+        let t = resolvedTimestamp(for: book, requestedTimestamp: timestamp)
+        let time = formatTime(Int(t))
         let date = Date.getCurrentDate()
-       
-        let start = max(0, t - 5.0)
-        let end = min(book.duration, t + 15.0)
+        let range = AudioClipUtils.clipRange(around: t, duration: book.duration)
+        let start = range.start
+        let end = range.end
         let bookmarkId = UUID().uuidString
         let clipId = AudioClipUtils.makeClipId(bookIdentifier: book.identifier ?? "book", timestamp: t)
         
@@ -82,18 +87,25 @@ class BookmarkManager {
     }
     
     // MARK: - Save Bookmark With Note
-    func saveBookmarkWithNote(book: Book, note: String, starStatus: Bool = false, completion: ((Bool) -> Void)? = nil) {
+    func saveBookmarkWithNote(
+        book: Book,
+        note: String,
+        starStatus: Bool = false,
+        timestamp: TimeInterval? = nil,
+        completion: ((Bool) -> Void)? = nil
+    ) {
         guard book.identifier != nil else {
             completion?(false)
             return
         }
         
         var arrBookmarksNotes = loadBookmarks(for: book)
-        let t = book.currentTime
-        let time = formatTime(Int(book.currentTime))
+        let t = resolvedTimestamp(for: book, requestedTimestamp: timestamp)
+        let time = formatTime(Int(t))
         let date = Date.getCurrentDate()
-        let start = max(0, t - 5.0)
-        let end = min(book.duration, t + 15.0)
+        let range = AudioClipUtils.clipRange(around: t, duration: book.duration)
+        let start = range.start
+        let end = range.end
         let bookmarkId = UUID().uuidString
         let clipId = AudioClipUtils.makeClipId(bookIdentifier: book.identifier ?? "book", timestamp: t)
         AudioClipUtils.extractClip(
@@ -152,8 +164,9 @@ class BookmarkManager {
         let time = arrBookmarksNotes[index].time
         let date = arrBookmarksNotes[index].date
         
-        let start = max(0, t - 5.0)
-        let end = min(book.duration, t + 15.0)
+        let range = AudioClipUtils.clipRange(around: t, duration: book.duration)
+        let start = range.start
+        let end = range.end
         let existing = arrBookmarksNotes[index]
         let clipId = existing.clipId ?? AudioClipUtils.makeClipId(bookIdentifier: book.identifier ?? "book", timestamp: t)
         let bookmarkId = existing.bookmarkId ?? UUID().uuidString
@@ -282,7 +295,11 @@ class BookmarkManager {
                 migrated: []
             ) { migrated in
                 self.saveBookmarks(migrated, for: book)
-                UserDefaults.standard.set(true, forKey: migrationKey)
+                let migrationCompleted = migrated.allSatisfy { bookmark in
+                    (bookmark.clipVersion ?? 0) >= self.clipVersion
+                        && AudioClipUtils.resolveClipURL(for: bookmark) != nil
+                }
+                UserDefaults.standard.set(migrationCompleted, forKey: migrationKey)
                 DispatchQueue.main.async {
                     completion?(migrated)
                 }
@@ -336,14 +353,12 @@ class BookmarkManager {
 
     private func normalizeBookmark(_ bookmark: BookmarksModel, book: Book) -> BookmarksModel {
         var normalized = bookmark
-        let start = max(0, bookmark.timeStamp - 5.0)
-        let end = min(book.duration, bookmark.timeStamp + 15.0)
+        let range = AudioClipUtils.clipRange(around: bookmark.timeStamp, duration: book.duration)
+        let start = range.start
+        let end = range.end
 
         if normalized.bookmarkId == nil {
             normalized.bookmarkId = UUID().uuidString
-        }
-        if normalized.clipVersion == nil {
-            normalized.clipVersion = clipVersion
         }
         if normalized.startTime == nil {
             normalized.startTime = start
@@ -373,8 +388,9 @@ class BookmarkManager {
         }
 
         var normalized = normalizeBookmark(bookmarks[index], book: book)
-        let start = normalized.startTime ?? max(0, normalized.timeStamp - 5.0)
-        let end = normalized.endTime ?? min(book.duration, normalized.timeStamp + 15.0)
+        let range = AudioClipUtils.clipRange(around: normalized.timeStamp, duration: book.duration)
+        let start = range.start
+        let end = range.end
 
         if normalized.clipId == nil {
             normalized.clipId = AudioClipUtils.makeClipId(bookIdentifier: normalized.indentifier, timestamp: normalized.timeStamp)
@@ -406,9 +422,9 @@ class BookmarkManager {
             recoded.clipId = clipId
             recoded.startTime = start
             recoded.endTime = end
-            recoded.clipVersion = self.clipVersion
             if let url = url {
                 recoded.audioClipPath = url
+                recoded.clipVersion = self.clipVersion
                 print("[BookmarkMigration] ts=\(recoded.timeStamp) start=\(start) end=\(end) clipId=\(clipId) path=\(url.path)")
             }
 
@@ -416,6 +432,22 @@ class BookmarkManager {
             result.append(recoded)
             self.migrateBookmarksSequentially(bookmarks, book: book, index: index + 1, forceReclip: forceReclip, migrated: result, completion: completion)
         }
+    }
+
+    private func resolvedTimestamp(
+        for book: Book,
+        requestedTimestamp: TimeInterval?
+    ) -> TimeInterval {
+        let timestamp: TimeInterval
+        if let requestedTimestamp {
+            timestamp = requestedTimestamp
+        } else if PlayerManager.shared.currentBook?.identifier == book.identifier {
+            timestamp = PlayerManager.shared.currentTime
+        } else {
+            timestamp = book.currentTime
+        }
+
+        return min(max(timestamp, 0), max(0, book.duration))
     }
     
     // MARK: - Setup Remote Command Center

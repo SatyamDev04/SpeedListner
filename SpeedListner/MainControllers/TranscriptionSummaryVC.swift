@@ -90,6 +90,14 @@ class TranscriptionSummaryVC: UIViewController {
         return label
     }()
 
+    private let copyButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.setTitle("Copy", for: .normal)
+        button.titleLabel?.font = .systemFont(ofSize: 15, weight: .semibold)
+        return button
+    }()
+
     // MARK: - Lifecycle
 
     override func viewDidLoad() {
@@ -116,6 +124,8 @@ class TranscriptionSummaryVC: UIViewController {
         scrollView.addSubview(contentView)
         contentView.translatesAutoresizingMaskIntoConstraints = false
 
+        contentView.addSubview(copyButton)
+
         // Add handle at top of contentView
         contentView.addSubview(handleContainer)
      //   handleContainer.addSubview(handlePill)
@@ -131,6 +141,7 @@ class TranscriptionSummaryVC: UIViewController {
         let tap = UITapGestureRecognizer(target: self, action: #selector(handleTapped(_:)))
         handleContainer.addGestureRecognizer(tap)
         handleContainer.isUserInteractionEnabled = true
+        copyButton.addTarget(self, action: #selector(copyAllText), for: .touchUpInside)
 
         NSLayoutConstraint.activate([
             // ScrollView
@@ -146,8 +157,11 @@ class TranscriptionSummaryVC: UIViewController {
             contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
             contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
 
+            copyButton.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 10),
+            copyButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+
             // Handle container
-            handleContainer.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            handleContainer.topAnchor.constraint(equalTo: copyButton.bottomAnchor, constant: 2),
             handleContainer.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
             handleContainer.heightAnchor.constraint(equalToConstant: 24),
             handleContainer.widthAnchor.constraint(equalTo: contentView.widthAnchor),
@@ -232,5 +246,19 @@ class TranscriptionSummaryVC: UIViewController {
         default:
             break
         }
+    }
+
+    @objc private func copyAllText() {
+        let combined = """
+        \(timeRange)
+
+        Exact Transcription:
+        \(transcriptionText)
+
+        Summary:
+        \(summaryText)
+        """
+        UIPasteboard.general.string = combined
+        showToast("Copied to clipboard")
     }
 }

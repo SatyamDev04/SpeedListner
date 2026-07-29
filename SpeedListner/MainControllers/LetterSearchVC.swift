@@ -1324,7 +1324,9 @@ extension LetterSearchVC {
         }
         currentBok = currentBook
         setupMiniPlayer(book: currentBook)
-        PlayerManager.shared.play()
+        ensureCategoryAssigned(for: currentBook) {
+            PlayerManager.shared.play()
+        }
     }
     
     func setupMiniPlayer(book:Book){
@@ -1383,45 +1385,18 @@ extension LetterSearchVC: UIDocumentPickerDelegate {
                     return
                 }
                 
-                guard let items = self.library.items?.array as? [LibraryItem] else {
-                    completion()
-                    return
-                }
-                let existingBooks = items.compactMap { $0 as? Book }
-                
-               
-                let asset = AVAsset(url: processedURL)
-                let newDuration = CMTimeGetSeconds(asset.duration)
-                let newTitle = processedURL.deletingPathExtension().lastPathComponent
-                
-                if let duplicateBook = existingBooks.first(where: { book in
-                    
-                    let normalizedNewTitle = newTitle
-                          .lowercased()
-                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression) // remove punctuation
-                          .trimmingCharacters(in: .whitespacesAndNewlines)
-                      
-                      let normalizedExistingTitle = (book.title ?? "")
-                          .lowercased()
-                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
-                          .trimmingCharacters(in: .whitespacesAndNewlines)
-                      
-                      print("Comparing:", normalizedNewTitle, "vs", normalizedExistingTitle)
-
-                      let isSameTitle = normalizedNewTitle.contains(normalizedExistingTitle) ||
-                                        normalizedExistingTitle.contains(normalizedNewTitle)
-                      
-                      let isSameDuration = abs(book.duration - newDuration) < 2
-                    
-                    print(newTitle,newDuration,book.title?.lowercased(),book.duration,"isSameDuration")
-                      return isSameTitle && isSameDuration
-                }) {
+                if let duplicateBook = NewDataMannagerClass.findDuplicateBook(
+                    processedURL: processedURL,
+                    originalURL: url,
+                    in: self.library
+                ) {
                     DispatchQueue.main.async {
                         let alert = UIAlertController(
                             title: "Duplicate Audiobook",
-                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this?",
                             preferredStyle: .alert
                         )
+                        
                         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
                             completion()
                         }))

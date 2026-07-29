@@ -153,6 +153,10 @@ extension UIViewController {
         badge.addSubview(mainStack)
         view.addSubview(badge)
 
+        let tap = UITapGestureRecognizer(target: self, action: #selector(openSpeedTrackFromBadge))
+        badge.isUserInteractionEnabled = true
+        badge.addGestureRecognizer(tap)
+
         let hasBackButton = (navigationItem.leftBarButtonItem != nil) || (navigationController?.viewControllers.first != self)
         let leadingOffset: CGFloat = hasBackButton ? 44 : 8
 
@@ -167,9 +171,22 @@ extension UIViewController {
         ])
     }
 
+    @objc private func openSpeedTrackFromBadge() {
+        let storyboard = UIStoryboard(name: "Main", bundle: nil)
+        guard let speedTrackVC = storyboard.instantiateViewController(withIdentifier: "SpeedTrackViewController") as? SpeedTrackViewController else {
+            return
+        }
+
+        if let nav = navigationController {
+            nav.pushViewController(speedTrackVC, animated: true)
+        } else {
+            present(speedTrackVC, animated: true)
+        }
+    }
+
     private func formatTHL(_ hours: Double) -> String {
         let wholeHours = max(0, Int(hours.rounded(.down)))
-        return "\(wholeHours) THL"
+        return "\(wholeHours)"
     }
 
     func ensureCategoryAssigned(for book: Book, completion: @escaping () -> Void) {
@@ -183,25 +200,18 @@ extension UIViewController {
             return
         }
 
-        let primary = SpeedTrackCategoryManager.shared.primaryLabel()
-        let secondary = SpeedTrackCategoryManager.shared.secondaryLabel()
-
         let alert = UIAlertController(
-            title: "Categorize Audiobook",
+            title: "Categorize Your Audio",
             message: "Choose a category for \"\(book.title ?? "this book")\".",
             preferredStyle: .alert
         )
-        alert.addAction(UIAlertAction(title: primary, style: .default, handler: { _ in
-            SpeedTrackCategoryManager.shared.setCategory("fiction", forBookId: identifier)
-            completion()
-        }))
-        alert.addAction(UIAlertAction(title: secondary, style: .default, handler: { _ in
-            SpeedTrackCategoryManager.shared.setCategory("non-fiction", forBookId: identifier)
-            completion()
-        }))
-        alert.addAction(UIAlertAction(title: "Skip", style: .cancel, handler: { _ in
-            completion()
-        }))
+        let manager = SpeedTrackCategoryManager.shared
+        for (categoryID, label) in zip(SpeedTrackCategoryManager.categoryIDs, manager.labels()) {
+            alert.addAction(UIAlertAction(title: label, style: .default, handler: { _ in
+                manager.setCategory(categoryID, forBookId: identifier)
+                completion()
+            }))
+        }
         present(alert, animated: true)
     }
 }

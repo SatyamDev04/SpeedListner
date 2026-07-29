@@ -20,6 +20,10 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     @IBOutlet weak var btnSave: UIButton!
     
     var book:Book!
+    var capturedTime: TimeInterval? = {
+        guard PlayerManager.shared.currentBook != nil else { return nil }
+        return PlayerManager.shared.currentTime
+    }()
     var txt:String?
     var index:Int?
     var i = ""
@@ -105,8 +109,18 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
     private func setupView(){
         
         txt_notes.delegate = self
-        guard let book = currentBok else {return}
-        self.book = book
+        if self.book == nil {
+            self.book = PlayerManager.shared.currentBook ?? currentBok
+        }
+        guard let book = self.book else { return }
+
+        if capturedTime == nil {
+            if PlayerManager.shared.currentBook?.identifier == book.identifier {
+                capturedTime = PlayerManager.shared.currentTime
+            } else {
+                capturedTime = book.currentTime
+            }
+        }
 
         let savedBookmarks = BookmarkManager.shared.loadBookmarks(for: self.book)
         if savedBookmarks.count > 0 {
@@ -291,9 +305,20 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             }
 
             if note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                BookmarkManager.shared.saveWithoutNote(book: self.book, starStatus: self.starStatus, completion: completion)
+                BookmarkManager.shared.saveWithoutNote(
+                    book: self.book,
+                    starStatus: self.starStatus,
+                    timestamp: capturedTime,
+                    completion: completion
+                )
             } else {
-                BookmarkManager.shared.saveBookmarkWithNote(book: self.book, note: note, starStatus: self.starStatus, completion: completion)
+                BookmarkManager.shared.saveBookmarkWithNote(
+                    book: self.book,
+                    note: note,
+                    starStatus: self.starStatus,
+                    timestamp: capturedTime,
+                    completion: completion
+                )
             }
         }
             
@@ -308,7 +333,11 @@ class BookmarkPopUpVC: UIViewController,UITextViewDelegate {
             return
         }
         if displayItems.count <= 0 {
-            BookmarkManager.shared.saveWithoutNote(book: self.book, starStatus: self.starStatus) { [weak self] success in
+            BookmarkManager.shared.saveWithoutNote(
+                book: self.book,
+                starStatus: self.starStatus,
+                timestamp: capturedTime
+            ) { [weak self] success in
                 guard let self = self, success else { return }
                 DispatchQueue.main.async {
                     self.dismiss(animated: true) {

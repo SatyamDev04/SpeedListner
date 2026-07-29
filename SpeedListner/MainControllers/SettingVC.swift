@@ -491,13 +491,32 @@ private extension SettingVC {
             textField.text = SpeedTrackCategoryManager.shared.secondaryLabel()
             textField.clearButtonMode = .whileEditing
         }
+        alert.addTextField { textField in
+            textField.placeholder = "Third Label"
+            textField.text = SpeedTrackCategoryManager.shared.tertiaryLabel()
+            textField.clearButtonMode = .whileEditing
+        }
+        alert.addTextField { textField in
+            textField.placeholder = "Fourth Label"
+            textField.text = SpeedTrackCategoryManager.shared.quaternaryLabel()
+            textField.clearButtonMode = .whileEditing
+        }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         alert.addAction(UIAlertAction(title: "Save", style: .default, handler: { _ in
             let primary = (alert.textFields?[0].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             let secondary = (alert.textFields?[1].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let tertiary = (alert.textFields?[2].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let quaternary = (alert.textFields?[3].text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
             let finalPrimary = primary.isEmpty ? "Fiction" : primary
             let finalSecondary = secondary.isEmpty ? "Non-Fiction" : secondary
-            SpeedTrackCategoryManager.shared.setLabels(primary: finalPrimary, secondary: finalSecondary)
+            let finalTertiary = tertiary.isEmpty ? "Misc 1" : tertiary
+            let finalQuaternary = quaternary.isEmpty ? "Misc 2" : quaternary
+            SpeedTrackCategoryManager.shared.setLabels(
+                primary: finalPrimary,
+                secondary: finalSecondary,
+                tertiary: finalTertiary,
+                quaternary: finalQuaternary
+            )
             self.showToast("SpeedTrack labels updated")
         }))
         present(alert, animated: true)

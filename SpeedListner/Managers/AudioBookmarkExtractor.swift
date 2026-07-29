@@ -177,53 +177,24 @@ class AudioBookmarkExtractor {
         outputURL: URL,
         completion: @escaping (Bool, URL?, Error?) -> Void
     ) {
-        let asset = AVAsset(url: inputURL)
-        let composition = AVMutableComposition()
-
-        asset.loadValuesAsynchronously(forKeys: ["tracks"]) {
-            var error: NSError?
-            let status = asset.statusOfValue(forKey: "tracks", error: &error)
-            guard status == .loaded, let track = asset.tracks(withMediaType: .audio).first else {
-                completion(false, nil, error ?? NSError(domain: "No audio track found", code: 0))
-                return
-            }
-
-            let start = CMTime(seconds: startTime, preferredTimescale: 600)
-            let end = CMTime(seconds: endTime, preferredTimescale: 600)
-            let timeRange = CMTimeRange(start: start, end: end)
-
-            do {
-                let compTrack = composition.addMutableTrack(
-                    withMediaType: .audio,
-                    preferredTrackID: kCMPersistentTrackID_Invalid
+        AudioClipUtils.extractClip(
+            from: inputURL,
+            startTime: startTime,
+            endTime: endTime,
+            outputURL: outputURL
+        ) { url in
+            if let url {
+                completion(true, url, nil)
+            } else {
+                completion(
+                    false,
+                    nil,
+                    NSError(
+                        domain: "AudioBookmarkExtractor",
+                        code: 1,
+                        userInfo: [NSLocalizedDescriptionKey: "Failed to extract bookmark segment"]
+                    )
                 )
-                try compTrack?.insertTimeRange(timeRange, of: track, at: .zero)
-            } catch {
-                completion(false, nil, error)
-                return
-            }
-
-            if FileManager.default.fileExists(atPath: outputURL.path) {
-                try? FileManager.default.removeItem(at: outputURL)
-            }
-
-            guard let exporter = AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetAppleM4A) else {
-                completion(false, nil, NSError(domain: "Export session creation failed", code: 1))
-                return
-            }
-
-            exporter.outputURL = outputURL
-            exporter.outputFileType = .m4a
-
-            exporter.exportAsynchronously {
-                switch exporter.status {
-                case .completed:
-                    completion(true, outputURL, nil)
-                case .failed, .cancelled:
-                    completion(false, nil, exporter.error)
-                default:
-                    break
-                }
             }
         }
     }
@@ -235,32 +206,46 @@ struct AITranscriptionResult {
     let summary: String
 }
 
+struct OpenAIRequestError: LocalizedError {
+    let message: String
 
+    var errorDescription: String? {
+        message
+    }
+}
 
-class TranscriptionAI{
+class TranscriptionAI {
     
-    
-    static func processAudio(fileURL: URL, completion: @escaping (AITranscriptionResult?) -> Void) {
-       
-        transcribeLocalAudio(fileURL: fileURL) { transcription in
-            guard let transcription = transcription else {
-                completion(nil)
-                return
-            }
-
-            getSummary(from: transcription) { summary in
-                guard let summary = summary else {
-                    completion(nil)
-                    return
+    static func processAudio(
+        fileURL: URL,
+        completion: @escaping (Result<AITranscriptionResult, Error>) -> Void
+    ) {
+        transcribeLocalAudio(fileURL: fileURL) { transcriptionResult in
+            switch transcriptionResult {
+            case .success(let transcription):
+                getSummary(from: transcription) { summaryResult in
+                    switch summaryResult {
+                    case .success(let summary):
+                        completion(.success(
+                            AITranscriptionResult(
+                                transcription: transcription,
+                                summary: summary
+                            )
+                        ))
+                    case .failure(let error):
+                        completion(.failure(error))
+                    }
                 }
-
-                completion(AITranscriptionResult(transcription: transcription, summary: summary))
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
     }
     
-    
-    static func transcribeLocalAudio(fileURL: URL, completion: @escaping (String?) -> Void) {
+    static func transcribeLocalAudio(
+        fileURL: URL,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         let boundary = UUID().uuidString
         var request = URLRequest(url: URL(string: "https://api.openai.com/v1/audio/transcriptions")!)
         request.httpMethod = "POST"
@@ -273,7 +258,12 @@ class TranscriptionAI{
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"file\"; filename=\"audio.m4a\"\r\n".data(using: .utf8)!)
         body.append("Content-Type: audio/m4a\r\n\r\n".data(using: .utf8)!)
-        body.append(try! Data(contentsOf: fileURL))
+        do {
+            body.append(try Data(contentsOf: fileURL))
+        } catch {
+            completion(.failure(error))
+            return
+        }
         body.append("\r\n".data(using: .utf8)!)
 
       
@@ -285,30 +275,42 @@ class TranscriptionAI{
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         let task = URLSession.shared.uploadTask(with: request, from: body) { data, response, error in
-            guard let data = data, error == nil else {
-                print("Transcription error:", error?.localizedDescription ?? "Unknown error")
-                completion(nil)
+            if let error {
+                print("Transcription error:", error.localizedDescription)
+                completion(.failure(error))
                 return
             }
 
-            do {
-                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let text = json["text"] as? String {
-                    completion(text)
-                } else {
-                    print("Unexpected API response:", String(data: data, encoding: .utf8) ?? "")
-                    completion(nil)
-                }
-            } catch {
-                print("Failed to decode transcription response:", error)
-                completion(nil)
+            guard let data else {
+                completion(.failure(OpenAIRequestError(message: "OpenAI returned an empty response.")))
+                return
             }
+
+            if let responseError = openAIError(from: data, response: response) {
+                completion(.failure(responseError))
+                return
+            }
+
+            guard
+                let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let text = json["text"] as? String
+            else {
+                completion(.failure(
+                    OpenAIRequestError(message: "OpenAI returned an unexpected transcription response.")
+                ))
+                return
+            }
+
+            completion(.success(text))
         }
 
         task.resume()
     }
     
-    static func getSummary(from transcription: String, completion: @escaping (String?) -> Void) {
+    static func getSummary(
+        from transcription: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
         let url = URL(string: "https://api.openai.com/v1/chat/completions")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -326,18 +328,53 @@ class TranscriptionAI{
 
         request.httpBody = try? JSONSerialization.data(withJSONObject: payload)
 
-        URLSession.shared.dataTask(with: request) { data, _, error in
-            guard let data = data, error == nil,
-                  let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let choices = result["choices"] as? [[String: Any]],
-                  let message = choices.first?["message"] as? [String: Any],
-                  let summary = message["content"] as? String else {
-                completion(nil)
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error {
+                completion(.failure(error))
                 return
             }
 
-            completion(summary)
+            guard let data else {
+                completion(.failure(OpenAIRequestError(message: "OpenAI returned an empty response.")))
+                return
+            }
+
+            if let responseError = openAIError(from: data, response: response) {
+                completion(.failure(responseError))
+                return
+            }
+
+            guard
+                let result = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                let choices = result["choices"] as? [[String: Any]],
+                let message = choices.first?["message"] as? [String: Any],
+                let summary = message["content"] as? String
+            else {
+                completion(.failure(
+                    OpenAIRequestError(message: "OpenAI returned an unexpected summary response.")
+                ))
+                return
+            }
+
+            completion(.success(summary))
         }.resume()
+    }
+
+    static func openAIError(from data: Data, response: URLResponse?) -> Error? {
+        let statusCode = (response as? HTTPURLResponse)?.statusCode
+        let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        let errorObject = json?["error"] as? [String: Any]
+        let apiMessage = errorObject?["message"] as? String
+
+        if let apiMessage, !apiMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            return OpenAIRequestError(message: apiMessage)
+        }
+
+        if let statusCode, !(200...299).contains(statusCode) {
+            return OpenAIRequestError(message: "OpenAI request failed with status \(statusCode).")
+        }
+
+        return nil
     }
 }
 

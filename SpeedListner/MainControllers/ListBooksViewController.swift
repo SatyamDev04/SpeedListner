@@ -86,12 +86,12 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     @objc func loadLibrary() {
 
         self.library = NewDataMannagerClass.getLibrary()
-        self.items = self.library.items?.array as? [LibraryItem] ?? []
+        let libraryItems = self.library.items?.array as? [LibraryItem] ?? []
 
-        let playlists = self.items.compactMap { $0 as? Playlist }
+        let playlists = libraryItems.compactMap { $0 as? Playlist }
 
         //  FILTER BOOKS WITH MISSING FILES HERE
-        let books = self.items
+        let books = libraryItems
             .compactMap { $0 as? Book }
             .filter { isAudioFileAvailable(book: $0) }
 
@@ -164,39 +164,18 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
     }
     
     // MARK: - Duplicate check helper (reusable)
-    private func checkDuplicateFor(processedURL: URL, completion: @escaping (Book?) -> Void) {
-        
-        let asset = AVAsset(url: processedURL)
-        let incomingTitle = AVMetadataItem.metadataItems(from: asset.metadata, withKey: AVMetadataKey.commonKeyTitle, keySpace: AVMetadataKeySpace.common).first?.value?.copy(with: nil) as? String ??  processedURL.deletingPathExtension().lastPathComponent
-        
-        let incomingDuration = CMTimeGetSeconds(asset.duration)
-
-         let library = NewDataMannagerClass.getLibrary()
-        
-        let items = library.items?.array as? [LibraryItem] ?? []
-
-        let existingBooks = items.compactMap { $0 as? Book }
-
-       
-        func normalize(_ s: String) -> String {
-            return s
-                .lowercased()
-                .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        }
-
-        let normalizedIncoming = normalize(incomingTitle)
-
-        if let duplicate = existingBooks.first(where: { book in
-            let normalizedExisting = normalize(book.title ?? "")
-            let sameTitle = normalizedIncoming.contains(normalizedExisting) || normalizedExisting.contains(normalizedIncoming)
-            let sameDuration = abs(book.duration - incomingDuration) < 2
-            return sameTitle && sameDuration
-        }) {
-            completion(duplicate)
-        } else {
-            completion(nil)
-        }
+    private func checkDuplicateFor(
+        processedURL: URL,
+        originalURL: URL,
+        completion: @escaping (Book?) -> Void
+    ) {
+        completion(
+            NewDataMannagerClass.findDuplicateBook(
+                processedURL: processedURL,
+                originalURL: originalURL,
+                in: NewDataMannagerClass.getLibrary()
+            )
+        )
     }
 
     @objc func loadformAppDelegate(){
@@ -209,7 +188,9 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
             if self.items.count != (self.library.items?.array as? [LibraryItem] ?? []).count{
                 t.invalidate()
             }
-            self.items = self.library.items?.array as? [LibraryItem] ?? []
+            self.items = self.foldersFirst(
+                self.library.items?.array as? [LibraryItem] ?? []
+            )
             self.t_items = self.items
 
             self.tableView.reloadData()
@@ -236,13 +217,16 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
                 return
             }
 
-            self.checkDuplicateFor(processedURL: processedURL) { duplicateBook in
+            self.checkDuplicateFor(
+                processedURL: processedURL,
+                originalURL: fileURL
+            ) { duplicateBook in
                 DispatchQueue.main.async {
                     if let dup = duplicateBook {
                        
                         let alert = UIAlertController(
-                            title: "Duplicate Audiobook",
-                            message: "There is already an audiobook named '\(dup.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            title: "Duplicate Audio",
+                            message: "There is already an audio named '\(dup.title ?? "Unknown")' in your library. Do you still want to upload this audio?",
                             preferredStyle: .alert
                         )
                         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
@@ -474,6 +458,8 @@ class ListBooksViewController: UIViewController, UIGestureRecognizerDelegate {
             
         }
         DispatchQueue.main.async {
+            self.items = self.foldersFirst(self.items)
+            self.t_items = self.foldersFirst(self.t_items)
             self.tableView.reloadData()
         }
         
@@ -1777,9 +1763,9 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
                 let newStringFirstLetter = String(newString.prefix(1))
                 return titleFirstLetter.caseInsensitiveCompare(newStringFirstLetter) == .orderedSame
             }
-            items = filteredArray
+            items = foldersFirst(filteredArray)
         } else {
-            items = t_items
+            items = foldersFirst(t_items)
         }
         
         self.tableView.reloadData()
@@ -1807,91 +1793,40 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
                 .trimmingCharacters(in: .whitespacesAndNewlines)
                 .lowercased()
 
-            let searchWords = cleanedInput.split(separator: " ")
-
-            // 🔥 MAIN FILTER (Library visible list)
-            if !cleanedInput.isEmpty {
-
-                let filteredArray = self.t_items.filter { item in
-
-                    let title = item.title?.lowercased() ?? ""
-                    let author = (item as? Book)?.author?.lowercased() ?? ""
-
-                    let titleMatch = searchWords.allSatisfy { word in
-                        title.contains(word)
-                    }
-
-                    let authorMatch = searchWords.allSatisfy { word in
-                        author.contains(word)
-                    }
-
-                    return titleMatch || authorMatch
-                }
-
-                self.items = filteredArray
-
-            } else {
-                let playlists = self.t_items.compactMap { $0 as? Playlist }
-                let books = self.t_items.compactMap { $0 as? Book }
-
-                self.items = playlists + books
-            }
-
-            // 🔥 अगर input empty है → hide dropdown
             if cleanedInput.isEmpty {
-                filteredBooks = []
-                matchedPlaylists = []
-                self.searchTblV.isHidden = true
+                self.items = self.foldersFirst(self.t_items)
+                self.hideSearchDropdown()
                 return
             }
 
-            // 🔥 DROPDOWN BOOKS (NOT IN CURRENT LIST)
-            filteredBooks = self.getAllBooks(from: self.library).filter { book in
+            // Filter and rank the current Library location.
+            self.items = self.foldersFirst(
+                self.rankedSearchResults(in: self.t_items, query: cleanedInput)
+            )
 
-                let title = book.title?.lowercased() ?? ""
+            let currentBookIDs = Set(
+                self.t_items
+                    .compactMap { $0 as? Book }
+                    .compactMap(\.identifier)
+            )
 
-                let matchesSearch = searchWords.allSatisfy { word in
-                    title.contains(word)
-                }
-
-                let alreadyVisible = self.items.contains {
-                    if let visibleBook = $0 as? Book {
-                        return visibleBook.identifier == book.identifier
-                    }
-                    return false
-                }
-
-                return matchesSearch && !alreadyVisible
+            let externalBooks = self.getAllBooks(from: self.library).filter { book in
+                guard let identifier = book.identifier else { return true }
+                return !currentBookIDs.contains(identifier)
             }
+            self.filteredBooks = self.rankedSearchResults(
+                in: externalBooks,
+                query: cleanedInput
+            )
+            self.matchedPlaylists = []
 
-            // 🔥 DROPDOWN PLAYLISTS
-            matchedPlaylists = self.getAllPlaylists(from: self.library).filter { playlist in
-
-                let title = playlist.title?.lowercased() ?? ""
-
-                let matchesSearch = searchWords.allSatisfy { word in
-                    title.contains(word)
-                }
-
-                let alreadyVisible = self.items.contains {
-                    if let visiblePlaylist = $0 as? Playlist {
-                        return visiblePlaylist.identifier == playlist.identifier
-                    }
-                    return false
-                }
-
-                return matchesSearch && !alreadyVisible
-            }
-
-            // 🔥 HEIGHT CALCULATION
-            let rowHeight: CGFloat = 40
+            let rowHeight: CGFloat = 50
             let maxHeight: CGFloat = 200
-            let totalResults = filteredBooks.count + matchedPlaylists.count
-            let calculatedHeight = min(CGFloat(totalResults) * rowHeight, maxHeight)
-
-            self.searchTblVH.constant = calculatedHeight
-
-            self.searchTblV.isHidden = totalResults == 0
+            self.searchTblVH.constant = min(
+                CGFloat(self.filteredBooks.count) * rowHeight,
+                maxHeight
+            )
+            self.searchTblV.isHidden = self.filteredBooks.isEmpty
             self.searchTblV.reloadData()
         }
 
@@ -1905,6 +1840,74 @@ extension ListBooksViewController:UICollectionViewDelegate,UICollectionViewDataS
         }
         keyboardHideWorkItem = hideWork
         DispatchQueue.main.asyncAfter(deadline: .now() + 10.0, execute: hideWork)
+    }
+
+    private func rankedSearchResults<T: LibraryItem>(in source: [T], query: String) -> [T] {
+        source.compactMap { item -> (item: T, rank: Int)? in
+            guard let rank = searchRank(for: item, query: query) else { return nil }
+            return (item, rank)
+        }
+        .sorted { lhs, rhs in
+            if lhs.rank != rhs.rank {
+                return lhs.rank < rhs.rank
+            }
+            return (lhs.item.title ?? "").localizedCaseInsensitiveCompare(
+                rhs.item.title ?? ""
+            ) == .orderedAscending
+        }
+        .map(\.item)
+    }
+
+    private func foldersFirst<T: LibraryItem>(_ source: [T]) -> [T] {
+        source.filter { $0 is Playlist } + source.filter { !($0 is Playlist) }
+    }
+
+    private func searchRank(for item: LibraryItem, query: String) -> Int? {
+        let normalizedQuery = normalizeSearchText(query)
+        guard !normalizedQuery.isEmpty else { return 0 }
+
+        let title = normalizeSearchText(item.title ?? "")
+        let author = normalizeSearchText((item as? Book)?.author ?? "")
+        let queryWords = normalizedQuery.split(separator: " ").map(String.init)
+        let titleWords = title.split(separator: " ").map(String.init)
+        let authorWords = author.split(separator: " ").map(String.init)
+
+        guard queryWords.allSatisfy({ word in
+            title.contains(word) || author.contains(word)
+        }) else {
+            return nil
+        }
+
+        if title == normalizedQuery { return 0 }
+        if author == normalizedQuery { return 1 }
+        if title.hasPrefix(normalizedQuery) { return 10 }
+        if author.hasPrefix(normalizedQuery) { return 11 }
+        if titleWords.contains(where: { $0.hasPrefix(normalizedQuery) }) { return 20 }
+        if authorWords.contains(where: { $0.hasPrefix(normalizedQuery) }) { return 21 }
+
+        let allWordsStartInTitleOrAuthor = queryWords.allSatisfy { queryWord in
+            titleWords.contains(where: { $0.hasPrefix(queryWord) }) ||
+                authorWords.contains(where: { $0.hasPrefix(queryWord) })
+        }
+        if allWordsStartInTitleOrAuthor { return 30 }
+
+        return 40
+    }
+
+    private func normalizeSearchText(_ text: String) -> String {
+        text.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+            .lowercased()
+            .components(separatedBy: CharacterSet.alphanumerics.inverted)
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    private func hideSearchDropdown() {
+        filteredBooks = []
+        matchedPlaylists = []
+        searchTblVH.constant = 0
+        searchTblV.isHidden = true
+        searchTblV.reloadData()
     }
     
     func getAllPlaylists(from library: Library) -> [Playlist] {
@@ -2027,7 +2030,9 @@ extension ListBooksViewController {
         currentBok = currentBook
         self.cuBook = currentBook
         setupMiniPlayer(book: currentBook)
-        PlayerManager.shared.playPause()
+        ensureCategoryAssigned(for: currentBook) {
+            PlayerManager.shared.playPause()
+        }
         
     }
     
@@ -2218,43 +2223,15 @@ extension ListBooksViewController: UIDocumentPickerDelegate {
                     return
                 }
 
-           
-                guard let items = self.library.items?.array as? [LibraryItem] else {
-                    completion()
-                    return
-                }
-                let existingBooks = items.compactMap { $0 as? Book }
-
-                let asset = AVAsset(url: processedURL)
-                let newDuration = CMTimeGetSeconds(asset.duration)
-                let newTitle = processedURL.deletingPathExtension().lastPathComponent
-
-                if let duplicateBook = existingBooks.first(where: { book in
-                   
-                    let normalizedNewTitle = newTitle
-                          .lowercased()
-                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression) // remove punctuation
-                          .trimmingCharacters(in: .whitespacesAndNewlines)
-                      
-                      let normalizedExistingTitle = (book.title ?? "")
-                          .lowercased()
-                          .replacingOccurrences(of: "[^a-z0-9 ]", with: "", options: .regularExpression)
-                          .trimmingCharacters(in: .whitespacesAndNewlines)
-                      
-                      print("Comparing:", normalizedNewTitle, "vs", normalizedExistingTitle)
-
-                      let isSameTitle = normalizedNewTitle.contains(normalizedExistingTitle) ||
-                                        normalizedExistingTitle.contains(normalizedNewTitle)
-                      
-                      let isSameDuration = abs(book.duration - newDuration) < 2
-                    
-                    print(newTitle,newDuration,book.title?.lowercased(),book.duration,"isSameDuration")
-                      return isSameTitle && isSameDuration
-                }) {
+                if let duplicateBook = NewDataMannagerClass.findDuplicateBook(
+                    processedURL: processedURL,
+                    originalURL: url,
+                    in: self.library
+                ) {
                     DispatchQueue.main.async {
                         let alert = UIAlertController(
-                            title: "Duplicate Audiobook",
-                            message: "There is already an audiobook named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audiobook?",
+                            title: "Duplicate Audio",
+                            message: "There is already an audio named '\(duplicateBook.title ?? "Unknown")' in your library. Do you still want to upload this audio?",
                             preferredStyle: .alert
                         )
                         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in

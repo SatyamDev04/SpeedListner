@@ -166,6 +166,8 @@ enum UserKeys:String {
     case savedSort = "savedSort"
     case categoryPrimaryLabel = "categoryPrimaryLabel"
     case categorySecondaryLabel = "categorySecondaryLabel"
+    case categoryTertiaryLabel = "categoryTertiaryLabel"
+    case categoryQuaternaryLabel = "categoryQuaternaryLabel"
     case categoryMap = "bookCategoryMap"
 }
  

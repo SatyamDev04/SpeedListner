@@ -26,6 +26,8 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
     private let pauseImage = UIImage(named: "landPauseImg")
     var library = NewDataMannagerClass.getLibrary()
     private var routePickerView: AVRoutePickerView!
+    private var isRoutePickerPresented = false
+    private var isClosingRoutePicker = false
     private var coverImage = UIImage()
     var currentValue: Float = 0.1
     private let closeButton = UIButton(type: .system)
@@ -104,6 +106,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.loadLibrary()
         setupAudioSession()
         setupRoutePickerView()
+        startObservingRouteChanges()
         if AppOrientationManager.shared.current == .lockHorizontal {
             setupCloseButton()
         }
@@ -372,6 +375,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
        // Set up AVRoutePickerView (Hidden)
        private func setupRoutePickerView() {
            routePickerView = AVRoutePickerView(frame: CGRect(x: 0, y: 0, width: 1, height: 1))
+           routePickerView.delegate = self
            routePickerView.isHidden = true
            self.view.addSubview(routePickerView)
        }
@@ -547,14 +551,10 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
      
     }
     @IBAction func didPressroutePicker(_ sender: UIButton) {
-        for subview in routePickerView.subviews {
-                  if let button = subview as? UIButton {
-                      button.sendActions(for: .touchUpInside)
-                      break
-                  }
-              }
-    
+        isClosingRoutePicker = false
+        triggerRoutePickerButton()
     }
+
     @IBAction func presentSpeed(_ sender: UIButton) {
         LandscapePlayerManager.shared.isModalBeingPresented = true
         guard !isLibraryEmpty() else {
@@ -589,7 +589,46 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         }
         
     }
-  
+    private func startObservingRouteChanges() {
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioRouteChanged(_:)),
+            name: AVAudioSession.routeChangeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func handleAudioRouteChanged(_ notification: Notification) {
+        closeRoutePickerAfterSelection()
+    }
+
+    @discardableResult
+    private func triggerRoutePickerButton() -> Bool {
+        guard let routeButton = routePickerView.subviews.compactMap({ $0 as? UIButton }).first else {
+            return false
+        }
+        routeButton.sendActions(for: .touchUpInside)
+        return true
+    }
+
+    private func closeRoutePickerAfterSelection() {
+        guard isRoutePickerPresented, !isClosingRoutePicker else { return }
+        isClosingRoutePicker = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) { [weak self] in
+            guard let self = self else { return }
+            guard self.isRoutePickerPresented else {
+                self.isClosingRoutePicker = false
+                return
+            }
+
+            self.triggerRoutePickerButton()
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                self?.isClosingRoutePicker = false
+            }
+        }
+    }
         func sendDataToFirstViewController(myData: Float) {
             
             PlayerManager.shared.speed = myData
@@ -619,6 +658,7 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
         self.present(vc, animated: false)
         
     }
+
     @objc private func bookReady(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let book = userInfo["book"] as? Book else {
@@ -678,5 +718,17 @@ final class LandscapePlayerViewController: UIViewController, DelegateforListenin
             self.playButton.setImage(self.playImage, for: .normal)
             self.playButton.setBackgroundImage(nil, for: .normal)
         }
+    }
+}
+
+extension LandscapePlayerViewController: AVRoutePickerViewDelegate {
+    func routePickerViewWillBeginPresentingRoutes(_ routePickerView: AVRoutePickerView) {
+        isRoutePickerPresented = true
+        isClosingRoutePicker = false
+    }
+
+    func routePickerViewDidEndPresentingRoutes(_ routePickerView: AVRoutePickerView) {
+        isRoutePickerPresented = false
+        isClosingRoutePicker = false
     }
 }
